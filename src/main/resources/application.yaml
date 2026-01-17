@@ -1,0 +1,61 @@
+server:
+  port: ${SERVER_PORT}
+  servlet:
+    context-path: ${SERVER_SERVLET_CONTEXT_PATH}
+  address: ${SERVER_ADDRESS}
+
+logging:
+  level:
+    root: ${LOGGING_LEVEL_ROOT}
+    org:
+      hibernate:
+        SQL: ${LOGGING_LEVEL_HIBERNATE_SQL}
+        orm:
+          jdbc:
+      springframework:
+        web: ${LOGGING_LEVEL_SPRING}
+
+spring:
+  servlet:
+    encoding:
+      enabled: true
+      charset: UTF-8
+      force: true
+
+  jpa:
+    hibernate:
+      ddl-auto: ${DB_DDL_AUTO}
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        show_sql: false
+        format_sql: true
+    open-in-view: false
+  datasource:
+    url: jdbc:postgresql://localhost:${POSTGRESQL_EXTERNAL_PORT}/${POSTGRESQL_DB}
+    username: ${POSTGRESQL_USER}
+    password: ${POSTGRESQL_PASSWORD}
+
+  data:
+    redis:
+      host: localhost
+      port: ${REDIS_EXTERNAL_PORT}
+      password: ${REDIS_PASSWORD}
+      database: ${REDIS_DATABASE}
+
+app:
+  secret: ${JWT_SECRET_KEY}
+  jwt:
+    token:
+      expires-in: ${JWT_ACCESS_EXPIRES_IN}
+    refresh-token:
+      expires-in: ${JWT_REFRESH_EXPIRES_IN}
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+
+scalar:
+  path: /docs
+  url: /v3/api-docs
+  enabled: true
