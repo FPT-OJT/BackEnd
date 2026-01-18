@@ -45,7 +45,10 @@ spring:
 
 app:
   secret: ${JWT_SECRET_KEY}
+  default-locale: ${APP_DEFAULT_LOCALE}
+  default-timezone: ${APP_DEFAULT_TIMEZONE}
   jwt:
+    secret: ${JWT_SECRET_KEY}
     token:
       expires-in: ${JWT_ACCESS_EXPIRES_IN}
     refresh-token:
