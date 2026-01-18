@@ -8,9 +8,9 @@ import jakarta.servlet.http.HttpServletRequest;
 public interface JwtTokenProvider {
     String generateAccessTokenByUserId(UUID userId, String userRole);
     String generateRefreshTokenByUserId(UUID userId, String userRole);
-    String generateRefreshTokenByAccessToken(String accessToken);
+    String generateAccessTokenByRefreshToken(String accessToken);
+    void deleteRefreshTokenByUserId(UUID userId);
     boolean validateToken(String token, HttpServletRequest request) ;
     String extractJwtFromHttpRequest(final HttpServletRequest request);
-    UUID getCurrentUserId();
     Claims getClaimsFromToken(String token);
 }

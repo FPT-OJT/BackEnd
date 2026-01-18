@@ -30,9 +30,11 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         show_sql: false
         format_sql: true
+        jdbc:
+          time_zone: UTC
     open-in-view: false
   datasource:
-    url: jdbc:postgresql://localhost:${POSTGRESQL_EXTERNAL_PORT}/${POSTGRESQL_DB}
+    url: jdbc:postgresql://localhost:${POSTGRESQL_EXTERNAL_PORT}/${POSTGRESQL_DB}?serverTimezone=UTC
     username: ${POSTGRESQL_USER}
     password: ${POSTGRESQL_PASSWORD}
 

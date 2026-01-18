@@ -1,5 +1,7 @@
 package com.fpt.ojt.securities.impl;
 
+import com.fpt.ojt.models.RefreshToken;
+import com.fpt.ojt.repositories.RefreshTokenRepository;
 import com.fpt.ojt.securities.JwtTokenProvider;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
@@ -8,9 +10,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.authentication.AnonymousAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
@@ -26,13 +25,16 @@ import static com.fpt.ojt.constants.Constants.TOKEN_TYPE;
 @Slf4j
 @RequiredArgsConstructor
 public class JwtTokenProviderImpl implements JwtTokenProvider {
-    @Value("{jwt.secret}")
+
+    private final RefreshTokenRepository refreshTokenRepository;
+
+    @Value("${app.jwt.secret}")
     private String jwtSecretKey;
 
-    @Value("{jwt.token.expires-in}")
+    @Value("${app.jwt.token.expires-in}")
     private long jwtTokenExpiresIn;
 
-    @Value("{jwt.refresh-token.expires-in}")
+    @Value("${app.jwt.refresh-token.expires-in}")
     private long jwtRefreshTokenExpiresIn;
 
     @Override
@@ -43,14 +45,48 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
     @Override
     public String generateRefreshTokenByUserId(UUID userId, String userRole) {
         String refreshToken = generateTokenByUserId(userId, userRole, jwtRefreshTokenExpiresIn);
-        // Store in Redis
+
+        // Store refresh token in Redis with TTL
+        RefreshToken refreshTokenEntity = RefreshToken.builder()
+                .id(UUID.randomUUID().toString())
+                .userId(userId)
+                .refreshToken(refreshToken)
+                .userRole(userRole)
+                .ttl(jwtRefreshTokenExpiresIn / 1000)
+                .build();
+
+        refreshTokenRepository.save(refreshTokenEntity);
+        log.debug("Refresh token stored in Redis for userID: {}, ttl: {} seconds", userId, refreshTokenEntity.getTtl());
 
         return refreshToken;
     }
 
     @Override
-    public String generateRefreshTokenByAccessToken(String accessToken) {
-        return "";
+    public String generateAccessTokenByRefreshToken(String refreshToken) {
+        return refreshTokenRepository.findByRefreshToken(refreshToken)
+                .map(storedToken -> {
+                    if (validateToken(refreshToken, null)) {
+                        log.debug("Generating new access token for userID: {}", storedToken.getUserId());
+                        return generateAccessTokenByUserId(storedToken.getUserId(), storedToken.getUserRole());
+                    }
+                    log.warn("Refresh token is expired or invalid for userID: {}", storedToken.getUserId());
+                    return null;
+                })
+                .orElseGet(() -> {
+                    log.error("Refresh token not found in Redis");
+                    return null;
+                });
+    }
+
+    @Override
+    public void deleteRefreshTokenByUserId(UUID userId) {
+        try {
+            refreshTokenRepository.findByUserId(userId)
+                    .ifPresent(refreshTokenRepository::delete);
+            log.debug("Deleted refresh token for userID: {}", userId);
+        } catch (Exception exception) {
+            throw new RuntimeException("Failed to delete refresh token for userID: " + userId, exception);
+        }
     }
 
     @Override
@@ -64,19 +100,29 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
 
         } catch (ExpiredJwtException e) {
             log.error("Expired JWT token: {}", e.getMessage());
-            request.setAttribute("expired", e.getMessage());
+            if (request != null) {
+                request.setAttribute("expired", e.getMessage());
+            }
         } catch (MalformedJwtException e) {
             log.error("Invalid JWT token: {}", e.getMessage());
-            request.setAttribute("malformed", e.getMessage());
+            if (request != null) {
+                request.setAttribute("malformed", e.getMessage());
+            }
         } catch (SignatureException e) {
             log.error("Invalid JWT signature: {}", e.getMessage());
-            request.setAttribute("signature", e.getMessage());
+            if (request != null) {
+                request.setAttribute("signature", e.getMessage());
+            }
         } catch (UnsupportedJwtException e) {
             log.error("Unsupported JWT token: {}", e.getMessage());
-            request.setAttribute("unsupported", e.getMessage());
+            if (request != null) {
+                request.setAttribute("unsupported", e.getMessage());
+            }
         } catch (IllegalArgumentException e) {
             log.error("JWT claims string is empty: {}", e.getMessage());
-            request.setAttribute("empty", e.getMessage());
+            if (request != null) {
+                request.setAttribute("empty", e.getMessage());
+            }
         } catch (Exception e) {
             log.error("JWT validation error: {}", e.getMessage());
             // Else -> Unauthorized
@@ -92,28 +138,9 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
             return bearer.substring(TOKEN_TYPE.length() + 1);
         }
 
-        return null;
+        return bearer;
     }
 
-    @Override
-    public UUID getCurrentUserId() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null ||
-                !authentication.isAuthenticated() ||
-                authentication instanceof AnonymousAuthenticationToken) {
-            throw new RuntimeException("User is not authenticated");
-        }
-
-        Object principal = authentication.getPrincipal();
-        String userIdString = (String) principal;
-
-        if (userIdString != null) {
-            return UUID.fromString(userIdString);
-        }
-
-        throw new RuntimeException("Principal type is not supported or ID is null");
-    }
 
     @Override
     public Claims getClaimsFromToken(String token) {
