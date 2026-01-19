@@ -4,7 +4,6 @@ import com.fpt.ojt.constants.Constants;
 import com.fpt.ojt.models.User;
 import com.fpt.ojt.presentations.dtos.requests.auth.LoginRequest;
 import com.fpt.ojt.presentations.dtos.requests.auth.RegisterRequest;
-import com.fpt.ojt.presentations.dtos.responses.auth.TokenResponse;
 import com.fpt.ojt.securities.JwtTokenProvider;
 import com.fpt.ojt.services.auth.AuthService;
 import com.fpt.ojt.services.user.UserService;
@@ -17,6 +16,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -48,28 +48,25 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public TokenResponse login(LoginRequest loginRequest) {
+    public Map<String, Object> login(LoginRequest loginRequest) {
         User user = userService.getUserByUserName(loginRequest.getUsername());
         UUID userId = user.getId();
         String userRole = user.getRole().toString();
         if (passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
-            return TokenResponse.builder()
-                    .userId(userId)
-                    .role(userRole)
-                    .accessToken(jwtTokenProvider.generateAccessTokenByUserId(
+            return Map.of(
+                    "userId", userId,
+                    "role", userRole,
+                    "accessToken", jwtTokenProvider.generateAccessTokenByUserId(
                             userId, userRole
-                    ))
-                    .refreshToken(jwtTokenProvider.generateRefreshTokenByUserId(
-                            userId, userRole
-                    ))
-                    .build();
+                    )
+            );
         } else {
             throw new BadCredentialsException("Invalid username or password");
         }
     }
 
     @Override
-    public String resetTokenByRefreshToken(String refreshToken) {
+    public String getAccessTokenByRefreshToken(String refreshToken) {
         return jwtTokenProvider.generateAccessTokenByRefreshToken(refreshToken);
     }
 

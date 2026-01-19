@@ -55,6 +55,7 @@ app:
       expires-in: ${JWT_ACCESS_EXPIRES_IN}
     refresh-token:
       expires-in: ${JWT_REFRESH_EXPIRES_IN}
+      expires-in-with-rememberme: ${JWT_REFRESH_EXPIRES_IN_WITH_REMEMBERME}
 
 springdoc:
   api-docs:

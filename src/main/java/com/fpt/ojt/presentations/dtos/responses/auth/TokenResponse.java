@@ -11,7 +11,6 @@ import java.util.UUID;
 @SuperBuilder
 public class TokenResponse {
     private String accessToken;
-    private String refreshToken;
     private UUID userId;
     private String role;
 }

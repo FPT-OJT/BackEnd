@@ -37,22 +37,31 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
     @Value("${app.jwt.refresh-token.expires-in}")
     private long jwtRefreshTokenExpiresIn;
 
+    @Value("${app.jwt.refresh-token.expires-in-with-rememberme}")
+    private long jwtRefreshTokenExpiresInWithRememberme;
+
     @Override
     public String generateAccessTokenByUserId(UUID userId, String userRole) {
         return generateTokenByUserId(userId, userRole, jwtTokenExpiresIn);
     }
 
     @Override
-    public String generateRefreshTokenByUserId(UUID userId, String userRole) {
-        String refreshToken = generateTokenByUserId(userId, userRole, jwtRefreshTokenExpiresIn);
+    public String generateRefreshTokenByUserId(UUID userId, String userRole, Boolean rememberMe) {
 
-        // Store refresh token in Redis with TTL
+        long refreshTokenExpiresIn;
+        if (rememberMe)
+            refreshTokenExpiresIn = jwtRefreshTokenExpiresInWithRememberme;
+        else
+            refreshTokenExpiresIn = jwtRefreshTokenExpiresIn;
+
+        String refreshToken = generateTokenByUserId(userId, userRole, refreshTokenExpiresIn);
+
         RefreshToken refreshTokenEntity = RefreshToken.builder()
                 .id(UUID.randomUUID().toString())
                 .userId(userId)
                 .refreshToken(refreshToken)
                 .userRole(userRole)
-                .ttl(jwtRefreshTokenExpiresIn / 1000)
+                .ttl(refreshTokenExpiresIn / 1000)
                 .build();
 
         refreshTokenRepository.save(refreshTokenEntity);
@@ -76,6 +85,11 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
                     log.error("Refresh token not found in Redis");
                     return null;
                 });
+    }
+
+    @Override
+    public int getRefreshTokenMaxAge(boolean rememberMe) {
+        return Math.toIntExact(rememberMe ? jwtRefreshTokenExpiresInWithRememberme : jwtRefreshTokenExpiresIn);
     }
 
     @Override

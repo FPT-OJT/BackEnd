@@ -3,7 +3,9 @@ package com.fpt.ojt.presentations.controllers.base;
 import com.fpt.ojt.presentations.dtos.responses.PageResponse;
 import com.fpt.ojt.presentations.dtos.responses.SingleResponse;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
@@ -48,6 +50,16 @@ public class ResponseFactory {
         return ResponseEntity.ok(
                 createSingleResponse(HttpStatus.OK, message, data)
         );
+    }
+
+    public <T> ResponseEntity<SingleResponse<T>> successSingleWithCookie(
+            T data,
+            String message,
+            ResponseCookie cookie
+    ) {
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .body(createSingleResponse(HttpStatus.OK, message, data));
     }
 
     public <T> ResponseEntity<SingleResponse<T>> failedSingle(
