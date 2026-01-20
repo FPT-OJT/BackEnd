@@ -84,7 +84,8 @@ public class AuthServiceImpl implements AuthService {
                             userId, userRole
                     ))
                     .refreshToken(jwtTokenProvider.generateRefreshTokenByUserId(
-                            userId, userRole, loginRequest.getRememberMe()
+                            userId, userRole,
+                            loginRequest.getRememberMe() != null ? loginRequest.getRememberMe() : false
                     ))
                     .build();
         } else {

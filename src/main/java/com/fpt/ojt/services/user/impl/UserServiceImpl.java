@@ -59,23 +59,19 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void updateUser(UUID userId, String googleId, String email, String userName, String firstName, String lastName) {
-        try {
-            List<User> users = userRepository.findAllByGoogleIdOrEmail(googleId, email);
-            if (!users.isEmpty()) {
-                throw new DuplicateException("User with this google id or email is already exist");
-            }
-
-            User user = userRepository.findById(userId)
-                    .orElseThrow(() -> new NotFoundException("User with id " + userId + " not found"));
-            user.setFirstName(firstName);
-            user.setLastName(lastName);
-            user.setEmail(email);
-            user.setGoogleId(googleId);
-
-            userRepository.save(user);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to update user", e);
+        List<User> users = userRepository.findAllByGoogleIdOrEmail(googleId, email);
+        if (!users.isEmpty()) {
+            throw new DuplicateException("User with this google id or email is already exist");
         }
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("User with id " + userId + " not found"));
+        user.setFirstName(firstName);
+        user.setLastName(lastName);
+        user.setEmail(email);
+        user.setGoogleId(googleId);
+
+        userRepository.save(user);
     }
 
     @Override
@@ -89,28 +85,20 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User getUserByUserName(String userName) {
-        try {
-            User user = userRepository.findByUserName(userName);
-            if (user == null) {
-                throw new NotFoundException("User not found with name " + userName);
-            }
-            return user;
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to get user by user name",e);
+        User user = userRepository.findByUserName(userName);
+        if (user == null) {
+            throw new NotFoundException("User not found with username " + userName);
         }
+        return user;
     }
 
     @Override
     public User getUserByEmail(String email) {
-        try {
-            User user = userRepository.findByEmail(email);
-            if (user == null) {
-                throw new NotFoundException("User not found with email " + email);
-            }
-            return user;
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to get user by email",e);
+        User user = userRepository.findByEmail(email);
+        if (user == null) {
+            throw new NotFoundException("User not found with email " + email);
         }
+        return user;
     }
 
     @Override
