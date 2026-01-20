@@ -5,7 +5,6 @@ import com.fpt.ojt.presentations.dtos.requests.auth.LoginRequest;
 import com.fpt.ojt.presentations.dtos.requests.auth.RegisterRequest;
 import com.fpt.ojt.presentations.dtos.responses.SingleResponse;
 import com.fpt.ojt.presentations.dtos.responses.auth.TokenResponse;
-import com.fpt.ojt.securities.JwtTokenProvider;
 import com.fpt.ojt.services.auth.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -24,7 +23,6 @@ import org.springframework.web.bind.annotation.*;
 public class PublicAuthController extends AbstractBaseController {
 
     private final AuthService authService;
-    private final JwtTokenProvider jwtTokenProvider;
 
     @PostMapping("/login")
     @Operation(summary = "Login", description = "Authenticate user and return access and refresh tokens")
@@ -54,5 +52,14 @@ public class PublicAuthController extends AbstractBaseController {
     ) {
         String newAccessToken = authService.getAccessTokenByRefreshToken(refreshToken);
         return responseFactory.successSingle(newAccessToken, "Token refreshed successfully");
+    }
+
+    @PostMapping("/google")
+    @Operation(summary = "Google Login", description = "Authenticate with Google ID Token and return JWT tokens")
+    public ResponseEntity<SingleResponse<TokenResponse>> loginWithGoogle(
+            @Valid @RequestParam String googleToken
+    ) {
+        TokenResponse authResponse = authService.loginWithGoogle(googleToken);
+        return responseFactory.successSingle(authResponse, "Google login successful");
     }
 }
