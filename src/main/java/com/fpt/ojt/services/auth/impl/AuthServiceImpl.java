@@ -46,7 +46,8 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final EmailService emailService;
 
-    private static final long OTP_EXPIRATION_MINUTES = 5;
+    @Value("${app.otp.expiration-minutes}")
+    private long otpExpirationMinutes;
 
     @Value("${spring.security.oauth2.client.registration.google.client-id}")
     private String googleClientId;
@@ -193,7 +194,7 @@ public class AuthServiceImpl implements AuthService {
         PasswordResetToken token = PasswordResetToken.builder()
                 .otp(otp)
                 .userId(user.getId())
-                .ttl(OTP_EXPIRATION_MINUTES * 1000)
+                .ttl(otpExpirationMinutes * 60)
                 .build();
 
         passwordResetTokenRepository.save(token);

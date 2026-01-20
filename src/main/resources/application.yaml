@@ -80,6 +80,8 @@ app:
     refresh-token:
       expires-in: ${JWT_REFRESH_EXPIRES_IN}
       expires-in-with-rememberme: ${JWT_REFRESH_EXPIRES_IN_WITH_REMEMBERME}
+  otp:
+    expiration-minutes: ${OTP_EXPIRATION_MINUTES:5}
 
 springdoc:
   api-docs:
