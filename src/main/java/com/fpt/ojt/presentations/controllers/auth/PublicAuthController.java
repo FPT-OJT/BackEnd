@@ -36,12 +36,11 @@ public class PublicAuthController extends AbstractBaseController {
 
     @PostMapping("/register")
     @Operation(summary = "Register", description = "Register a new user account")
-    public ResponseEntity<SingleResponse<Void>> register(
+    public ResponseEntity<SingleResponse<TokenResponse>> register(
             @Parameter(description = "Request body to register", required = true)
             @RequestBody @Valid final RegisterRequest request
     ) {
-        authService.register(request);
-        return responseFactory.sendSingle(null, "Registration successful", HttpStatus.CREATED);
+        return responseFactory.sendSingle(authService.register(request), "Registration successful", HttpStatus.CREATED);
     }
 
     @PostMapping("/refresh")

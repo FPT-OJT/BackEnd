@@ -86,7 +86,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public void register(RegisterRequest registerRequest) {
+    public TokenResponse register(RegisterRequest registerRequest) {
         String password = registerRequest.getPassword();
         String passwordHash = passwordEncoder.encode(password);
         userService.createUser(
@@ -98,6 +98,12 @@ public class AuthServiceImpl implements AuthService {
                 registerRequest.getEmail(),
                 passwordHash
         );
+
+        return login(new LoginRequest(
+                registerRequest.getUsername(),
+                registerRequest.getPassword(),
+                false
+        ));
     }
 
     @Override

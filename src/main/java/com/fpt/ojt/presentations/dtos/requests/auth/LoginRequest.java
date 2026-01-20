@@ -1,9 +1,11 @@
 package com.fpt.ojt.presentations.dtos.requests.auth;
 
 import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
+@AllArgsConstructor
 public class LoginRequest {
     @NotBlank(message = "Username must not be blank")
     private String username;
