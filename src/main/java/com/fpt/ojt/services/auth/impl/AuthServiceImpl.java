@@ -2,12 +2,16 @@ package com.fpt.ojt.services.auth.impl;
 
 import com.fpt.ojt.constants.Constants;
 import com.fpt.ojt.exceptions.BadRequestException;
+import com.fpt.ojt.exceptions.NotFoundException;
+import com.fpt.ojt.models.PasswordResetToken;
 import com.fpt.ojt.models.User;
 import com.fpt.ojt.presentations.dtos.requests.auth.LoginRequest;
 import com.fpt.ojt.presentations.dtos.requests.auth.RegisterRequest;
 import com.fpt.ojt.presentations.dtos.responses.auth.TokenResponse;
+import com.fpt.ojt.repositories.PasswordResetTokenRepository;
 import com.fpt.ojt.securities.JwtTokenProvider;
 import com.fpt.ojt.services.auth.AuthService;
+import com.fpt.ojt.services.email.EmailService;
 import com.fpt.ojt.services.user.UserService;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
@@ -22,10 +26,13 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.security.SecureRandom;
 import java.util.Collections;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -36,6 +43,10 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final UserService userService;
     private final JwtTokenProvider jwtTokenProvider;
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
+    private final EmailService emailService;
+
+    private static final long OTP_EXPIRATION_MINUTES = 5;
 
     @Value("${spring.security.oauth2.client.registration.google.client-id}")
     private String googleClientId;
@@ -170,5 +181,58 @@ public class AuthServiceImpl implements AuthService {
             log.error("Google token verification failed", e);
             throw new BadRequestException("Invalid Google Token: " + e.getMessage());
         }
+    }
+
+    @Transactional
+    public void initiatePasswordReset(String email) {
+        User user = userService.getUserByEmail(email);
+        String otp = generateRandomOtp();
+        Optional<PasswordResetToken> oldToken = passwordResetTokenRepository.findByUserId(user.getId());
+        oldToken.ifPresent(passwordResetTokenRepository::delete);
+
+        PasswordResetToken token = PasswordResetToken.builder()
+                .otp(otp)
+                .userId(user.getId())
+                .ttl(OTP_EXPIRATION_MINUTES * 1000)
+                .build();
+
+        passwordResetTokenRepository.save(token);
+
+        log.info("Password reset initiated for email: {}", email);
+
+        emailService.sendOtpEmail(email, otp);
+    }
+
+    @Transactional
+    public void resetPassword(String email, String otp, String newPassword) {
+        User user = userService.getUserByEmail(email);
+        if (user == null) {
+            throw new NotFoundException("Email not found");
+        }
+
+        PasswordResetToken token = passwordResetTokenRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new BadRequestException("Invalid OTP"));
+
+        if (token == null) {
+            throw new BadRequestException("OTP has expired");
+        }
+
+        if (!token.getOtp().equals(otp)) {
+            throw new BadRequestException("Invalid OTP");
+        }
+
+        userService.updateNewPassword(
+                user.getId(),
+                passwordEncoder.encode(newPassword)
+        );
+
+        log.info("Password reset successful for email: {}", email);
+        passwordResetTokenRepository.deleteAllByUserId(user.getId());
+    }
+
+    private String generateRandomOtp() {
+        SecureRandom random = new SecureRandom();
+        int otp = 100000 + random.nextInt(900000);
+        return String.valueOf(otp);
     }
 }

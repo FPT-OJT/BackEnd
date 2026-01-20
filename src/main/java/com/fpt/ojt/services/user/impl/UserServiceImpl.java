@@ -9,6 +9,7 @@ import com.fpt.ojt.services.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -78,6 +79,15 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
+    public void updateNewPassword(UUID userId, String hashPassword) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("User with id " + userId + " not found"));
+        user.setPassword(hashPassword);
+        userRepository.save(user);
+    }
+
+    @Override
     public User getUserByUserName(String userName) {
         try {
             User user = userRepository.findByUserName(userName);
@@ -87,6 +97,19 @@ public class UserServiceImpl implements UserService {
             return user;
         } catch (Exception e) {
             throw new RuntimeException("Failed to get user by user name",e);
+        }
+    }
+
+    @Override
+    public User getUserByEmail(String email) {
+        try {
+            User user = userRepository.findByEmail(email);
+            if (user == null) {
+                throw new NotFoundException("User not found with email " + email);
+            }
+            return user;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to get user by email",e);
         }
     }
 
