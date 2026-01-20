@@ -28,6 +28,16 @@ public class UserServiceImpl implements UserService {
                            String userName,
                            String email,
                            String passwordEncoded) {
+        // Check for duplicate username
+        if (userName != null && userRepository.existsByUserName(userName)) {
+            throw new DuplicateException("Username '" + userName + "' is already taken");
+        }
+
+        // Check for duplicate email
+        if (email != null && userRepository.existsByEmail(email)) {
+            throw new DuplicateException("Email '" + email + "' is already registered");
+        }
+
         try {
             userRepository.save(
                     User.builder()
@@ -41,6 +51,7 @@ public class UserServiceImpl implements UserService {
                             .build()
             );
         } catch (Exception exception) {
+            log.error("Failed to create user: {}", exception.getMessage(), exception);
             throw new RuntimeException("Failed to create user", exception);
         }
     }

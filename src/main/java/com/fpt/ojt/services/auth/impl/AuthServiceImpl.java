@@ -95,7 +95,7 @@ public class AuthServiceImpl implements AuthService {
                 registerRequest.getFirstName(),
                 registerRequest.getLastName(),
                 registerRequest.getUsername(),
-                null,
+                registerRequest.getEmail(),
                 passwordHash
         );
     }

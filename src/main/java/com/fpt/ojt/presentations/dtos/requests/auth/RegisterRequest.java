@@ -16,6 +16,9 @@ public class RegisterRequest {
     @NotBlank(message = "Username must not be blank")
     private String username;
 
+    @NotBlank(message = "Email must not be blank")
+    private String email;
+
     @NotBlank(message = "Password must not be blank")
     private String password;
 

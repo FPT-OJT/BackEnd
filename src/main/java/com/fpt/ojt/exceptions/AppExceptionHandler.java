@@ -108,6 +108,12 @@ public class AppExceptionHandler {
         return build(HttpStatus.NOT_FOUND, e.getMessage());
     }
 
+    @ExceptionHandler(DuplicateException.class)
+    public final ResponseEntity<ErrorResponse> handleDuplicateException(final DuplicateException e) {
+        log.error("Duplicate resource: {}", e.getMessage());
+        return build(HttpStatus.CONFLICT, e.getMessage());
+    }
+
     @ExceptionHandler({
             InternalAuthenticationServiceException.class,
             BadCredentialsException.class,
