@@ -26,6 +26,8 @@ public class RefreshToken {
 
     private String userRole;
 
+    private boolean isRevoked;
+
     @TimeToLive
     private Long ttl;
 }

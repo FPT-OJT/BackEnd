@@ -88,16 +88,18 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
     }
 
     @Override
-    public int getRefreshTokenMaxAge(boolean rememberMe) {
-        return Math.toIntExact(rememberMe ? jwtRefreshTokenExpiresInWithRememberme : jwtRefreshTokenExpiresIn);
-    }
-
-    @Override
-    public void deleteRefreshTokenByUserId(UUID userId) {
+    public boolean deleteRefreshTokenByUserId(UUID userId) {
         try {
-            refreshTokenRepository.findByUserId(userId)
-                    .ifPresent(refreshTokenRepository::delete);
-            log.debug("Deleted refresh token for userID: {}", userId);
+            RefreshToken refreshToken = refreshTokenRepository.findByUserId(userId);
+            if (refreshToken != null) {
+                refreshToken.setRevoked(true);
+                refreshTokenRepository.save(refreshToken);
+                log.debug("Assign revoke flag to refresh token for userID: {}", userId);
+
+                return true;
+            } else {
+                return false;
+            }
         } catch (Exception exception) {
             throw new RuntimeException("Failed to delete refresh token for userID: " + userId, exception);
         }

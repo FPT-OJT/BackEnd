@@ -1,4 +1,4 @@
-package com.fpt.ojt.presentations.controllers;
+package com.fpt.ojt.presentations.controllers.auth;
 
 import com.fpt.ojt.presentations.controllers.base.AbstractBaseController;
 import com.fpt.ojt.presentations.dtos.responses.SingleResponse;

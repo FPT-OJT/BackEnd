@@ -1,4 +1,4 @@
-package com.fpt.ojt.presentations.controllers;
+package com.fpt.ojt.presentations.controllers.auth;
 
 import com.fpt.ojt.presentations.controllers.base.AbstractBaseController;
 import com.fpt.ojt.presentations.dtos.requests.auth.LoginRequest;
@@ -12,21 +12,16 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Map;
-import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/public/auth")
 @Tag(name = "Public Authentication", description = "Authentication API endpoints")
-public class AuthPublicController extends AbstractBaseController {
+public class PublicAuthController extends AbstractBaseController {
 
     private final AuthService authService;
     private final JwtTokenProvider jwtTokenProvider;
@@ -37,31 +32,8 @@ public class AuthPublicController extends AbstractBaseController {
             @Parameter(description = "Request body to login", required = true)
             @RequestBody @Validated final LoginRequest request
     ) {
-        Map<String, Object> loginResult = authService.login(request);
-
-        UUID userId = (UUID) loginResult.get("userId");
-        String userRole = (String) loginResult.get("role");
-        String accessToken = (String) loginResult.get("accessToken");
-
-        TokenResponse tokenResponse = TokenResponse.builder()
-                .userId(userId)
-                .role(userRole)
-                .accessToken(accessToken)
-                .build();
-
-        ResponseCookie refreshCookie = ResponseCookie.from("refresh_token", jwtTokenProvider.generateRefreshTokenByUserId(
-                        userId, userRole, request.getRememberMe()
-                ))
-                .httpOnly(true)
-                .secure(true)
-                .path("/public/auth/refresh")
-                .maxAge(jwtTokenProvider.getRefreshTokenMaxAge(
-                        request.getRememberMe()
-                ))
-                .sameSite("Strict")
-                .build();
-
-        return responseFactory.successSingleWithCookie(tokenResponse, "Login successful", refreshCookie);
+        return responseFactory.successSingle(
+                authService.login(request), "Login successful");
     }
 
     @PostMapping("/register")

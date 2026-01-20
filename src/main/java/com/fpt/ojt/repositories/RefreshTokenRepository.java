@@ -10,5 +10,5 @@ import java.util.UUID;
 @Repository
 public interface RefreshTokenRepository extends CrudRepository<RefreshToken, String> {
     Optional<RefreshToken> findByRefreshToken(String refreshToken);
-    Optional<RefreshToken> findByUserId(UUID userId);
+    RefreshToken findByUserId(UUID userId);
 }

@@ -45,6 +45,25 @@ spring:
       password: ${REDIS_PASSWORD}
       database: ${REDIS_DATABASE}
 
+  threads:
+    virtual:
+          enabled: true
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            scope:
+              - openid
+              - profile
+              - email
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+        provider:
+          google:
+            issuer-uri: https://accounts.google.com
 app:
   secret: ${JWT_SECRET_KEY}
   default-locale: ${APP_DEFAULT_LOCALE}
@@ -56,6 +75,12 @@ app:
     refresh-token:
       expires-in: ${JWT_REFRESH_EXPIRES_IN}
       expires-in-with-rememberme: ${JWT_REFRESH_EXPIRES_IN_WITH_REMEMBERME}
+  oauth2:
+    authorized-redirect-uris: ${DEEP_LINK_REDIRECT}
+    cookie:
+      auth-request-name: ${OAUTH2_AUTHORIZATION_REQUEST_COOKIE_NAME}
+      redirect-uri-param-name: ${OAUTH2_REDIRECT_URI_PARAM_COOKIE_NAME}
+      expire-seconds: ${OAUTH2_COOKIE_EXPIRE_SECONDS}
 
 springdoc:
   api-docs:
