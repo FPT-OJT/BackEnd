@@ -65,6 +65,7 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new NotFoundException("User with id " + userId + " not found"));
         user.setFirstName(firstName);
         user.setLastName(lastName);
+        user.setUserName(userName);
 
         userRepository.save(user);
     }
