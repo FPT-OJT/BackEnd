@@ -1,18 +1,19 @@
 package com.fpt.ojt.services.user.impl;
 
-import com.fpt.ojt.constants.Constants;
-import com.fpt.ojt.exceptions.DuplicateException;
-import com.fpt.ojt.models.User;
-import com.fpt.ojt.exceptions.NotFoundException;
-import com.fpt.ojt.repositories.UserRepository;
-import com.fpt.ojt.services.user.UserService;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.util.UUID;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.UUID;
+import com.fpt.ojt.constants.Constants;
+import com.fpt.ojt.exceptions.DuplicateException;
+import com.fpt.ojt.exceptions.NotFoundException;
+import com.fpt.ojt.models.User;
+import com.fpt.ojt.repositories.UserRepository;
+import com.fpt.ojt.services.user.UserService;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
@@ -23,12 +24,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void createUser(Constants.RoleEnum roleEnum,
-                           String googleId,
-                           String firstName,
-                           String lastName,
-                           String userName,
-                           String email,
-                           String passwordEncoded) {
+            String googleId,
+            String firstName,
+            String lastName,
+            String userName,
+            String email,
+            String passwordEncoded) {
         // Check for duplicate username
         if (userName != null && userRepository.existsByUserName(userName)) {
             throw new DuplicateException("Username '" + userName + "' is already taken");
@@ -49,8 +50,7 @@ public class UserServiceImpl implements UserService {
                             .userName(userName)
                             .email(email)
                             .password(passwordEncoded)
-                            .build()
-            );
+                            .build());
         } catch (Exception exception) {
             log.error("Failed to create user: {}", exception.getMessage(), exception);
             throw new RuntimeException("Failed to create user", exception);
@@ -58,18 +58,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void updateUser(UUID userId, String googleId, String email, String userName, String firstName, String lastName) {
-        List<User> users = userRepository.findAllByGoogleIdOrEmail(googleId, email);
-        if (!users.isEmpty()) {
-            throw new DuplicateException("User with this google id or email is already exist");
-        }
+    public void updateUser(UUID userId, String userName, String firstName,
+            String lastName) {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User with id " + userId + " not found"));
         user.setFirstName(firstName);
         user.setLastName(lastName);
-        user.setEmail(email);
-        user.setGoogleId(googleId);
 
         userRepository.save(user);
     }
@@ -103,9 +98,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User handleUpdateGoogleCredential(String googleId,
-                                             String email,
-                                             String firstName, String lastName,
-                                             String pictureUrl) {
+            String email,
+            String firstName, String lastName,
+            String pictureUrl) {
         // TODO: Handle picture here
         User user = userRepository.findByGoogleId(googleId);
         if (user == null) {
@@ -114,18 +109,14 @@ public class UserServiceImpl implements UserService {
                     Constants.RoleEnum.CUSTOMER,
                     googleId,
                     firstName, lastName,
-                    null,
                     email,
-                    null
-            );
+                    email,
+                    null);
         } else {
             updateUser(
                     user.getId(),
-                    googleId,
-                    email,
-                    null,
-                    firstName, lastName
-            );
+                    user.getUserName(),
+                    firstName, lastName);
         }
 
         return userRepository.findByGoogleId(googleId);
