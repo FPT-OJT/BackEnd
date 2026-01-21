@@ -9,5 +9,6 @@ down: ## Stop containers
 
 down-v: ## Stop containers and remove volumes (Fresh Start)
 	podman compose -f docker/docker-compose.yaml --env-file .env down -v
-
+format: 
+	mvn spotless:apply
 .PHONY: up-b up down down-v
