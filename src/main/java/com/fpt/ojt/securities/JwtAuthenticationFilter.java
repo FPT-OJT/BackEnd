@@ -30,13 +30,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                           @NotNull final FilterChain filterChain
     ) throws ServletException, IOException {
         try {
-            String token = jwtTokenProvider.extractJwtFromHttpRequest(request);
-            if (token != null) {
-                if (jwtTokenProvider.validateToken(token, request)) {
-                    Claims claims = jwtTokenProvider.getClaimsFromToken(token);
+            String accessToken = jwtTokenProvider.extractAccessTokenFromHttpRequest(request);
+            if (accessToken != null) {
+                if (jwtTokenProvider.validateToken(accessToken, request)) {
+                    Claims claims = jwtTokenProvider.getClaimsFromToken(accessToken);
                     UUID userId = UUID.fromString(claims.getSubject());
 
                     String userRole = claims.get("role").toString();
+                    String familyToken = claims.get("family_token", String.class);
 
                     List<SimpleGrantedAuthority> authorities;
                     if (userRole != null) {
@@ -45,8 +46,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         authorities = List.of();
                     }
 
+                    UserPrincipal userPrincipal = new UserPrincipal(userId, familyToken);
                     UsernamePasswordAuthenticationToken authenticationToken =
-                            new UsernamePasswordAuthenticationToken(userId, null, authorities);
+                            new UsernamePasswordAuthenticationToken(userPrincipal, null, authorities);
 
                     SecurityContextHolder.getContext().setAuthentication(authenticationToken);
                 }

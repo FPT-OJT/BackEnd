@@ -22,6 +22,9 @@ public class RefreshToken {
     private UUID userId;
 
     @Indexed
+    private String familyToken;
+
+    @Indexed
     private String refreshToken;
 
     private String userRole;

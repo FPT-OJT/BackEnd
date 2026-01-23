@@ -17,6 +17,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import static com.fpt.ojt.constants.Constants.REFRESH_TOKEN_HEADER;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/public/auth")
@@ -29,10 +31,12 @@ public class PublicAuthController extends AbstractBaseController {
     @Operation(summary = "Login", description = "Authenticate user and return access and refresh tokens")
     public ResponseEntity<SingleResponse<TokenResponse>> login(
             @Parameter(description = "Request body to login", required = true)
-            @RequestBody @Validated final LoginRequest request
+            @RequestBody @Validated final LoginRequest request,
+            @Parameter(description = "Optional refresh token for session continuity", required = false)
+            @RequestHeader(value = REFRESH_TOKEN_HEADER, required = false) final String refreshToken
     ) {
         return responseFactory.successSingle(
-                authService.login(request), "Login successful");
+                authService.login(request, refreshToken), "Login successful");
     }
 
     @PostMapping("/register")

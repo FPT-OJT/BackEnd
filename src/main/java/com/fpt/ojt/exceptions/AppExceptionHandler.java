@@ -32,7 +32,6 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import org.springframework.web.multipart.MultipartException;
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -145,6 +144,12 @@ public class AppExceptionHandler {
     @ExceptionHandler(AccessDeniedException.class)
     public final ResponseEntity<ErrorResponse> handleAccessDeniedException(final Exception e) {
         log.error(e.toString(), e.getMessage());
+        return build(HttpStatus.FORBIDDEN, e.getMessage());
+    }
+
+    @ExceptionHandler(SuspiciousDetectedException.class)
+    public final ResponseEntity<ErrorResponse> handleSuspiciousDetectedException(final SuspiciousDetectedException e) {
+        log.error("Suspicious activity detected: {}", e.getMessage());
         return build(HttpStatus.FORBIDDEN, e.getMessage());
     }
 

@@ -10,6 +10,7 @@ import com.fpt.ojt.presentations.dtos.requests.auth.RegisterRequest;
 import com.fpt.ojt.presentations.dtos.responses.auth.TokenResponse;
 import com.fpt.ojt.repositories.PasswordResetTokenRepository;
 import com.fpt.ojt.securities.JwtTokenProvider;
+import com.fpt.ojt.securities.UserPrincipal;
 import com.fpt.ojt.services.auth.AuthService;
 import com.fpt.ojt.services.email.EmailService;
 import com.fpt.ojt.services.user.UserService;
@@ -17,6 +18,7 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
+import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,6 +34,7 @@ import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.SecureRandom;
 import java.util.Collections;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -54,15 +57,11 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public UUID getCurrentUserId() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Object principal = getPrincipal();
 
-        if (authentication == null ||
-                !authentication.isAuthenticated() ||
-                authentication instanceof AnonymousAuthenticationToken) {
-            throw new RuntimeException("User is not authenticated");
+        if (principal instanceof UserPrincipal) {
+            return ((UserPrincipal) principal).userId();
         }
-
-        Object principal = authentication.getPrincipal();
 
         if (principal instanceof UUID) {
             return (UUID) principal;
@@ -72,21 +71,61 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public TokenResponse login(LoginRequest loginRequest) {
+    public String getCurrentFamilyToken() {
+        Object principal = getPrincipal();
+
+        if (principal instanceof UserPrincipal) {
+            return ((UserPrincipal) principal).familyToken();
+        }
+
+        throw new RuntimeException("Family token not found in authentication context");
+    }
+
+    private Object getPrincipal() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null ||
+                !authentication.isAuthenticated() ||
+                authentication instanceof AnonymousAuthenticationToken) {
+            throw new RuntimeException("User is not authenticated");
+        }
+
+        return authentication.getPrincipal();
+    }
+
+    @Override
+    public TokenResponse login(LoginRequest loginRequest, String refreshToken) {
         User user = userService.getUserByUserName(loginRequest.getUsername());
         UUID userId = user.getId();
         String userRole = user.getRole().toString();
         if (passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
+
+            String familyToken = null;
+            if (refreshToken != null && !refreshToken.isBlank()) {
+                jwtTokenProvider.revokeRefreshTokenByRefreshToken(refreshToken);
+                Claims claims = jwtTokenProvider.getClaimsFromToken(refreshToken);
+                familyToken = claims.get("family_token", String.class);
+            } else {
+                log.debug("No refresh token found in header, this might be new device, generate new family token");
+            }
+
+            Map<String, String> map = jwtTokenProvider.generateRefreshTokenByUserId(
+                    userId,
+                    familyToken,
+                    userRole,
+                    loginRequest.getRememberMe() != null ? loginRequest.getRememberMe() : false
+            );
+
+            String newRefreshToken = map.get("refresh_token");
+            String newFamilyToken = map.get("family_token");
+
+            String accessToken = jwtTokenProvider.generateAccessTokenByUserId(userId, newFamilyToken, userRole);
+
             return TokenResponse.builder()
                     .userId(userId)
                     .role(userRole)
-                    .accessToken(jwtTokenProvider.generateAccessTokenByUserId(
-                            userId, userRole
-                    ))
-                    .refreshToken(jwtTokenProvider.generateRefreshTokenByUserId(
-                            userId, userRole,
-                            loginRequest.getRememberMe() != null ? loginRequest.getRememberMe() : false
-                    ))
+                    .accessToken(accessToken)
+                    .refreshToken(newRefreshToken)
                     .build();
         } else {
             throw new BadCredentialsException("Invalid username or password");
@@ -116,19 +155,13 @@ public class AuthServiceImpl implements AuthService {
                 registerRequest.getUsername(),
                 registerRequest.getPassword(),
                 false
-        ));
+        ), null);
     }
 
     @Override
     public void logout() {
-        try {
-            if (!jwtTokenProvider.deleteRefreshTokenByUserId(getCurrentUserId())) {
-
-                // TODO: handleSuspiciousAccess();
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to logout" + e.getMessage());
-        }
+        String familyToken = getCurrentFamilyToken();
+        jwtTokenProvider.revokeRefreshTokenByFamilyToken(familyToken);
     }
 
     @Override
@@ -160,14 +193,19 @@ public class AuthServiceImpl implements AuthService {
                     googleId, email, firstName, lastName, pictureUrl
             );
 
-            String accessToken = jwtTokenProvider.generateAccessTokenByUserId(
+            Map<String, String> map = jwtTokenProvider.generateRefreshTokenByUserId(
                     user.getId(),
-                    user.getRole().getValue()
-            );
-            String refreshToken = jwtTokenProvider.generateRefreshTokenByUserId(
-                    user.getId(),
+                    null,
                     user.getRole().getValue(),
                     false
+            );
+            String refreshToken = map.get("refresh_token");
+            String familyToken = map.get("family_token");
+
+            String accessToken = jwtTokenProvider.generateAccessTokenByUserId(
+                    user.getId(),
+                    familyToken,
+                    user.getRole().getValue()
             );
 
             log.info("Generated tokens for user: {}", user.getId());
@@ -208,16 +246,9 @@ public class AuthServiceImpl implements AuthService {
     @Transactional
     public void resetPassword(String email, String otp, String newPassword) {
         User user = userService.getUserByEmail(email);
-        if (user == null) {
-            throw new NotFoundException("Email not found");
-        }
 
         PasswordResetToken token = passwordResetTokenRepository.findByUserId(user.getId())
-                .orElseThrow(() -> new BadRequestException("Invalid OTP"));
-
-        if (token == null) {
-            throw new BadRequestException("OTP has expired");
-        }
+                .orElseThrow(() -> new NotFoundException("Password reset token not found or expired"));
 
         if (!token.getOtp().equals(otp)) {
             throw new BadRequestException("Invalid OTP");

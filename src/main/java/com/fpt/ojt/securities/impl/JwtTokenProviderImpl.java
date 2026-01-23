@@ -1,5 +1,7 @@
 package com.fpt.ojt.securities.impl;
 
+import com.fpt.ojt.exceptions.RefreshTokenExpiredException;
+import com.fpt.ojt.exceptions.SuspiciousDetectedException;
 import com.fpt.ojt.models.RefreshToken;
 import com.fpt.ojt.repositories.RefreshTokenRepository;
 import com.fpt.ojt.securities.JwtTokenProvider;
@@ -10,16 +12,16 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
-import java.util.Date;
-import java.util.UUID;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
-import static com.fpt.ojt.constants.Constants.TOKEN_HEADER;
-import static com.fpt.ojt.constants.Constants.TOKEN_TYPE;
+import static com.fpt.ojt.constants.Constants.*;
 
 @Component
 @Slf4j
@@ -41,12 +43,23 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
     private long jwtRefreshTokenExpiresInWithRememberme;
 
     @Override
-    public String generateAccessTokenByUserId(UUID userId, String userRole) {
-        return generateTokenByUserId(userId, userRole, jwtTokenExpiresIn);
+    public String generateAccessTokenByUserId(UUID userId, String familyToken, String userRole) {
+        return generateTokenByUserId(userId, userRole, familyToken, jwtTokenExpiresIn);
     }
 
     @Override
-    public String generateRefreshTokenByUserId(UUID userId, String userRole, Boolean rememberMe) {
+    public Map<String, String> generateRefreshTokenByUserId(UUID userId, String familyToken, String userRole, Boolean rememberMe) {
+
+        // Check and revoke existing refresh token
+        if (familyToken != null) {
+            // Old device
+            List<RefreshToken> refreshToken = refreshTokenRepository.findAllByFamilyToken(familyToken);
+            for (RefreshToken rt : refreshToken) {
+                if (!rt.isRevoked()) {
+                    rt.setRevoked(true);
+                }
+            }
+        }
 
         long refreshTokenExpiresIn;
         if (rememberMe)
@@ -54,12 +67,16 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
         else
             refreshTokenExpiresIn = jwtRefreshTokenExpiresIn;
 
-        String refreshToken = generateTokenByUserId(userId, userRole, refreshTokenExpiresIn);
+        String newFamilyToken = familyToken != null ? familyToken
+                : UUID.randomUUID().toString();
+
+        String refreshToken = generateTokenByUserId(userId, userRole, newFamilyToken, refreshTokenExpiresIn);
 
         RefreshToken refreshTokenEntity = RefreshToken.builder()
                 .id(UUID.randomUUID().toString())
                 .userId(userId)
                 .refreshToken(refreshToken)
+                .familyToken(newFamilyToken)
                 .userRole(userRole)
                 .ttl(refreshTokenExpiresIn / 1000)
                 .build();
@@ -67,42 +84,62 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
         refreshTokenRepository.save(refreshTokenEntity);
         log.debug("Refresh token stored in Redis for userID: {}, ttl: {} seconds", userId, refreshTokenEntity.getTtl());
 
-        return refreshToken;
+        return Map.of("refresh_token", refreshToken, "family_token", newFamilyToken);
     }
 
     @Override
     public String generateAccessTokenByRefreshToken(String refreshToken) {
-        return refreshTokenRepository.findByRefreshToken(refreshToken)
-                .map(storedToken -> {
-                    if (validateToken(refreshToken, null)) {
-                        log.debug("Generating new access token for userID: {}", storedToken.getUserId());
-                        return generateAccessTokenByUserId(storedToken.getUserId(), storedToken.getUserRole());
-                    }
-                    log.warn("Refresh token is expired or invalid for userID: {}", storedToken.getUserId());
-                    return null;
-                })
-                .orElseGet(() -> {
-                    log.error("Refresh token not found in Redis");
-                    return null;
-                });
+        RefreshToken storedRefreshToken = refreshTokenRepository.findByRefreshToken(refreshToken)
+                .orElseThrow(() -> new RefreshTokenExpiredException("Refresh token has expired"));
+
+        if (storedRefreshToken.isRevoked()) {
+            throw new SuspiciousDetectedException("Refresh token is revoked");
+        }
+
+        storedRefreshToken.setRevoked(true);
+        refreshTokenRepository.save(storedRefreshToken);
+
+        return generateAccessTokenByUserId(
+                storedRefreshToken.getUserId(),
+                storedRefreshToken.getFamilyToken(),
+                storedRefreshToken.getUserRole()
+        );
     }
 
     @Override
-    public boolean deleteRefreshTokenByUserId(UUID userId) {
-        try {
-            RefreshToken refreshToken = refreshTokenRepository.findByUserId(userId);
-            if (refreshToken != null) {
-                refreshToken.setRevoked(true);
-                refreshTokenRepository.save(refreshToken);
-                log.debug("Assign revoke flag to refresh token for userID: {}", userId);
+    @Async
+    public void revokeRefreshTokenByFamilyToken(String familyToken) {
+        List<RefreshToken> refreshTokens = refreshTokenRepository.findAllByFamilyTokenAndIsRevoked(
+                familyToken, false
+        );
 
-                return true;
-            } else {
-                return false;
-            }
-        } catch (Exception exception) {
-            throw new RuntimeException("Failed to delete refresh token for userID: " + userId, exception);
+        if (refreshTokens.size() > 2) {
+            throw new SuspiciousDetectedException("2 Refresh tokens in the same device that have not been revoked found");
         }
+
+        if (refreshTokens.isEmpty()) {
+            throw new SuspiciousDetectedException("Refresh token have already been revoked, this refresh token have been reuse -> suspicious detected");
+        }
+
+        for (RefreshToken rt : refreshTokens) {
+            if (!rt.isRevoked()) {
+                rt.setRevoked(true);
+            }
+        }
+        CompletableFuture.completedFuture(true);
+    }
+
+    @Override
+    public void revokeRefreshTokenByRefreshToken(String refreshToken) {
+        RefreshToken storedRefreshToken = refreshTokenRepository.findByRefreshToken(refreshToken)
+                .orElseThrow(() -> new RefreshTokenExpiredException("Refresh token has expired"));
+
+        if (storedRefreshToken.isRevoked()) {
+            throw new SuspiciousDetectedException("Refresh token is revoked");
+        }
+
+        storedRefreshToken.setRevoked(true);
+        refreshTokenRepository.save(storedRefreshToken);
     }
 
     @Override
@@ -148,15 +185,14 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
     }
 
     @Override
-    public String extractJwtFromHttpRequest(final HttpServletRequest request) {
-        String bearer = request.getHeader(TOKEN_HEADER);
-        if (StringUtils.hasText(bearer) && bearer.startsWith(String.format("%s ", TOKEN_TYPE))) {
-            return bearer.substring(TOKEN_TYPE.length() + 1);
-        }
-
-        return bearer;
+    public String extractAccessTokenFromHttpRequest(HttpServletRequest request) {
+        return request.getHeader(ACCESS_TOKEN_HEADER);
     }
 
+    @Override
+    public String extractRefreshTokenFromHttpRequest(HttpServletRequest request) {
+        return request.getHeader(REFRESH_TOKEN_HEADER);
+    }
 
     @Override
     public Claims getClaimsFromToken(String token) {
@@ -167,21 +203,28 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
                 .getPayload();
     }
 
-    private String generateTokenByUserId(UUID userId, String userRole, long expiryTime) {
+    private String generateTokenByUserId(UUID userId, String userRole, String familyToken, long expiryTime) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + expiryTime);
 
         SecretKey key = getSigningKey();
 
-        String token = Jwts.builder()
+        var jwtBuilder = Jwts.builder()
                 .subject(String.valueOf(userId))
                 .claim("role", "ROLE_" + userRole)
                 .issuedAt(now)
-                .expiration(expiryDate)
+                .expiration(expiryDate);
+
+        if (familyToken != null) {
+            jwtBuilder.claim("family_token", familyToken);
+        }
+
+        String token = jwtBuilder
                 .signWith(key, Jwts.SIG.HS256)
                 .compact();
 
-        log.trace("Token is added to the local cache for userID: {}, ttl: {}", userId, expiryTime);
+        log.trace("Token generated for userID: {}, familyToken: {}, ttl: {}ms",
+                userId, familyToken != null ? "present" : "null", expiryTime);
 
         return token;
     }

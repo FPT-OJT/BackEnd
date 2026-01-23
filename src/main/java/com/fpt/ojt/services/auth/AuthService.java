@@ -8,7 +8,8 @@ import java.util.UUID;
 
 public interface AuthService {
     UUID getCurrentUserId();
-    TokenResponse login(LoginRequest loginRequest);
+    String getCurrentFamilyToken();
+    TokenResponse login(LoginRequest loginRequest, String refreshToken);
     TokenResponse loginWithGoogle(String googleToken);
     String getAccessTokenByRefreshToken(String refreshToken);
     TokenResponse register(RegisterRequest registerRequest);

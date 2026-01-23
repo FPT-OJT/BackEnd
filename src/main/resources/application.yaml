@@ -7,6 +7,9 @@ server:
 logging:
   level:
     root: ${LOGGING_LEVEL_ROOT}
+    com:
+      fpt:
+        ojt: ${LOGGING_LEVEL_APP}
     org:
       hibernate:
         SQL: ${LOGGING_LEVEL_HIBERNATE_SQL}
