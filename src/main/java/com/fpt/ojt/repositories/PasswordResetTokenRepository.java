@@ -12,4 +12,6 @@ public interface PasswordResetTokenRepository  extends CrudRepository<PasswordRe
     Optional<PasswordResetToken> findByUserId(UUID userId);
 
     void deleteAllByUserId(UUID userId);
+
+    void deleteByOtp(String otp);
 }

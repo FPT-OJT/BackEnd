@@ -11,7 +11,7 @@ public interface AuthService {
     String getCurrentFamilyToken();
     TokenResponse login(LoginRequest loginRequest, String refreshToken);
     TokenResponse loginWithGoogle(String googleToken);
-    String getAccessTokenByRefreshToken(String refreshToken);
+    TokenResponse getAccessTokenByRefreshToken(String refreshToken);
     TokenResponse register(RegisterRequest registerRequest);
     void resetPassword(String email, String otp, String newPassword);
     void initiatePasswordReset(String email);

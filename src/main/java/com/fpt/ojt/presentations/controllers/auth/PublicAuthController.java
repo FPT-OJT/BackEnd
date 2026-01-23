@@ -50,11 +50,11 @@ public class PublicAuthController extends AbstractBaseController {
 
     @PostMapping("/refresh")
     @Operation(summary = "Refresh Token", description = "Generate new access token using refresh token")
-    public ResponseEntity<SingleResponse<String>> refreshToken(
+    public ResponseEntity<SingleResponse<TokenResponse>> refreshToken(
             @Parameter(description = "Refresh token", required = true)
             @RequestHeader("X-Refresh-Token") final String refreshToken
     ) {
-        String newAccessToken = authService.getAccessTokenByRefreshToken(refreshToken);
+        TokenResponse newAccessToken = authService.getAccessTokenByRefreshToken(refreshToken);
         return responseFactory.successSingle(newAccessToken, "Token refreshed successfully");
     }
 

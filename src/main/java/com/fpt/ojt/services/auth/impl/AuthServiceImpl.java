@@ -3,6 +3,7 @@ package com.fpt.ojt.services.auth.impl;
 import com.fpt.ojt.constants.Constants;
 import com.fpt.ojt.exceptions.BadRequestException;
 import com.fpt.ojt.exceptions.NotFoundException;
+import com.fpt.ojt.exceptions.SuspiciousDetectedException;
 import com.fpt.ojt.models.PasswordResetToken;
 import com.fpt.ojt.models.User;
 import com.fpt.ojt.presentations.dtos.requests.auth.LoginRequest;
@@ -133,8 +134,22 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public String getAccessTokenByRefreshToken(String refreshToken) {
-        return jwtTokenProvider.generateAccessTokenByRefreshToken(refreshToken);
+    public TokenResponse getAccessTokenByRefreshToken(String refreshToken) {
+        String accessToken = jwtTokenProvider.generateAccessTokenByRefreshToken(refreshToken);
+        Claims claims = jwtTokenProvider.getClaimsFromToken(accessToken);
+        UUID userId = UUID.fromString(claims.getSubject());
+        String userRole = claims.get("role", String.class);
+        String familyToken = claims.get("family_token", String.class);
+        String newRefreshToken = jwtTokenProvider.generateRefreshTokenByUserId(
+                userId, familyToken, userRole, false
+        ).get("refresh_token");
+
+        return TokenResponse.builder()
+                .role(claims.get("role", String.class))
+                .accessToken(accessToken)
+                .userId(UUID.fromString(claims.getSubject()))
+                .refreshToken(newRefreshToken)
+                .build();
     }
 
     @Override
@@ -227,13 +242,12 @@ public class AuthServiceImpl implements AuthService {
     public void initiatePasswordReset(String email) {
         User user = userService.getUserByEmail(email);
         String otp = generateRandomOtp();
-        Optional<PasswordResetToken> oldToken = passwordResetTokenRepository.findByUserId(user.getId());
-        oldToken.ifPresent(passwordResetTokenRepository::delete);
 
         PasswordResetToken token = PasswordResetToken.builder()
                 .otp(otp)
                 .userId(user.getId())
                 .ttl(otpExpirationMinutes * 60)
+                .isRevoked(false)
                 .build();
 
         passwordResetTokenRepository.save(token);
@@ -254,13 +268,19 @@ public class AuthServiceImpl implements AuthService {
             throw new BadRequestException("Invalid OTP");
         }
 
+        if (token.isRevoked()) {
+            throw new SuspiciousDetectedException("Password reset token is revoked");
+        }
+
         userService.updateNewPassword(
                 user.getId(),
                 passwordEncoder.encode(newPassword)
         );
 
         log.info("Password reset successful for email: {}", email);
-        passwordResetTokenRepository.deleteAllByUserId(user.getId());
+
+        token.setRevoked(true);
+        passwordResetTokenRepository.save(token);
     }
 
     private String generateRandomOtp() {

@@ -25,4 +25,6 @@ public class PasswordResetToken {
 
     @TimeToLive
     private Long ttl;
+
+    private boolean isRevoked;
 }
