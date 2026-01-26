@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
+import java.util.concurrent.CompletableFuture;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -20,8 +22,8 @@ public class EmailServiceImpl implements EmailService {
     private final JavaMailSender mailSender;
     private final TemplateEngine templateEngine;
 
-    @Async
-    public void sendOtpEmail(String toEmail, String otp) {
+    @Async("taskExecutor")
+    public CompletableFuture<Void> sendOtpEmail(String toEmail, String otp) {
         try {
             MimeMessage mimeMessage = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
@@ -38,8 +40,10 @@ public class EmailServiceImpl implements EmailService {
 
             mailSender.send(mimeMessage);
             log.info("OTP email sent successfully to {}", toEmail);
+            return CompletableFuture.completedFuture(null);
         } catch (MessagingException e) {
             log.error("Failed to send OTP email to {}", toEmail, e);
+            return CompletableFuture.failedFuture(e);
         }
     }
 }

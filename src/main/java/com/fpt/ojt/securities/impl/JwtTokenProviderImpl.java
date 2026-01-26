@@ -137,8 +137,8 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
     }
 
     @Override
-    @Async
-    public void revokeRefreshTokenByFamilyToken(String familyToken) {
+    @Async("taskExecutor")
+    public CompletableFuture<Void> revokeRefreshTokenByFamilyToken(String familyToken) {
         List<RefreshToken> refreshTokens = refreshTokenRepository.findAllByFamilyTokenAndIsRevoked(
                 familyToken, false
         );
@@ -148,7 +148,10 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
                 rt.setRevoked(true);
             }
         }
-        CompletableFuture.completedFuture(true);
+
+        refreshTokenRepository.saveAll(refreshTokens);
+
+        return CompletableFuture.completedFuture(null);
     }
 
     @Override
