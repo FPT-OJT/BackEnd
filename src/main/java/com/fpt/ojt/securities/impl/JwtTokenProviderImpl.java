@@ -5,6 +5,7 @@ import com.fpt.ojt.exceptions.SuspiciousDetectedException;
 import com.fpt.ojt.models.RefreshToken;
 import com.fpt.ojt.repositories.RefreshTokenRepository;
 import com.fpt.ojt.securities.JwtTokenProvider;
+import com.fpt.ojt.securities.dto.AccessTokenData;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
@@ -14,7 +15,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
@@ -59,6 +59,7 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
                     rt.setRevoked(true);
                 }
             }
+            refreshTokenRepository.saveAll(refreshToken);
         }
 
         long refreshTokenExpiresIn;
@@ -73,10 +74,9 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
         String refreshToken = generateTokenByUserId(userId, userRole, newFamilyToken, refreshTokenExpiresIn);
 
         RefreshToken refreshTokenEntity = RefreshToken.builder()
-                .id(UUID.randomUUID().toString())
-                .userId(userId)
                 .refreshToken(refreshToken)
                 .familyToken(newFamilyToken)
+                .userId(userId)
                 .userRole(userRole)
                 .ttl(refreshTokenExpiresIn / 1000)
                 .build();
@@ -88,22 +88,36 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
     }
 
     @Override
-    public String generateAccessTokenByRefreshToken(String refreshToken) {
+    public AccessTokenData generateAccessTokenByRefreshToken(String refreshToken) {
         RefreshToken storedRefreshToken = refreshTokenRepository.findByRefreshToken(refreshToken)
                 .orElseThrow(() -> new RefreshTokenExpiredException("Refresh token has expired"));
 
         if (storedRefreshToken.isRevoked()) {
+            revokeAllRefreshTokensByFamilyTokenInRefreshToken(refreshToken);
             throw new SuspiciousDetectedException("Refresh token is revoked");
         }
 
         storedRefreshToken.setRevoked(true);
         refreshTokenRepository.save(storedRefreshToken);
 
-        return generateAccessTokenByUserId(
-                storedRefreshToken.getUserId(),
-                storedRefreshToken.getFamilyToken(),
-                storedRefreshToken.getUserRole()
-        );
+        UUID userId = storedRefreshToken.getUserId();
+        String familyToken = storedRefreshToken.getFamilyToken();
+        String userRole = storedRefreshToken.getUserRole();
+
+        String accessToken = generateAccessTokenByUserId(userId, familyToken, userRole);
+
+        return AccessTokenData.builder()
+                .accessToken(accessToken)
+                .userId(userId)
+                .userRole(userRole)
+                .familyToken(familyToken)
+                .build();
+    }
+
+    private void revokeAllRefreshTokensByFamilyTokenInRefreshToken(String refreshToken) {
+        Claims claims = getClaimsFromToken(refreshToken);
+        String familyToken = claims.get("family_token").toString();
+        revokeRefreshTokenByFamilyToken(familyToken);
     }
 
     @Override
@@ -112,14 +126,6 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
         List<RefreshToken> refreshTokens = refreshTokenRepository.findAllByFamilyTokenAndIsRevoked(
                 familyToken, false
         );
-
-        if (refreshTokens.size() > 2) {
-            throw new SuspiciousDetectedException("2 Refresh tokens in the same device that have not been revoked found");
-        }
-
-        if (refreshTokens.isEmpty()) {
-            throw new SuspiciousDetectedException("Refresh token have already been revoked, this refresh token have been reuse -> suspicious detected");
-        }
 
         for (RefreshToken rt : refreshTokens) {
             if (!rt.isRevoked()) {
@@ -187,11 +193,6 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
     @Override
     public String extractAccessTokenFromHttpRequest(HttpServletRequest request) {
         return request.getHeader(ACCESS_TOKEN_HEADER);
-    }
-
-    @Override
-    public String extractRefreshTokenFromHttpRequest(HttpServletRequest request) {
-        return request.getHeader(REFRESH_TOKEN_HEADER);
     }
 
     @Override

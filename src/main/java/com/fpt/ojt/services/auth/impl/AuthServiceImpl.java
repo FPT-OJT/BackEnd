@@ -12,6 +12,7 @@ import com.fpt.ojt.presentations.dtos.responses.auth.TokenResponse;
 import com.fpt.ojt.repositories.PasswordResetTokenRepository;
 import com.fpt.ojt.securities.JwtTokenProvider;
 import com.fpt.ojt.securities.UserPrincipal;
+import com.fpt.ojt.securities.dto.AccessTokenData;
 import com.fpt.ojt.services.auth.AuthService;
 import com.fpt.ojt.services.email.EmailService;
 import com.fpt.ojt.services.user.UserService;
@@ -36,7 +37,6 @@ import java.security.GeneralSecurityException;
 import java.security.SecureRandom;
 import java.util.Collections;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -135,19 +135,19 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public TokenResponse getAccessTokenByRefreshToken(String refreshToken) {
-        String accessToken = jwtTokenProvider.generateAccessTokenByRefreshToken(refreshToken);
-        Claims claims = jwtTokenProvider.getClaimsFromToken(accessToken);
-        UUID userId = UUID.fromString(claims.getSubject());
-        String userRole = claims.get("role", String.class);
-        String familyToken = claims.get("family_token", String.class);
+        AccessTokenData tokenData = jwtTokenProvider.generateAccessTokenByRefreshToken(refreshToken);
+
         String newRefreshToken = jwtTokenProvider.generateRefreshTokenByUserId(
-                userId, familyToken, userRole, false
+                tokenData.getUserId(),
+                tokenData.getFamilyToken(),
+                tokenData.getUserRole(),
+                false
         ).get("refresh_token");
 
         return TokenResponse.builder()
-                .role(claims.get("role", String.class))
-                .accessToken(accessToken)
-                .userId(UUID.fromString(claims.getSubject()))
+                .role(tokenData.getUserRole())
+                .accessToken(tokenData.getAccessToken())
+                .userId(tokenData.getUserId())
                 .refreshToken(newRefreshToken)
                 .build();
     }

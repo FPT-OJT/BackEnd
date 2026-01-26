@@ -16,16 +16,13 @@ import java.util.UUID;
 @AllArgsConstructor
 public class RefreshToken {
     @Id
-    private String id;
-
-    @Indexed
-    private UUID userId;
+    private String refreshToken;
 
     @Indexed
     private String familyToken;
 
     @Indexed
-    private String refreshToken;
+    private UUID userId;
 
     private String userRole;
 
