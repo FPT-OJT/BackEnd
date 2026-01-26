@@ -2,8 +2,10 @@ package com.fpt.ojt.configs;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
 import org.springframework.data.redis.serializer.RedisSerializer;
 
@@ -26,5 +28,10 @@ public class RedisConfig {
 
         template.afterPropertiesSet();
         return template;
+    }
+
+    @Bean
+    public RedisScript<Long> revokeTokenScript() {
+        return RedisScript.of(new ClassPathResource("scripts/revoke_token.lua"), Long.class);
     }
 }

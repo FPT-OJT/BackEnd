@@ -13,6 +13,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
@@ -29,6 +31,8 @@ import static com.fpt.ojt.constants.Constants.*;
 public class JwtTokenProviderImpl implements JwtTokenProvider {
 
     private final RefreshTokenRepository refreshTokenRepository;
+    private final RedisTemplate<String, Object> redisTemplate;
+    private final RedisScript<Long> revokeTokenScript;
 
     @Value("${app.jwt.secret}")
     private String jwtSecretKey;
@@ -92,9 +96,21 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
         RefreshToken storedRefreshToken = refreshTokenRepository.findByRefreshToken(refreshToken)
                 .orElseThrow(() -> new RefreshTokenExpiredException("Refresh token has expired"));
 
-        if (storedRefreshToken.isRevoked()) {
+        String redisKey = "refresh_tokens:" + refreshToken;
+        Long result = redisTemplate.execute(
+                revokeTokenScript,
+                Collections.singletonList(redisKey),
+                "isRevoked",
+                "0"
+        );
+
+        if (result == null || result == -1) {
+            throw new RefreshTokenExpiredException("Refresh token not found in Redis");
+        }
+
+        if (result == 0) {
             revokeAllRefreshTokensByFamilyTokenInRefreshToken(refreshToken);
-            throw new SuspiciousDetectedException("Refresh token is revoked");
+            throw new SuspiciousDetectedException("Refresh token has already been used - potential replay attack");
         }
 
         storedRefreshToken.setRevoked(true);

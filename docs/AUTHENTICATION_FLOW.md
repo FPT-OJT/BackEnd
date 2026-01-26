@@ -52,6 +52,69 @@ A UUID for your device. That's it.
 - Obviously, I don't need this complexity for one user = one device
 - But many users have multiple devices, so here we are
 
+#### The Elevator Pitch
+
+**"Without family_id, we lose the trace of the relationship between old (dead) tokens and new (alive) tokens."**
+
+When we detect an old token being reused (Replay Attack), we know something's wrong, but we don't know which new token replaced it to revoke. Result: we're forced to logout ALL user devices (Kill All), affecting UX on devices that weren't compromised.
+
+#### Deep Dive: Why Family Token Prevents "Kill All" Scenario
+
+Let's visualize this with a concrete attack scenario:
+
+**Setup:**
+- User has 2 devices: Phone (Device A) and Laptop (Device B)
+- Phone holds: `RT_A1`
+- Laptop holds: `RT_B1`
+
+**Normal Rotation:**
+1. User refreshes on Phone → `RT_A1` dies, `RT_A2` is created
+2. Valid tokens in DB/Redis: `[RT_A2, RT_B1]`
+
+**Attack: Hacker Replay Attack**
+Hacker stole `RT_A1` (Phone's old token) and tries to reuse it.
+
+##### ❌ Case 1: WITHOUT family_id (Bad Approach)
+
+**Detection:**
+- Server receives `RT_A1`
+- Check DB → `RT_A1` not found (or marked as `used`)
+- Server detects: "Someone is reusing old token `RT_A1`! This is a hack!"
+
+**The Million Dollar Question:**
+- Server looks at valid tokens: `[RT_A2, RT_B1]`
+- How does Server know `RT_A2` is the "child" of `RT_A1` to revoke it?
+
+**Dead End:**
+- Without `family_id` or any linkage, Server cannot tell that `RT_A1` and `RT_A2` belong to the same chain
+- Server also doesn't know if `RT_A1` is related to `RT_B1` or not
+
+**Consequence:**
+- To be safe, Server **revokes EVERYTHING**: `RT_A2` and `RT_B1`
+- ⚠️ User on Laptop (Device B) suddenly gets kicked out → **Bad UX**
+
+##### ✅ Case 2: WITH family_id (Our Approach)
+
+**Data Structure:**
+```
+Chain A (Phone):    family_id: family_X  →  Current: RT_A2
+Chain B (Laptop):   family_id: family_Y  →  Current: RT_B1
+```
+
+**Attack Handling:**
+1. Hacker sends `RT_A1`
+2. Server decodes `RT_A1`, finds `family_token: family_X` inside
+3. Server queries `family_X`. Detects current token should be `RT_A2`, not `RT_A1` → **Suspicious!**
+4. Server revokes **only** `family_X` chain
+
+**Result:**
+- `RT_A2` (Phone's current token) is revoked → Phone gets logged out ✅ (Correct, Phone is compromised)
+- `family_Y` (Laptop) is completely innocent. `RT_B1` remains valid ✅
+- → **Good UX & Security**: Only isolate the infected device
+
+**Key Insight:**
+`family_id` acts as a **chain identifier** that links all token generations of a single device, enabling **surgical revocation** instead of nuclear "kill all" approach.
+
 ### Scenarios
 
 #### 1. Login
