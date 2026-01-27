@@ -16,8 +16,6 @@ import java.util.UUID;
 @AllArgsConstructor
 public class PasswordResetToken {
     @Id
-    private String id;
-
     private String otp;
 
     @Indexed
