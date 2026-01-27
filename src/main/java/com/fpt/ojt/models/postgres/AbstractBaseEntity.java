@@ -1,4 +1,4 @@
-package com.fpt.ojt.models;
+package com.fpt.ojt.models.postgres;
 
 import jakarta.persistence.*;
 import lombok.Getter;
