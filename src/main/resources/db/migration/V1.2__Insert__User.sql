@@ -26,6 +26,3 @@ INSERT INTO users (id, user_name, google_id, email, role, password, first_name, 
 ('c1d2e3f4-a5b6-4c7d-8e9f-0a1b2c3d4e5f', 'anthony_clark', NULL, 'anthony.clark@gmail.com', 'CUSTOMER', '$2a$10$vBw/9O7LrqJNEqUqPKWRuuUrGJqnMqQJj8IzQhjqDUqBgCjDJfZ5S', 'Anthony', 'Clark', '2025-01-20 09:15:00', '2025-01-28 16:20:00', NULL),
 ('d2e3f4a5-b6c7-4d8e-9f0a-1b2c3d4e5f6a', 'nicole_rodriguez', NULL, 'nicole.rodriguez@outlook.com', 'CUSTOMER', '$2a$10$vBw/9O7LrqJNEqUqPKWRuuUrGJqnMqQJj8IzQhjqDUqBgCjDJfZ5S', 'Nicole', 'Rodriguez', '2025-01-22 11:30:00', '2025-01-28 17:10:00', NULL),
 ('e3f4a5b6-c7d8-4e9f-0a1b-2c3d4e5f6a7b', 'william_lewis', NULL, 'william.lewis@gmail.com', 'CUSTOMER', '$2a$10$vBw/9O7LrqJNEqUqPKWRuuUrGJqnMqQJj8IzQhjqDUqBgCjDJfZ5S', 'William', 'Lewis', '2025-01-24 14:45:00', '2025-01-28 18:00:00', NULL);
-
--- Create an index on deleted_at for performance
-CREATE INDEX IF NOT EXISTS idx_users_deleted_at ON users(deleted_at) WHERE deleted_at IS NULL;

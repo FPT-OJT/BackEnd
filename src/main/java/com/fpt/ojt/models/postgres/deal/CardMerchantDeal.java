@@ -10,6 +10,7 @@ import lombok.*;
 @Builder
 @Getter
 @Setter
+@ToString(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
 public class CardMerchantDeal extends AbstractBaseEntity {

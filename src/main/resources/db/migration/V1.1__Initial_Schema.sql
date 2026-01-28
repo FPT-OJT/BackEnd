@@ -3,20 +3,7 @@
 -- Description: Create all base tables for the application
 -- =====================================================
 
--- Drop tables if exists (in reverse order of dependencies)
-DROP TABLE IF EXISTS card_merchant_deals CASCADE;
-DROP TABLE IF EXISTS merchant_deals CASCADE;
-DROP TABLE IF EXISTS merchant_agencies CASCADE;
-DROP TABLE IF EXISTS merchants CASCADE;
-DROP TABLE IF EXISTS merchant_categories CASCADE;
-DROP TABLE IF EXISTS card_rules CASCADE;
-DROP TABLE IF EXISTS user_credit_cards CASCADE;
-DROP TABLE IF EXISTS card_products CASCADE;
-DROP TABLE IF EXISTS condition_options CASCADE;
-DROP TABLE IF EXISTS conditions CASCADE;
-DROP TABLE IF EXISTS users CASCADE;
 
--- =====================================================
 -- User Management Tables
 -- =====================================================
 

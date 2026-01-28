@@ -12,6 +12,7 @@ import java.time.LocalDate;
 @Builder
 @Getter
 @Setter
+@ToString(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserCreditCard extends AbstractBaseEntity {
