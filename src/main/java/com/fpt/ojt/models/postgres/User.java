@@ -1,4 +1,4 @@
-package com.fpt.ojt.models;
+package com.fpt.ojt.models.postgres;
 
 import com.fpt.ojt.constants.Constants;
 import jakarta.persistence.*;
@@ -9,6 +9,7 @@ import lombok.*;
 @Builder
 @Getter
 @Setter
+@ToString(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
 public class User extends AbstractBaseEntity {

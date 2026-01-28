@@ -3,7 +3,7 @@ package com.fpt.ojt.services.user;
 import java.util.UUID;
 
 import com.fpt.ojt.constants.Constants;
-import com.fpt.ojt.models.User;
+import com.fpt.ojt.models.postgres.User;
 
 public interface UserService {
         void createUser(Constants.RoleEnum roleEnum, String googleId, String firstName, String lastName,

@@ -1,6 +1,6 @@
 package com.fpt.ojt.repositories;
 
-import com.fpt.ojt.models.PasswordResetToken;
+import com.fpt.ojt.models.redis.PasswordResetToken;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 

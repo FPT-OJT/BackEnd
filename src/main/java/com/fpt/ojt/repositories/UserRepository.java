@@ -1,6 +1,6 @@
 package com.fpt.ojt.repositories;
 
-import com.fpt.ojt.models.User;
+import com.fpt.ojt.models.postgres.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;

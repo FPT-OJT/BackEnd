@@ -2,7 +2,7 @@ package com.fpt.ojt.securities.impl;
 
 import com.fpt.ojt.exceptions.RefreshTokenExpiredException;
 import com.fpt.ojt.exceptions.SuspiciousDetectedException;
-import com.fpt.ojt.models.RefreshToken;
+import com.fpt.ojt.models.redis.RefreshToken;
 import com.fpt.ojt.repositories.RefreshTokenRepository;
 import com.fpt.ojt.securities.JwtTokenProvider;
 import com.fpt.ojt.securities.dto.AccessTokenData;

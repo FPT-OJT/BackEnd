@@ -1,6 +1,6 @@
 package com.fpt.ojt.repositories;
 
-import com.fpt.ojt.models.RefreshToken;
+import com.fpt.ojt.models.redis.RefreshToken;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 

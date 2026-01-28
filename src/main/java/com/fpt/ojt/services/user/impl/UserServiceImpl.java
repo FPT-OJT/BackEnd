@@ -8,7 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.fpt.ojt.constants.Constants;
 import com.fpt.ojt.exceptions.DuplicateException;
 import com.fpt.ojt.exceptions.NotFoundException;
-import com.fpt.ojt.models.User;
+import com.fpt.ojt.models.postgres.User;
 import com.fpt.ojt.repositories.UserRepository;
 import com.fpt.ojt.services.user.UserService;
 

@@ -1,4 +1,4 @@
-package com.fpt.ojt.models;
+package com.fpt.ojt.models.redis;
 
 import lombok.*;
 import org.springframework.data.annotation.Id;
@@ -8,21 +8,26 @@ import org.springframework.data.redis.core.index.Indexed;
 
 import java.util.UUID;
 
-@RedisHash("password_reset_token")
+@RedisHash("refresh_tokens")
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PasswordResetToken {
+public class RefreshToken {
     @Id
-    private String otp;
+    private String refreshToken;
+
+    @Indexed
+    private String familyToken;
 
     @Indexed
     private UUID userId;
 
-    @TimeToLive
-    private Long ttl;
+    private String userRole;
 
     private boolean isRevoked;
+
+    @TimeToLive
+    private Long ttl;
 }
