@@ -17,6 +17,7 @@ logging:
           jdbc:
       springframework:
         web: ${LOGGING_LEVEL_SPRING}
+      flywaydb: ${LOGGING_LEVEL_FLYWAY:DEBUG}
 
 spring:
   servlet:
@@ -36,16 +37,16 @@ spring:
         jdbc:
           time_zone: ${HIBERNATE_JDBC_TIME_ZONE:UTC}
     open-in-view: ${SPRING_JPA_OPEN_IN_VIEW:false}
+    defer-datasource-initialization: false
 
   flyway:
-    enabled: ${FLYWAY_ENABLED:true}
+    enabled: false
     baseline-on-migrate: ${FLYWAY_BASELINE_ON_MIGRATE:true}
     locations: ${FLYWAY_LOCATIONS:classpath:db/migration}
     validate-on-migrate: ${FLYWAY_VALIDATE_ON_MIGRATE:false}
+    clean-disabled: ${FLYWAY_CLEAN_DISABLED:true}
     schemas: ${FLYWAY_SCHEMAS:public}
     default-schema: ${FLYWAY_DEFAULT_SCHEMA:public}
-    clean-disabled: ${FLYWAY_CLEAN_DISABLED:false}
-    clean-on-validation-error: ${FLYWAY_CLEAN_ON_VALIDATION_ERROR:true}
 
   datasource:
     url: jdbc:postgresql://${POSTGRESQL_HOST:localhost}:${POSTGRESQL_EXTERNAL_PORT}/${POSTGRESQL_DB}?serverTimezone=${POSTGRESQL_SERVER_TIMEZONE:UTC}

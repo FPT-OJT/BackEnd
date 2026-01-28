@@ -87,6 +87,11 @@ CREATE TABLE card_rules (
 -- Create index for card rules queries
 CREATE INDEX idx_card_rules_card_product_id ON card_rules(card_product_id);
 
+-- Create GIN indexes for JSONB fields (optimize JSON queries)
+CREATE INDEX idx_card_rules_match_conditions ON card_rules USING GIN (match_conditions);
+CREATE INDEX idx_card_rules_allow_mccs ON card_rules USING GIN (match_allow_mccs);
+CREATE INDEX idx_card_rules_reject_mccs ON card_rules USING GIN (match_reject_mccs);
+
 -- =====================================================
 -- Condition Tables
 -- =====================================================
@@ -104,7 +109,6 @@ CREATE TABLE conditions (
 
 -- Create index for condition queries
 CREATE INDEX idx_conditions_condition_code ON conditions(condition_code);
-CREATE INDEX idx_conditions_type ON conditions(type);
 
 -- Condition options table
 CREATE TABLE condition_options (
@@ -139,6 +143,7 @@ CREATE TABLE merchant_categories (
 CREATE TABLE merchants (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(255) NOT NULL,
+    mcc VARCHAR(100) NOT NULL UNIQUE,
     description VARCHAR(1000),
     category_id UUID NOT NULL,
     logo_url VARCHAR(500),
@@ -151,6 +156,7 @@ CREATE TABLE merchants (
 -- Create index for merchant queries
 CREATE INDEX idx_merchants_category_id ON merchants(category_id);
 CREATE INDEX idx_merchants_name ON merchants(name);
+CREATE INDEX idx_merchants_mcc ON merchants(mcc);
 
 -- Merchant agencies table
 CREATE TABLE merchant_agencies (

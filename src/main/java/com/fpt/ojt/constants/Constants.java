@@ -14,4 +14,13 @@ public final class Constants {
         CUSTOMER("CUSTOMER");
         private final String value;
     }
+
+    @Getter
+    @AllArgsConstructor
+    public enum ConditionTypeEnum {
+        STRING("string"),
+        NUMBER("number"),
+        BOOLEAN("boolean");
+        private final String value;
+    }
 }

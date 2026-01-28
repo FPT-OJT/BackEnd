@@ -16,6 +16,9 @@ public class Merchant extends AbstractBaseEntity {
     @Column(name = "name", nullable = false)
     private String name;
 
+    @Column(name = "mcc", nullable = false, unique = true)
+    private String mcc;
+
     @Column(name = "description", length = 1000)
     private String description;
 
