@@ -1,14 +1,17 @@
 package com.fpt.ojt.models.postgres.card;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.List;
 
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@EqualsAndHashCode
 public class MatchCondition {
     private String conditionCode;
-    private List<Object> acceptedValues;
-    private List<Object> rejectedValues;
+    private List<String> acceptedValues;
+    private List<String> rejectedValues;
 }
