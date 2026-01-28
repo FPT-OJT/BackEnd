@@ -43,13 +43,13 @@ VALUES ('019c02b1-00e5-771c-ab2a-a29038f14e43', 'Starbucks New World', '019c02b1
 
 
 INSERT INTO merchant_deals (id, merchant_agency_id, deal_name, discount_rate, cashback_rate, points_multiplier, description, valid_from, valid_to)
-VALUES ('019c02b5-e5cd-719e-8412-ce5fe28dc468', '019c02b1-00e5-771c-ab2a-a29038f14e43', 'Buy 1 Get 1 Coffee', 50.0, , 1.5, 'Buy one coffee and get another free for the same or lower price.', '2026-02-01', '2026-02-28'),
-       ('019c02b5-e5cd-719e-8412-ce5fe28dc479', '019c02b1-00e5-71df-b21c-15fd36d72cb0', 'Morning Coffee Discount', 20.0, , 1.2, '20% off for all drinks before 10 AM.', '2026-02-01', '2026-03-31'),
-       ('019c02b5-e5cd-719e-8412-ce5fe28dc490', '019c02b5-e5cd-7f99-af6e-a7be68d12e09', 'Hotpot Cashback', , 10.0, 2.0, 'Get 10% cashback when dining in.', '2026-01-15', '2026-04-15'),
-       ('019c02b5-e5cd-719e-8412-ce5fe28dc781', '019c02b5-e5cd-7270-963a-cfd6461c4c3d', 'Season Sale', 30.0, , 1.0, 'Up to 30% off selected seasonal items.', '2026-02-10', '2026-03-10'),
-       ('019c02b5-e5cd-719e-8412-ce5fe28dc112', '019c02b5-e5cd-70bc-bc1b-fe63e5096866', 'Member Exclusive Discount', 15.0, , 1.3, 'Exclusive discount for loyalty members.', '2026-02-01', '2026-02-20'),
-       ('019c02b5-e5cd-719e-8412-ce5fe28dc128', '019c02b5-e5cd-79a8-9a05-38996603d280', 'Daily Cashback', , 5.0, 1.0, '5% cashback for all purchases.', '2026-01-01', '2026-12-31'),
-       ('019c02b5-e5cd-719e-8412-ce5fe28dc938', '019c02b5-e5cd-7b71-bae9-f03440d533fb', 'Points Booster', , , 2.0, 'Earn double reward points for every purchase.', '2026-02-01', '2026-06-30'),
-       ('019c02b5-e5cd-719e-8412-ce5fe28dc116', '019c02b5-e5cd-7afb-a7c0-3a839ba37ac4', 'Weekend Discount', 10.0, , 1.1, '10% off for shopping on weekends.', '2026-02-01', '2026-05-31'),
-       ('019c02b5-e5cd-719e-8412-ce5fe28dc195', '019c02b5-e5cd-7c77-a341-19e0794d5205', 'Movie Ticket Cashback', , 15.0, 1.5, '15% cashback on movie tickets.', '2026-02-01', '2026-04-30'),
-       ('019c02b5-e5cd-719e-8412-ce5fe28dc632', '019c02b5-e5cd-7106-bc93-b35b7357bc80', 'Health & Beauty Sale', 25.0, , 1.2, 'Save 25% on selected health and beauty products.', '2026-02-05', '2026-03-05');
+VALUES ('019c02b5-e5cd-719e-8412-ce5fe28dc468', '019c02b1-00e5-771c-ab2a-a29038f14e43', 'Buy 1 Get 1 Coffee', 50.0, NULL, 1.5, 'Buy one coffee and get another free for the same or lower price.', '2026-02-01', '2026-02-28'),
+       ('019c02b5-e5cd-719e-8412-ce5fe28dc479', '019c02b1-00e5-71df-b21c-15fd36d72cb0', 'Morning Coffee Discount', 20.0, NULL, 1.2, '20% off for all drinks before 10 AM.', '2026-02-01', '2026-03-31'),
+       ('019c02b5-e5cd-719e-8412-ce5fe28dc490', '019c02b5-e5cd-7f99-af6e-a7be68d12e09', 'Hotpot Cashback', NULL, 10.0, 2.0, 'Get 10% cashback when dining in.', '2026-01-15', '2026-04-15'),
+       ('019c02b5-e5cd-719e-8412-ce5fe28dc781', '019c02b5-e5cd-7270-963a-cfd6461c4c3d', 'Season Sale', 30.0, NULL, 1.0, 'Up to 30% off selected seasonal items.', '2026-02-10', '2026-03-10'),
+       ('019c02b5-e5cd-719e-8412-ce5fe28dc112', '019c02b5-e5cd-70bc-bc1b-fe63e5096866', 'Member Exclusive Discount', 15.0, NULL, 1.3, 'Exclusive discount for loyalty members.', '2026-02-01', '2026-02-20'),
+       ('019c02b5-e5cd-719e-8412-ce5fe28dc128', '019c02b5-e5cd-79a8-9a05-38996603d280', 'Daily Cashback', NULL, 5.0, 1.0, '5% cashback for all purchases.', '2026-01-01', '2026-12-31'),
+       ('019c02b5-e5cd-719e-8412-ce5fe28dc938', '019c02b5-e5cd-7b71-bae9-f03440d533fb', 'Points Booster', NULL, NULL, 2.0, 'Earn double reward points for every purchase.', '2026-02-01', '2026-06-30'),
+       ('019c02b5-e5cd-719e-8412-ce5fe28dc116', '019c02b5-e5cd-7afb-a7c0-3a839ba37ac4', 'Weekend Discount', 10.0, NULL, 1.1, '10% off for shopping on weekends.', '2026-02-01', '2026-05-31'),
+       ('019c02b5-e5cd-719e-8412-ce5fe28dc195', '019c02b5-e5cd-7c77-a341-19e0794d5205', 'Movie Ticket Cashback', NULL, 15.0, 1.5, '15% cashback on movie tickets.', '2026-02-01', '2026-04-30'),
+       ('019c02b5-e5cd-719e-8412-ce5fe28dc632', '019c02b5-e5cd-7106-bc93-b35b7357bc80', 'Health & Beauty Sale', 25.0, NULL, 1.2, 'Save 25% on selected health and beauty products.', '2026-02-05', '2026-03-05');
