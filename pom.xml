@@ -29,7 +29,9 @@
     </scm>
     <properties>
         <java.version>25</java.version>
+        <logback.version>1.5.25</logback.version>
         <spring-cloud.version>2025.1.0</spring-cloud.version>
+        <assertj.version>3.27.7</assertj.version>
     </properties>
     <dependencies>
         <dependency>
@@ -137,6 +139,11 @@
         <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-database-postgresql</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>33.4.0-jre</version>
         </dependency>
         <dependency>
             <groupId>com.google.api-client</groupId>
