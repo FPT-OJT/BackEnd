@@ -1,11 +1,11 @@
-package com.fpt.ojt.securities.impl;
+package com.fpt.ojt.infrastructure.securities.impl;
 
 import com.fpt.ojt.exceptions.RefreshTokenExpiredException;
 import com.fpt.ojt.exceptions.SuspiciousDetectedException;
 import com.fpt.ojt.models.redis.RefreshToken;
 import com.fpt.ojt.repositories.RefreshTokenRepository;
-import com.fpt.ojt.securities.JwtTokenProvider;
-import com.fpt.ojt.securities.dto.AccessTokenData;
+import com.fpt.ojt.infrastructure.securities.JwtTokenProvider;
+import com.fpt.ojt.infrastructure.securities.dto.AccessTokenData;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
@@ -23,7 +23,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
-import static com.fpt.ojt.constants.Constants.*;
+import static com.fpt.ojt.infrastructure.constants.Constants.ACCESS_TOKEN_HEADER;
 
 @Component
 @Slf4j

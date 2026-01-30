@@ -1,6 +1,5 @@
 package com.fpt.ojt.presentations.dtos.responses.home;
 
-import com.fpt.ojt.presentations.dtos.responses.AbstractBaseResponse;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,7 +13,7 @@ import java.util.UUID;
 @Setter
 @SuperBuilder
 @NoArgsConstructor
-public class HomePageResponse extends AbstractBaseResponse {
+public class HomePageResponse {
     private List<MerchantCategory> merchantCategories;
     private List<MerchantOffer> merchantOffers;
 
@@ -22,8 +21,8 @@ public class HomePageResponse extends AbstractBaseResponse {
     @Setter
     @Builder
     public static class MerchantOffer {
-        private UUID merchantId;
-        private String merchantName;
+        private UUID merchantAgencyId;
+        private String merchantAgencyName;
         private String imageUrl;
         private String merchantDealName;
         private boolean isFavorite;

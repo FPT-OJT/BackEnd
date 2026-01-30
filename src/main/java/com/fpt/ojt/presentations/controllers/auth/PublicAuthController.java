@@ -17,7 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import static com.fpt.ojt.constants.Constants.REFRESH_TOKEN_HEADER;
+import static com.fpt.ojt.infrastructure.constants.Constants.REFRESH_TOKEN_HEADER;
 
 @RestController
 @RequiredArgsConstructor

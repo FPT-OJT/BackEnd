@@ -1,6 +1,7 @@
-package com.fpt.ojt.models.postgres;
+package com.fpt.ojt.models.postgres.user;
 
-import com.fpt.ojt.constants.Constants;
+import com.fpt.ojt.models.enums.EnumConstants;
+import com.fpt.ojt.models.postgres.AbstractBaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -24,7 +25,7 @@ public class User extends AbstractBaseEntity {
 
     @Column(name = "role", nullable = false)
     @Enumerated(EnumType.STRING)
-    private Constants.RoleEnum role;
+    private EnumConstants.RoleEnum role;
 
     @Column(name = "password")
     private String password;

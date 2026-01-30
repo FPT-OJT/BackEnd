@@ -1,4 +1,4 @@
-package com.fpt.ojt.securities.dto;
+package com.fpt.ojt.infrastructure.securities.dto;
 
 import lombok.Builder;
 import lombok.Getter;
