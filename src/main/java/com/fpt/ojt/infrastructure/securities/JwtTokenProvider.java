@@ -1,8 +1,8 @@
-package com.fpt.ojt.securities;
+package com.fpt.ojt.infrastructure.securities;
 
 import module java.base;
 
-import com.fpt.ojt.securities.dto.AccessTokenData;
+import com.fpt.ojt.infrastructure.securities.dto.AccessTokenData;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.concurrent.CompletableFuture;

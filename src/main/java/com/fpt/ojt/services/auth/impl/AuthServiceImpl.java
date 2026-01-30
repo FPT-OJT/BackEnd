@@ -1,18 +1,18 @@
 package com.fpt.ojt.services.auth.impl;
 
-import com.fpt.ojt.constants.Constants;
 import com.fpt.ojt.exceptions.BadRequestException;
 import com.fpt.ojt.exceptions.NotFoundException;
 import com.fpt.ojt.exceptions.SuspiciousDetectedException;
+import com.fpt.ojt.models.enums.EnumConstants;
 import com.fpt.ojt.models.redis.PasswordResetToken;
-import com.fpt.ojt.models.postgres.User;
+import com.fpt.ojt.models.postgres.user.User;
 import com.fpt.ojt.presentations.dtos.requests.auth.LoginRequest;
 import com.fpt.ojt.presentations.dtos.requests.auth.RegisterRequest;
 import com.fpt.ojt.presentations.dtos.responses.auth.TokenResponse;
 import com.fpt.ojt.repositories.PasswordResetTokenRepository;
-import com.fpt.ojt.securities.JwtTokenProvider;
-import com.fpt.ojt.securities.UserPrincipal;
-import com.fpt.ojt.securities.dto.AccessTokenData;
+import com.fpt.ojt.infrastructure.securities.JwtTokenProvider;
+import com.fpt.ojt.infrastructure.securities.UserPrincipal;
+import com.fpt.ojt.infrastructure.securities.dto.AccessTokenData;
 import com.fpt.ojt.services.auth.AuthService;
 import com.fpt.ojt.services.email.EmailService;
 import com.fpt.ojt.services.user.UserService;
@@ -38,6 +38,8 @@ import java.security.SecureRandom;
 import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
 
 @Service
 @Slf4j
@@ -96,7 +98,24 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public TokenResponse login(LoginRequest loginRequest, String refreshToken) {
-        User user = userService.getUserByUserName(loginRequest.getUsername());
+        User user;
+        try (var executor = Executors.newSingleThreadExecutor()) {
+            var userWithUserNameFuture = executor.submit(() -> userService.getUserByUserName(loginRequest.getUsername()));
+            var userWithEmailFuture = executor.submit(() -> userService.getUserByEmail(loginRequest.getUsername()));
+
+            User userWithEmail = userWithEmailFuture.get();
+            User userWithUserName = userWithUserNameFuture.get();
+
+            if (userWithUserName != null) user = userWithUserName;
+            else if (userWithEmail != null) user = userWithEmail;
+            else {
+                throw new BadCredentialsException("Invalid username or password");
+            }
+
+        } catch (ExecutionException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
         UUID userId = user.getId();
         String userRole = user.getRole().toString();
         if (passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
@@ -157,7 +176,7 @@ public class AuthServiceImpl implements AuthService {
         String password = registerRequest.getPassword();
         String passwordHash = passwordEncoder.encode(password);
         userService.createUser(
-                Constants.RoleEnum.CUSTOMER, // TODO: Assume that only customer need register
+                EnumConstants.RoleEnum.CUSTOMER, // TODO: Assume that only customer need register
                 null,
                 registerRequest.getFirstName(),
                 registerRequest.getLastName(),

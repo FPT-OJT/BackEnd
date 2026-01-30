@@ -1,7 +1,7 @@
-package com.fpt.ojt.configs;
+package com.fpt.ojt.infrastructure.configs;
 
-import com.fpt.ojt.securities.JwtAuthenticationEntryPoint;
-import com.fpt.ojt.securities.JwtAuthenticationFilter;
+import com.fpt.ojt.infrastructure.securities.JwtAuthenticationEntryPoint;
+import com.fpt.ojt.infrastructure.securities.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

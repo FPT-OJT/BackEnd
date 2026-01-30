@@ -1,6 +1,6 @@
-package com.fpt.ojt.repositories;
+package com.fpt.ojt.repositories.user;
 
-import com.fpt.ojt.models.postgres.User;
+import com.fpt.ojt.models.postgres.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
@@ -14,8 +14,6 @@ public interface UserRepository extends JpaRepository<User, UUID>, JpaSpecificat
     User findByUserName(String userName);
 
     User findByGoogleId(String googleId);
-
-    List<User> findAllByGoogleIdOrEmail(String googleId, String email);
 
     User findByEmail(String email);
 

@@ -1,4 +1,4 @@
-package com.fpt.ojt.securities;
+package com.fpt.ojt.infrastructure.securities;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;

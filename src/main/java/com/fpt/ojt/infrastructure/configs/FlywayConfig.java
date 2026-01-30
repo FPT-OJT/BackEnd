@@ -1,4 +1,4 @@
-package com.fpt.ojt.configs;
+package com.fpt.ojt.infrastructure.configs;
 
 import org.flywaydb.core.Flyway;
 import org.springframework.beans.factory.annotation.Value;

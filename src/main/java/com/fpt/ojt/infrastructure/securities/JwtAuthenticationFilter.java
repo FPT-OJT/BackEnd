@@ -1,4 +1,4 @@
-package com.fpt.ojt.securities;
+package com.fpt.ojt.infrastructure.securities;
 
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
