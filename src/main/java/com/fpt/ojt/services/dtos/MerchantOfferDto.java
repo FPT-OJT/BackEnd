@@ -17,6 +17,7 @@ public class MerchantOfferDto {
     private String merchantDealName;
     private boolean isFavorite;
     private boolean isSubscribed;
-    private Double distance;
+    private Double lat;
+    private Double lng;
     private Double totalDiscount;
 }

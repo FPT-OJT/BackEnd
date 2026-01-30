@@ -60,7 +60,8 @@ public class MerchantServiceImpl implements MerchantService {
                             .merchantDealName(dto.getMerchantDealName())
                             .isFavorite(dto.isFavorite())
                             .isSubscribed(dto.isSubscribed())
-                            .distance(dto.getDistance())
+                            .lat(dto.getLat())
+                            .lng(dto.getLng())
                             .totalDiscount(dto.getTotalDiscount())
                             .build())
                     .toList();
@@ -145,7 +146,8 @@ public class MerchantServiceImpl implements MerchantService {
                                         .merchantDealName(availableDeal.getDealName())
                                         .isFavorite(isFavorite)
                                         .isSubscribed(isSubscribed)
-                                        .distance(0.0)
+                                        .lat(agency.getLat())
+                                        .lng(agency.getLng())
                                         .totalDiscount(totalDiscount)
                                         .build();
                             })))
@@ -211,7 +213,8 @@ public class MerchantServiceImpl implements MerchantService {
                                                         .merchantDealName("Card Benefit: " + String.format("%.1f%%", cardBenefit))
                                                         .isFavorite(isFavorite)
                                                         .isSubscribed(isSubscribed)
-                                                        .distance(0.0)
+                                                        .lat(agency.getLatitude())
+                                                        .lng(agency.getLongitude())
                                                         .totalDiscount(cardBenefit)
                                                         .build();
                                             }));
@@ -246,7 +249,8 @@ public class MerchantServiceImpl implements MerchantService {
                                                         .merchantDealName("Card Benefit: " + String.format("%.1f%%", cardBenefit))
                                                         .isFavorite(isFavorite)
                                                         .isSubscribed(isSubscribed)
-                                                        .distance(0.0)
+                                                        .lat(agency.getLatitude())
+                                                        .lng(agency.getLongitude())
                                                         .totalDiscount(cardBenefit)
                                                         .build();
                                             }));
@@ -283,7 +287,8 @@ public class MerchantServiceImpl implements MerchantService {
                                                                     .merchantDealName("Card Benefit: " + String.format("%.1f%%", cardBenefit))
                                                                     .isFavorite(isFavorite)
                                                                     .isSubscribed(isSubscribed)
-                                                                    .distance(0.0)
+                                                                    .lat(agency.getLatitude())
+                                                                    .lng(agency.getLongitude())
                                                                     .totalDiscount(cardBenefit)
                                                                     .build();
                                                         }));

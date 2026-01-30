@@ -44,6 +44,8 @@ public class DealServiceImpl implements DealService {
                                 .merchantAgencyName(agency.getName())
                                 .imageUrl(merchant.getLogoUrl())
                                 .mcc(merchant.getMcc())
+                                .lat(agency.getLatitude())
+                                .lng(agency.getLongitude())
 
                                 .merchantDealItems(entry.getValue().stream()
                                         .map(this::mapToMerchantDealItem)

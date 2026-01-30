@@ -16,6 +16,8 @@ public class MerchantAgencyWithAvailableDealsDto {
     private String imageUrl;
     private boolean isFavorite;
     private boolean isSubscribed;
+    private Double lat;
+    private Double lng;
     List<MerchantDealItem> merchantDealItems;
 
     @Getter
