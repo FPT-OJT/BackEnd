@@ -1,0 +1,34 @@
+package com.fpt.ojt.infrastructure.configs;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.script.RedisScript;
+import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
+import org.springframework.data.redis.serializer.RedisSerializer;
+
+@Configuration
+@EnableRedisRepositories(basePackages = "com.fpt.ojt.repositories")
+public class RedisConfig {
+
+    @Bean
+    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
+        RedisTemplate<String, Object> template = new RedisTemplate<>();
+        template.setConnectionFactory(connectionFactory);
+
+        template.setKeySerializer(RedisSerializer.string());
+        template.setHashKeySerializer(RedisSerializer.string());
+        template.setValueSerializer(RedisSerializer.string());
+        template.setHashValueSerializer(RedisSerializer.string());
+
+        template.afterPropertiesSet();
+        return template;
+    }
+
+    @Bean
+    public RedisScript<Long> revokeTokenScript() {
+        return RedisScript.of(new ClassPathResource("scripts/revoke_token.lua"), Long.class);
+    }
+}
