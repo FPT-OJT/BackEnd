@@ -20,12 +20,12 @@ public abstract class AbstractBaseController {
         }
 
         Sort.Direction direction = (sortType != null && sortType.equalsIgnoreCase("asc"))
-                ? Sort.Direction.ASC : Sort.Direction.DESC;
+                ? Sort.Direction.ASC
+                : Sort.Direction.DESC;
         String sortField = !sortBy.isEmpty() ? sortBy : "id";
         Sort sort = Sort.by(direction, sortField);
 
         return PageRequest.of(pageNumber, limit, sort);
     }
 
-    // Other common methods for controllers can be added here...
 }
