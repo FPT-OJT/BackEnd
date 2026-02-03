@@ -19,4 +19,6 @@ public interface CardService {
     void addCardToUser(UUID userId, AddCardToUserRequest userCardDto);
 
     void editUserCard(UUID userCardId, UUID userId, EditUserCard userCardDto);
+
+    void removeUserCard(UUID userCardId, UUID userId);
 }

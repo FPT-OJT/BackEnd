@@ -3,7 +3,6 @@ package com.fpt.ojt.services.card.impl;
 import com.fpt.ojt.exceptions.ForbiddenException;
 import com.fpt.ojt.exceptions.NotFoundException;
 import com.fpt.ojt.exceptions.QueryErrorException;
-import com.fpt.ojt.models.postgres.card.CardProduct;
 import com.fpt.ojt.models.postgres.card.CardRule;
 import com.fpt.ojt.models.postgres.card.UserCreditCard;
 import com.fpt.ojt.presentations.dtos.requests.card.AddCardToUserRequest;
@@ -22,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -119,6 +119,17 @@ public class CardServiceImpl implements CardService {
         }
         userCard.setFirstPaymentDate(userCardDto.getFirstPaymentDate());
         userCard.setExpiryDate(userCardDto.getExpiryDate());
+        userCreditCardRepository.save(userCard);
+    }
+
+    @Override
+    public void removeUserCard(UUID userCardId, UUID userId) {
+        var userCard = userCreditCardRepository.findById(userCardId)
+                .orElseThrow(() -> new NotFoundException("User card not found with id: " + userCardId));
+        if (!userCard.getUser().getId().equals(userId)) {
+            throw new ForbiddenException("User does not own this card");
+        }
+        userCard.setDeletedAt(LocalDateTime.now());
         userCreditCardRepository.save(userCard);
     }
 }
