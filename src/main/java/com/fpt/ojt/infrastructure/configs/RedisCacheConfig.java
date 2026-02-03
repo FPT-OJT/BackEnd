@@ -20,6 +20,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 @EnableCaching
 @Configuration
 public class RedisCacheConfig {
+        private final int DEFAULT_CACHE_TTL = 10;
         public ObjectMapper redisObjectMapper() {
                 return JsonMapper.builder()
                                 .addModule(new JavaTimeModule())
@@ -34,7 +35,7 @@ public class RedisCacheConfig {
 
                 serializer.setObjectMapper(redisObjectMapper());
                 return RedisCacheConfiguration.defaultCacheConfig()
-                                .entryTtl(Duration.ofMinutes(10))
+                                .entryTtl(Duration.ofMinutes(DEFAULT_CACHE_TTL))
                                 .disableCachingNullValues()
                                 .serializeValuesWith(
                                                 RedisSerializationContext.SerializationPair.fromSerializer(serializer));
