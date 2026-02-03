@@ -2,13 +2,13 @@ package com.fpt.ojt.infrastructure.configs;
 
 import java.time.Duration;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 
@@ -20,7 +20,8 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 @EnableCaching
 @Configuration
 public class RedisCacheConfig {
-        private final int DEFAULT_CACHE_TTL = 10;
+        @Value("${app.cache.default-ttl:10}")
+        private int DEFAULT_CACHE_TTL;
         public ObjectMapper redisObjectMapper() {
                 return JsonMapper.builder()
                                 .addModule(new JavaTimeModule())
