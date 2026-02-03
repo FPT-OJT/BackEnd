@@ -1,7 +1,10 @@
 package com.fpt.ojt.services.merchants.impl;
 
+import java.time.Duration;
 import java.util.List;
 
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import com.fpt.ojt.models.postgres.merchant.NearestAgencyProjection;
@@ -15,9 +18,15 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class MerchantAgencyServiceImpl implements MerchantAgencyService {
     private final MerchantAgencyRepository merchantAgencyRepository;
+    private final NearestMerchantCacheKeyGenerator geoGridUtil;
+    private final RedisTemplate<String, Object> redisTemplate;
 
+    private static final Duration CACHE_TTL = Duration.ofMinutes(30);
+
+    @Cacheable(cacheNames = "nearestAgency", keyGenerator = "nearestMerchantCacheKeyGenerator")
     @Override
     public List<NearestAgencyDto> findNearestAgencies(String keyword, Double latitude, Double longitude, int limit) {
+
         var result = merchantAgencyRepository.searchNearestAgencies(keyword, latitude, longitude, limit);
         return result.stream()
                 .map(this::mapToNearestAgencyDto)
@@ -35,4 +44,5 @@ public class MerchantAgencyServiceImpl implements MerchantAgencyService {
                 .distanceMeters(projection.getDistanceMeters())
                 .build();
     }
+
 }
