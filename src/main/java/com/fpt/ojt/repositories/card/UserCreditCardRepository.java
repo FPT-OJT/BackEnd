@@ -15,6 +15,6 @@ public interface UserCreditCardRepository
         extends JpaRepository<UserCreditCard, UUID>, JpaSpecificationExecutor<UserCreditCard> {
 
     @EntityGraph(attributePaths = { "user", "cardProduct" })
-    List<UserCreditCard> findByUserId(UUID userId);
+    List<UserCreditCard> findByUserIdAndDeletedAtIsNull(UUID userId);
 
 }

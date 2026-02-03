@@ -88,7 +88,7 @@ public class CardServiceImpl implements CardService {
 
     @Override
     public List<UserCardDto> getUserCards(UUID userId) {
-        var userCards = userCreditCardRepository.findByUserId(userId);
+        var userCards = userCreditCardRepository.findByUserIdAndDeletedAtIsNull(userId);
         return userCards.stream()
                 .map(UserCardDto::fromEntity)
                 .toList();

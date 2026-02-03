@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -38,7 +39,7 @@ public class UserCardController {
         }
 
         @PostMapping("")
-        public ResponseEntity<SingleResponse<String>> addCardToUser(AddCardToUserRequest request) {
+        public ResponseEntity<SingleResponse<String>> addCardToUser(@RequestBody AddCardToUserRequest request) {
                 cardService.addCardToUser(authService.getCurrentUserId(), request);
                 return ResponseEntity.ok(SingleResponse.<String>builder().data("ok").statusCode(201)
                                 .message("ok").build());
@@ -46,7 +47,7 @@ public class UserCardController {
 
         @PutMapping("/{id}")
         public ResponseEntity<SingleResponse<String>> editCardToUser(@PathVariable UUID id,
-                        EditUserCard request) {
+                        @RequestBody EditUserCard request) {
                 cardService.editUserCard(id, authService.getCurrentUserId(), request);
                 return ResponseEntity.ok(SingleResponse.<String>builder().data("ok").statusCode(200)
                                 .message("ok").build());
