@@ -22,6 +22,7 @@ import io.swagger.v3.oas.annotations.security.SecurityScheme;
     in = SecuritySchemeIn.HEADER,
     paramName = "Authorization"
 )
+
 public class OjtApplication {
 
     static void main(String[] args) {

@@ -15,6 +15,8 @@ import com.fpt.ojt.services.dtos.AvailableCardRulesDto;
 import com.fpt.ojt.services.dtos.CardProductDto;
 import com.fpt.ojt.services.dtos.UserCardDto;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -86,6 +88,7 @@ public class CardServiceImpl implements CardService {
                 .build();
     }
 
+    @Cacheable(value = "userCards", key = "#userId")
     @Override
     public List<UserCardDto> getUserCards(UUID userId) {
         var userCards = userCreditCardRepository.findByUserIdAndDeletedAtIsNull(userId);
@@ -95,6 +98,7 @@ public class CardServiceImpl implements CardService {
 
     }
 
+    @CacheEvict(value = "userCards", key = "#userId")
     @Override
     public void addCardToUser(UUID userId, AddCardToUserRequest request) {
         var cardProduct = cardProductRepository.findById(request.getCardId())
@@ -110,6 +114,7 @@ public class CardServiceImpl implements CardService {
         userCreditCardRepository.save(userCard);
     }
 
+    @CacheEvict(value = "userCards", key = "#userId")
     @Override
     public void editUserCard(UUID userCardId, UUID userId, EditUserCard userCardDto) {
         var userCard = userCreditCardRepository.findById(userCardId)
@@ -122,6 +127,7 @@ public class CardServiceImpl implements CardService {
         userCreditCardRepository.save(userCard);
     }
 
+    @CacheEvict(value = "userCards", key = "#userId")
     @Override
     public void removeUserCard(UUID userCardId, UUID userId) {
         var userCard = userCreditCardRepository.findById(userCardId)
