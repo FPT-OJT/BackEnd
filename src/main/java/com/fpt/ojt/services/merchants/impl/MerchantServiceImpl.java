@@ -3,6 +3,7 @@ package com.fpt.ojt.services.merchants.impl;
 import com.fpt.ojt.models.postgres.merchant.MerchantAgency;
 import com.fpt.ojt.models.postgres.merchant.MerchantCategory;
 import com.fpt.ojt.presentations.dtos.responses.home.HomePageResponse;
+import com.fpt.ojt.presentations.dtos.responses.home.HomePageResponse.MerchantOffer;
 import com.fpt.ojt.repositories.merchant.MerchantAgencyRepository;
 import com.fpt.ojt.repositories.merchant.MerchantCategoryRepository;
 import com.fpt.ojt.repositories.user.FavoriteMerchantRepository;
@@ -341,5 +342,21 @@ public class MerchantServiceImpl implements MerchantService {
                         .imageUrl(category.getImageUrl())
                         .build())
                 .toList();
+    }
+
+    @Override
+    public List<MerchantOffer> getBestOffers() {
+        try {
+            var offers = getMerchantOffers(10, authService.getCurrentUserId());
+            return offers.stream().map(dto -> HomePageResponse.MerchantOffer.builder()
+                    .merchantAgencyId(dto.getMerchantAgencyId())
+                    .merchantAgencyName(dto.getMerchantAgencyName()).imageUrl(dto.getImageUrl())
+                    .merchantDealName(dto.getMerchantDealName()).isFavorite(dto.isFavorite())
+                    .isSubscribed(dto.isSubscribed()).lat(dto.getLat()).lng(dto.getLng())
+                    .totalDiscount(dto.getTotalDiscount()).build()).toList();
+        } catch (Exception e) {
+            log.error("Error while getting best offers", e);
+            return List.of();
+        }
     }
 }
