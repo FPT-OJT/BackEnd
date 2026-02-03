@@ -41,41 +41,9 @@ public class MerchantServiceImpl implements MerchantService {
     private final FavoriteMerchantRepository favoriteMerchantRepository;
     private final SubscribedMerchantRepository subscribedMerchantRepository;
 
+
     @Override
-    public HomePageResponse getHomePage() throws InterruptedException {
-        UUID currentUserId = authService.getCurrentUserId();
-
-        try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
-            var offersFuture = executor.submit(() -> getMerchantOffers(10, currentUserId));
-            var categoriesFuture = executor.submit(this::getMerchantCategories);
-
-            var offers = offersFuture.get();
-            var categories = categoriesFuture.get();
-
-            List<HomePageResponse.MerchantOffer> merchantOffers = offers.stream()
-                    .map(dto -> HomePageResponse.MerchantOffer.builder()
-                            .merchantAgencyId(dto.getMerchantAgencyId())
-                            .merchantAgencyName(dto.getMerchantAgencyName())
-                            .imageUrl(dto.getImageUrl())
-                            .merchantDealName(dto.getMerchantDealName())
-                            .isFavorite(dto.isFavorite())
-                            .isSubscribed(dto.isSubscribed())
-                            .lat(dto.getLat())
-                            .lng(dto.getLng())
-                            .totalDiscount(dto.getTotalDiscount())
-                            .build())
-                    .toList();
-
-            return HomePageResponse.builder()
-                    .merchantCategories(categories)
-                    .merchantOffers(merchantOffers)
-                    .build();
-        } catch (InterruptedException | ExecutionException e) {
-            throw new InterruptedException("Interrupted while waiting for merchant offers" + e.getMessage());
-        }
-    }
-
-    private List<MerchantOfferDto> getMerchantOffers(int limit, UUID currentUserId) throws InterruptedException {
+    public List<HomePageResponse.MerchantOffer> getMerchantOffers(int limit, UUID currentUserId) {
         try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
             var offersWithMerchantsFuture = executor.submit(() -> getOffersWithMerchants(currentUserId));
             var offersWithoutMerchantsFuture = executor.submit(() -> getOffersWithoutMerchants(currentUserId));
@@ -89,10 +57,21 @@ public class MerchantServiceImpl implements MerchantService {
                             o1.getTotalDiscount() != null ? o1.getTotalDiscount() : 0.0
                     ))
                     .limit(limit)
+                    .map(dto -> HomePageResponse.MerchantOffer.builder()
+                            .merchantAgencyId(dto.getMerchantAgencyId())
+                            .merchantAgencyName(dto.getMerchantAgencyName())
+                            .imageUrl(dto.getImageUrl())
+                            .merchantDealName(dto.getMerchantDealName())
+                            .isFavorite(dto.isFavorite())
+                            .isSubscribed(dto.isSubscribed())
+                            .lat(dto.getLat())
+                            .lng(dto.getLng())
+                            .totalDiscount(dto.getTotalDiscount())
+                            .build())
                     .toList();
 
         } catch (InterruptedException | ExecutionException e) {
-            throw new InterruptedException("Interrupted while waiting for offers" + e.getMessage());
+            throw new RuntimeException(e);
         }
     }
 

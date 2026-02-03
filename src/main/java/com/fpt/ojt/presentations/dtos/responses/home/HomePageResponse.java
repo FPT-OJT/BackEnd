@@ -16,6 +16,7 @@ import java.util.UUID;
 public class HomePageResponse {
     private List<MerchantCategory> merchantCategories;
     private List<MerchantOffer> merchantOffers;
+    private boolean isUserCardEmpty;
 
     @Getter
     @Setter
