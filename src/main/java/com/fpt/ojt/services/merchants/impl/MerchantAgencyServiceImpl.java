@@ -18,10 +18,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class MerchantAgencyServiceImpl implements MerchantAgencyService {
     private final MerchantAgencyRepository merchantAgencyRepository;
-    private final NearestMerchantCacheKeyGenerator geoGridUtil;
-    private final RedisTemplate<String, Object> redisTemplate;
-
-    private static final Duration CACHE_TTL = Duration.ofMinutes(30);
 
     @Cacheable(cacheNames = "nearestAgency", keyGenerator = "nearestMerchantCacheKeyGenerator")
     @Override
