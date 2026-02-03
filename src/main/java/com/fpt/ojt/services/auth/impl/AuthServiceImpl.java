@@ -3,6 +3,7 @@ package com.fpt.ojt.services.auth.impl;
 import com.fpt.ojt.exceptions.BadRequestException;
 import com.fpt.ojt.exceptions.NotFoundException;
 import com.fpt.ojt.exceptions.SuspiciousDetectedException;
+import com.fpt.ojt.exceptions.UnAuthorizedException;
 import com.fpt.ojt.models.enums.EnumConstants;
 import com.fpt.ojt.models.redis.PasswordResetToken;
 import com.fpt.ojt.models.postgres.user.User;
@@ -10,10 +11,12 @@ import com.fpt.ojt.presentations.dtos.requests.auth.LoginRequest;
 import com.fpt.ojt.presentations.dtos.requests.auth.RegisterRequest;
 import com.fpt.ojt.presentations.dtos.responses.auth.TokenResponse;
 import com.fpt.ojt.repositories.PasswordResetTokenRepository;
+import com.fpt.ojt.repositories.user.UserRepository;
 import com.fpt.ojt.infrastructure.securities.JwtTokenProvider;
 import com.fpt.ojt.infrastructure.securities.UserPrincipal;
 import com.fpt.ojt.infrastructure.securities.dto.AccessTokenData;
 import com.fpt.ojt.services.auth.AuthService;
+import com.fpt.ojt.services.dtos.UserDto;
 import com.fpt.ojt.services.email.EmailService;
 import com.fpt.ojt.services.user.UserService;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
@@ -51,6 +54,7 @@ public class AuthServiceImpl implements AuthService {
     private final JwtTokenProvider jwtTokenProvider;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final EmailService emailService;
+    private final UserRepository userRepository;
 
     @Value("${app.otp.expiration-minutes}")
     private long otpExpirationMinutes;
@@ -100,14 +104,17 @@ public class AuthServiceImpl implements AuthService {
     public TokenResponse login(LoginRequest loginRequest, String refreshToken) {
         User user;
         try (var executor = Executors.newSingleThreadExecutor()) {
-            var userWithUserNameFuture = executor.submit(() -> userService.getUserByUserName(loginRequest.getUsername()));
+            var userWithUserNameFuture = executor
+                    .submit(() -> userService.getUserByUserName(loginRequest.getUsername()));
             var userWithEmailFuture = executor.submit(() -> userService.getUserByEmail(loginRequest.getUsername()));
 
             User userWithEmail = userWithEmailFuture.get();
             User userWithUserName = userWithUserNameFuture.get();
 
-            if (userWithUserName != null) user = userWithUserName;
-            else if (userWithEmail != null) user = userWithEmail;
+            if (userWithUserName != null)
+                user = userWithUserName;
+            else if (userWithEmail != null)
+                user = userWithEmail;
             else {
                 throw new BadCredentialsException("Invalid username or password");
             }
@@ -133,8 +140,7 @@ public class AuthServiceImpl implements AuthService {
                     userId,
                     familyToken,
                     userRole,
-                    loginRequest.getRememberMe() != null ? loginRequest.getRememberMe() : false
-            );
+                    loginRequest.getRememberMe() != null ? loginRequest.getRememberMe() : false);
 
             String newRefreshToken = map.get("refresh_token");
             String newFamilyToken = map.get("family_token");
@@ -160,8 +166,7 @@ public class AuthServiceImpl implements AuthService {
                 tokenData.getUserId(),
                 tokenData.getFamilyToken(),
                 tokenData.getUserRole(),
-                false
-        ).get("refresh_token");
+                false).get("refresh_token");
 
         return TokenResponse.builder()
                 .role(tokenData.getUserRole())
@@ -182,14 +187,12 @@ public class AuthServiceImpl implements AuthService {
                 registerRequest.getLastName(),
                 registerRequest.getUsername(),
                 registerRequest.getEmail(),
-                passwordHash
-        );
+                passwordHash);
 
         return login(new LoginRequest(
                 registerRequest.getUsername(),
                 registerRequest.getPassword(),
-                false
-        ), null);
+                false), null);
     }
 
     @Override
@@ -224,23 +227,20 @@ public class AuthServiceImpl implements AuthService {
             log.info("Google login successful for email: {}, googleId: {}", email, googleId);
 
             User user = userService.handleUpdateGoogleCredential(
-                    googleId, email, firstName, lastName, pictureUrl
-            );
+                    googleId, email, firstName, lastName, pictureUrl);
 
             Map<String, String> map = jwtTokenProvider.generateRefreshTokenByUserId(
                     user.getId(),
                     null,
                     user.getRole().getValue(),
-                    false
-            );
+                    false);
             String refreshToken = map.get("refresh_token");
             String familyToken = map.get("family_token");
 
             String accessToken = jwtTokenProvider.generateAccessTokenByUserId(
                     user.getId(),
                     familyToken,
-                    user.getRole().getValue()
-            );
+                    user.getRole().getValue());
 
             log.info("Generated tokens for user: {}", user.getId());
 
@@ -293,8 +293,7 @@ public class AuthServiceImpl implements AuthService {
 
         userService.updateNewPassword(
                 user.getId(),
-                passwordEncoder.encode(newPassword)
-        );
+                passwordEncoder.encode(newPassword));
 
         log.info("Password reset successful for email: {}", email);
 
@@ -306,5 +305,12 @@ public class AuthServiceImpl implements AuthService {
         SecureRandom random = new SecureRandom();
         int otp = 100000 + random.nextInt(900000);
         return String.valueOf(otp);
+    }
+
+    @Override
+    public UserDto getCurrentUser() {
+        User user = userRepository.findById(getCurrentUserId()).orElseThrow(
+                () -> new UnAuthorizedException("You are not authorized to access this resource"));
+        return UserDto.fromEntity(user);
     }
 }
