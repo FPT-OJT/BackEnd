@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -16,5 +17,8 @@ public interface UserCreditCardRepository
 
     @EntityGraph(attributePaths = { "user", "cardProduct" })
     List<UserCreditCard> findByUserIdAndDeletedAtIsNull(UUID userId);
+
+    @EntityGraph(attributePaths = { "user", "cardProduct" })
+    Optional<UserCreditCard> findByIdAndUserIdAndDeletedAtIsNull(UUID id, UUID userId);
 
 }

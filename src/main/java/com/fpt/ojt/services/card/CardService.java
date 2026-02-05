@@ -4,6 +4,7 @@ import com.fpt.ojt.presentations.dtos.requests.card.AddCardToUserRequest;
 import com.fpt.ojt.presentations.dtos.requests.card.EditUserCard;
 import com.fpt.ojt.services.dtos.AvailableCardRulesDto;
 import com.fpt.ojt.services.dtos.CardProductDto;
+import com.fpt.ojt.services.dtos.UserCardDetailDto;
 import com.fpt.ojt.services.dtos.UserCardDto;
 
 import java.util.List;
@@ -21,4 +22,6 @@ public interface CardService {
     void editUserCard(UUID userCardId, UUID userId, EditUserCard userCardDto);
 
     void removeUserCard(UUID userCardId, UUID userId);
+
+    UserCardDetailDto getUserCardDetail(UUID userCardId, UUID userId);
 }

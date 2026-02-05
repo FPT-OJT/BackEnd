@@ -18,6 +18,7 @@ import com.fpt.ojt.presentations.dtos.requests.card.EditUserCard;
 import com.fpt.ojt.presentations.dtos.responses.SingleResponse;
 import com.fpt.ojt.services.auth.AuthService;
 import com.fpt.ojt.services.card.CardService;
+import com.fpt.ojt.services.dtos.UserCardDetailDto;
 import com.fpt.ojt.services.dtos.UserCardDto;
 
 import lombok.RequiredArgsConstructor;
@@ -58,5 +59,12 @@ public class UserCardController {
                 cardService.removeUserCard(id, authService.getCurrentUserId());
                 return ResponseEntity.ok(SingleResponse.<String>builder().data("ok").statusCode(200)
                                 .message("ok").build());
+        }
+
+        @GetMapping("/{id}")
+        public ResponseEntity<SingleResponse<UserCardDetailDto>> getUserCardDetail(@PathVariable UUID id) {
+                UserCardDetailDto userCardDetail = cardService.getUserCardDetail(id, authService.getCurrentUserId());
+                return ResponseEntity.ok(SingleResponse.<UserCardDetailDto>builder().data(userCardDetail)
+                                .statusCode(200).message("ok").build());
         }
 }
