@@ -138,4 +138,12 @@ public class CardServiceImpl implements CardService {
                 .orElseThrow(() -> new NotFoundException("User card not found with id: " + userCardId));
         return UserCardDetailDto.fromEntity(userCard);
     }
+
+    @Override
+    public List<UserCardDto> getUserCardsByCardType(UUID userId, String cardType) {
+        var userCards = userCreditCardRepository.findByUserIdAndCardType(userId, cardType);
+        return userCards.stream()
+                .map(UserCardDto::fromEntity)
+                .toList();
+    }
 }

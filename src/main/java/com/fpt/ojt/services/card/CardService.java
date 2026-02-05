@@ -24,4 +24,6 @@ public interface CardService {
     void removeUserCard(UUID userCardId, UUID userId);
 
     UserCardDetailDto getUserCardDetail(UUID userCardId, UUID userId);
+
+    List<UserCardDto> getUserCardsByCardType(UUID userId, String cardType);
 }

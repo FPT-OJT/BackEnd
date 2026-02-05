@@ -67,4 +67,11 @@ public class UserCardController {
                 return ResponseEntity.ok(SingleResponse.<UserCardDetailDto>builder().data(userCardDetail)
                                 .statusCode(200).message("ok").build());
         }
+
+        @GetMapping("/card-type/{cardType}")
+        public ResponseEntity<SingleResponse<List<UserCardDto>>> getUserCardsByCardType(@PathVariable String cardType) {
+                List<UserCardDto> userCards = cardService.getUserCardsByCardType(authService.getCurrentUserId(), cardType);
+                return ResponseEntity.ok(SingleResponse.<List<UserCardDto>>builder().data(userCards)
+                                .statusCode(200).message("ok").build());
+        }
 }

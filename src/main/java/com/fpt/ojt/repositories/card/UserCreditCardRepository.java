@@ -5,6 +5,7 @@ import com.fpt.ojt.models.postgres.card.UserCreditCard;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -20,5 +21,14 @@ public interface UserCreditCardRepository
 
     @EntityGraph(attributePaths = { "user", "cardProduct" })
     Optional<UserCreditCard> findByIdAndUserIdAndDeletedAtIsNull(UUID id, UUID userId);
+
+    @Query("""
+                SELECT ucc
+                FROM UserCreditCard ucc
+                JOIN FETCH ucc.cardProduct cp
+                WHERE ucc.user.id = :userId
+                  AND cp.cardType = :cardType
+            """)
+    List<UserCreditCard> findByUserIdAndCardType(UUID userId, String cardType);
 
 }
