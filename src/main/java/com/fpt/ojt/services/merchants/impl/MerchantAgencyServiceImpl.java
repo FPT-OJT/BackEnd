@@ -7,6 +7,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import com.fpt.ojt.infrastructure.configs.CacheNames;
 import com.fpt.ojt.models.postgres.merchant.NearestAgencyProjection;
 import com.fpt.ojt.repositories.merchant.MerchantAgencyRepository;
 import com.fpt.ojt.services.dtos.NearestAgencyDto;
@@ -19,7 +20,7 @@ import lombok.RequiredArgsConstructor;
 public class MerchantAgencyServiceImpl implements MerchantAgencyService {
     private final MerchantAgencyRepository merchantAgencyRepository;
 
-    @Cacheable(cacheNames = "nearestAgency", keyGenerator = "nearestMerchantCacheKeyGenerator")
+    @Cacheable(cacheNames = CacheNames.SEARCH_NEAREST_MERCHANT_CACHE_NAME, keyGenerator = "nearestMerchantCacheKeyGenerator")
     @Override
     public List<NearestAgencyDto> findNearestAgencies(String keyword, Double latitude, Double longitude, int limit) {
 

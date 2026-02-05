@@ -48,10 +48,9 @@ public class RedisCacheConfig {
                 Map<String, RedisCacheConfiguration> cacheConfigurations = new HashMap<>();
 
                 cacheConfigurations.put(
-                                "nearestAgency",
+                                CacheNames.SEARCH_NEAREST_MERCHANT_CACHE_NAME,
                                 redisCacheConfiguration
                                                 .entryTtl(Duration.ofMinutes(30)));
-
                 return RedisCacheManager.builder(redisConnectionFactory)
                                 .cacheDefaults(redisCacheConfiguration)
                                 .withInitialCacheConfigurations(cacheConfigurations)
