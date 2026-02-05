@@ -1,6 +1,8 @@
 package com.fpt.ojt.infrastructure.configs;
 
 import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.EnableCaching;
@@ -31,8 +33,7 @@ public class RedisCacheConfig {
 
         @Bean
         public RedisCacheConfiguration redisCacheConfiguration() {
-                Jackson2JsonRedisSerializer<Object> serializer =
-                                new Jackson2JsonRedisSerializer<>(Object.class);
+                Jackson2JsonRedisSerializer<Object> serializer = new Jackson2JsonRedisSerializer<>(Object.class);
 
                 serializer.setObjectMapper(redisObjectMapper());
                 return RedisCacheConfiguration.defaultCacheConfig()
@@ -46,8 +47,15 @@ public class RedisCacheConfig {
         public RedisCacheManager cacheManager(
                         RedisConnectionFactory redisConnectionFactory,
                         RedisCacheConfiguration redisCacheConfiguration) {
+                Map<String, RedisCacheConfiguration> cacheConfigurations = new HashMap<>();
+
+                cacheConfigurations.put(
+                                CacheNames.SEARCH_NEAREST_MERCHANT_CACHE_NAME,
+                                redisCacheConfiguration
+                                                .entryTtl(Duration.ofMinutes(30)));
                 return RedisCacheManager.builder(redisConnectionFactory)
                                 .cacheDefaults(redisCacheConfiguration)
+                                .withInitialCacheConfigurations(cacheConfigurations)
                                 .build();
         }
 }
