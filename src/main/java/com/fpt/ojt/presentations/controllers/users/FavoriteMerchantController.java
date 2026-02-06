@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fpt.ojt.presentations.controllers.base.ResponseFactory;
 import com.fpt.ojt.presentations.dtos.requests.user.AddFavoriteMerchantRequest;
 import com.fpt.ojt.presentations.dtos.responses.SingleResponse;
 import com.fpt.ojt.services.auth.AuthService;
@@ -26,19 +27,17 @@ import lombok.RequiredArgsConstructor;
 public class FavoriteMerchantController {
     private final FavoriteMerchantService favoriteMerchantService;
     private final AuthService authService;
+    private final ResponseFactory responseFactory;
 
     @GetMapping
     public ResponseEntity<SingleResponse<List<FavoriteMerchantDto>>> getFavoriteMerchants() {
         var userId = authService.getCurrentUserId();
-        return ResponseEntity.ok(SingleResponse.<List<FavoriteMerchantDto>>builder()
-                .data(favoriteMerchantService.getFavoriteMerchants(userId))
-                .build());
+        return responseFactory.successSingle(favoriteMerchantService.getFavoriteMerchants(userId), null);
     }
 
     @PostMapping
     public ResponseEntity<SingleResponse<Void>> addFavoriteMerchant(@RequestBody AddFavoriteMerchantRequest request) {
         var userId = authService.getCurrentUserId();
-        System.out.println("Helloe" + userId + request.getMerchantAgencyId().toString());
         favoriteMerchantService.addFavoriteMerchant(userId, request.getMerchantAgencyId());
         return ResponseEntity.ok(SingleResponse.<Void>builder()
                 .statusCode(201)
