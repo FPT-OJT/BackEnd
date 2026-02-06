@@ -146,4 +146,10 @@ public class CardServiceImpl implements CardService {
                 .map(UserCardDto::fromEntity)
                 .toList();
     }
+
+    @Override
+    public boolean isUserCardEmpty(UUID userId) {
+        var userCards = userCreditCardRepository.existsByUserIdAndDeletedAtIsNull(userId);
+        return !userCards;
+    }
 }

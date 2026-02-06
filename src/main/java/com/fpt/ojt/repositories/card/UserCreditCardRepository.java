@@ -12,9 +12,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+
 @Repository
-public interface UserCreditCardRepository
-        extends JpaRepository<UserCreditCard, UUID>, JpaSpecificationExecutor<UserCreditCard> {
+public interface UserCreditCardRepository extends JpaRepository<UserCreditCard, UUID>, JpaSpecificationExecutor<UserCreditCard> {
 
     @EntityGraph(attributePaths = { "user", "cardProduct" })
     List<UserCreditCard> findByUserIdAndDeletedAtIsNull(UUID userId);
@@ -30,5 +30,6 @@ public interface UserCreditCardRepository
                   AND cp.cardType = :cardType
             """)
     List<UserCreditCard> findByUserIdAndCardType(UUID userId, String cardType);
+    boolean existsByUserIdAndDeletedAtIsNull(UUID userId);
 
 }

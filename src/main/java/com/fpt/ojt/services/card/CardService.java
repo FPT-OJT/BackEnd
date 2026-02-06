@@ -26,4 +26,5 @@ public interface CardService {
     UserCardDetailDto getUserCardDetail(UUID userCardId, UUID userId);
 
     List<UserCardDto> getUserCardsByCardType(UUID userId, String cardType);
+    boolean isUserCardEmpty(UUID userId);
 }
