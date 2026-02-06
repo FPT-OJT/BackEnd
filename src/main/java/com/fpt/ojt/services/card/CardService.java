@@ -9,5 +9,8 @@ import java.util.UUID;
 
 public interface CardService {
     List<AvailableCardRulesDto> getAvailableCardRulesByUserId(UUID userId);
-    List<CardProductDto> searchCardProducts(String keyword,int limit);
+
+    List<CardProductDto> searchCardProducts(String keyword, int limit);
+
+    boolean isUserCardEmpty(UUID userId);
 }

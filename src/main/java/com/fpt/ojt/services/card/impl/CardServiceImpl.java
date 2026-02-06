@@ -4,6 +4,7 @@ import com.fpt.ojt.exceptions.QueryErrorException;
 import com.fpt.ojt.models.postgres.card.CardRule;
 import com.fpt.ojt.repositories.card.CardProductRepository;
 import com.fpt.ojt.repositories.card.CardRuleRepository;
+import com.fpt.ojt.repositories.card.UserCreditCardRepository;
 import com.fpt.ojt.services.card.CardService;
 import com.fpt.ojt.services.dtos.AvailableCardRulesDto;
 import com.fpt.ojt.services.dtos.CardProductDto;
@@ -24,6 +25,7 @@ import java.util.stream.Collectors;
 public class CardServiceImpl implements CardService {
     private final CardRuleRepository cardRuleRepository;
     private final CardProductRepository cardProductRepository;
+    private final UserCreditCardRepository userCreditCardRepository;
 
     @Override
     public List<AvailableCardRulesDto> getAvailableCardRulesByUserId(UUID userId) {
@@ -73,5 +75,11 @@ public class CardServiceImpl implements CardService {
                 .imageUrl(cardProduct.getImageUrl())
                 .cardCode(cardProduct.getCardCode())
                 .build();
+    }
+
+    @Override
+    public boolean isUserCardEmpty(UUID userId) {
+        var userCards = userCreditCardRepository.existsByUserIdAndDeletedAtIsNull(userId);
+        return !userCards;
     }
 }

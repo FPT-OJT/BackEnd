@@ -3,6 +3,7 @@ package com.fpt.ojt.presentations.controllers.home;
 import com.fpt.ojt.presentations.controllers.base.AbstractBaseController;
 import com.fpt.ojt.presentations.dtos.responses.SingleResponse;
 import com.fpt.ojt.presentations.dtos.responses.home.HomePageResponse;
+import com.fpt.ojt.services.home.HomeService;
 import com.fpt.ojt.services.merchants.MerchantService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -18,15 +19,14 @@ import java.util.concurrent.ExecutionException;
 @Tag(name = "Home Screen", description = "Home Screen API endpoints")
 public class HomeController extends AbstractBaseController {
 
-    private final MerchantService merchantService;
-
+    private final HomeService homeService;
     @GetMapping
     @Operation(summary = "Home page endpoint", description = "Get homepage")
     public ResponseEntity<SingleResponse<HomePageResponse>> test(
     ) throws ExecutionException, InterruptedException {
         return responseFactory.successSingle(
-                merchantService.getHomePage(),
-                "Retrieve Home page successfully"
+                homeService.getHomeData(),
+                "Retrieve Home page  successfully"
         );
     }
 }
