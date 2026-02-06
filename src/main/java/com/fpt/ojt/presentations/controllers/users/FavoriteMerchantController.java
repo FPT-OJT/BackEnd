@@ -32,7 +32,7 @@ public class FavoriteMerchantController {
     @GetMapping
     public ResponseEntity<SingleResponse<List<FavoriteMerchantDto>>> getFavoriteMerchants() {
         var userId = authService.getCurrentUserId();
-        return responseFactory.successSingle(favoriteMerchantService.getFavoriteMerchants(userId), null);
+        return responseFactory.successSingle(favoriteMerchantService.getFavoriteMerchants(userId), "ok");
     }
 
     @PostMapping
