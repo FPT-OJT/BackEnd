@@ -2,14 +2,14 @@ package com.fpt.ojt.services.user.impl;
 
 import java.util.UUID;
 
+import com.fpt.ojt.models.enums.EnumConstants;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.fpt.ojt.constants.Constants;
 import com.fpt.ojt.exceptions.DuplicateException;
 import com.fpt.ojt.exceptions.NotFoundException;
-import com.fpt.ojt.models.postgres.User;
-import com.fpt.ojt.repositories.UserRepository;
+import com.fpt.ojt.models.postgres.user.User;
+import com.fpt.ojt.repositories.user.UserRepository;
 import com.fpt.ojt.services.user.UserService;
 
 import lombok.RequiredArgsConstructor;
@@ -23,13 +23,13 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
 
     @Override
-    public void createUser(Constants.RoleEnum roleEnum,
-            String googleId,
-            String firstName,
-            String lastName,
-            String userName,
-            String email,
-            String passwordEncoded) {
+    public void createUser(EnumConstants.RoleEnum roleEnum,
+                           String googleId,
+                           String firstName,
+                           String lastName,
+                           String userName,
+                           String email,
+                           String passwordEncoded) {
         // Check for duplicate username
         if (userName != null && userRepository.existsByUserName(userName)) {
             throw new DuplicateException("Username '" + userName + "' is already taken");
@@ -81,20 +81,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User getUserByUserName(String userName) {
-        User user = userRepository.findByUserName(userName);
-        if (user == null) {
-            throw new NotFoundException("User not found with username " + userName);
-        }
-        return user;
+        return userRepository.findByUserName(userName);
     }
 
     @Override
     public User getUserByEmail(String email) {
-        User user = userRepository.findByEmail(email);
-        if (user == null) {
-            throw new NotFoundException("User not found with email " + email);
-        }
-        return user;
+        return userRepository.findByEmail(email);
     }
 
     @Override
@@ -107,7 +99,7 @@ public class UserServiceImpl implements UserService {
         if (user == null) {
             // Handle create new
             createUser(
-                    Constants.RoleEnum.CUSTOMER,
+                    EnumConstants.RoleEnum.CUSTOMER,
                     googleId,
                     firstName, lastName,
                     email,
