@@ -39,17 +39,13 @@ public class FavoriteMerchantController {
     public ResponseEntity<SingleResponse<Void>> addFavoriteMerchant(@RequestBody AddFavoriteMerchantRequest request) {
         var userId = authService.getCurrentUserId();
         favoriteMerchantService.addFavoriteMerchant(userId, request.getMerchantAgencyId());
-        return ResponseEntity.ok(SingleResponse.<Void>builder()
-                .statusCode(201)
-                .build());
+        return responseFactory.successSingle(null, "Favorite merchant added successfully");
     }
 
     @DeleteMapping("{favoriteMerchantId}")
     public ResponseEntity<SingleResponse<Void>> removeFavoriteMerchant(@PathVariable UUID favoriteMerchantId) {
         var userId = authService.getCurrentUserId();
         favoriteMerchantService.removeFavoriteMerchant(userId, favoriteMerchantId);
-        return ResponseEntity.ok(SingleResponse.<Void>builder()
-                .statusCode(200)
-                .build());
+        return responseFactory.successSingle(null, "Favorite merchant removed successfully");
     }
 }
