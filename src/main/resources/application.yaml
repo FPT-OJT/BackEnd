@@ -59,10 +59,11 @@ spring:
       port: ${REDIS_EXTERNAL_PORT}
       password: ${REDIS_PASSWORD}
       database: ${REDIS_DATABASE}
-
+  cache:
+    type: redis
   threads:
     virtual:
-          enabled: ${SPRING_THREADS_VIRTUAL_ENABLED:true}
+      enabled: ${SPRING_THREADS_VIRTUAL_ENABLED:true}
 
   mail:
     host: ${MAIL_HOST:smtp.gmail.com}

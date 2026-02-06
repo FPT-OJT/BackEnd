@@ -16,8 +16,8 @@ public interface CardProductRepository extends JpaRepository<CardProduct, UUID>,
                 SELECT *
                 FROM card_products
                 WHERE deleted_at IS NULL
-                  AND search_text % lower(unaccent(:q))
-                ORDER BY search_text <-> lower(unaccent(:q)) ASC
+                  AND search_text % lower(:q)
+                ORDER BY search_text <-> lower(:q) ASC
                 LIMIT :limit
             """, nativeQuery = true)
     List<CardProduct> search(@Param("q") String keyword,
