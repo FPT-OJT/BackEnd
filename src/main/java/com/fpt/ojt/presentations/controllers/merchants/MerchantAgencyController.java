@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fpt.ojt.presentations.dtos.responses.SingleResponse;
+import com.fpt.ojt.services.dtos.MerchantSort;
 import com.fpt.ojt.services.dtos.NearestAgencyDto;
 import com.fpt.ojt.services.merchants.MerchantAgencyService;
 
@@ -29,9 +30,11 @@ public class MerchantAgencyController {
             @RequestParam(required = true) String keyword,
             @RequestParam(required = true) Double latitude,
             @RequestParam(required = true) Double longitude,
-            @RequestParam(defaultValue = DEFAULT_SEARCH_LIMIT, required = false) int limit) {
+            @RequestParam(defaultValue = DEFAULT_SEARCH_LIMIT, required = false) int limit,
+            @RequestParam(defaultValue = "NAME_ASC", required = false) MerchantSort sort)
+            {
 
-        var agencies = merchantAgencyService.findNearestAgencies(keyword, latitude, longitude, limit);
+        var agencies = merchantAgencyService.findNearestAgencies(keyword, latitude, longitude, limit, sort);
         return ResponseEntity.ok(
                 SingleResponse.<List<NearestAgencyDto>>builder()
                         .data(agencies)
