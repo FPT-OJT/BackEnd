@@ -7,6 +7,9 @@ server:
 logging:
   level:
     root: ${LOGGING_LEVEL_ROOT}
+    com:
+      fpt:
+        ojt: ${LOGGING_LEVEL_APP}
     org:
       hibernate:
         SQL: ${LOGGING_LEVEL_HIBERNATE_SQL}
@@ -14,48 +17,93 @@ logging:
           jdbc:
       springframework:
         web: ${LOGGING_LEVEL_SPRING}
+      flywaydb: ${LOGGING_LEVEL_FLYWAY:DEBUG}
 
 spring:
   servlet:
     encoding:
-      enabled: true
-      charset: UTF-8
-      force: true
+      enabled: ${SPRING_SERVLET_ENCODING_ENABLED:true}
+      charset: ${SPRING_SERVLET_ENCODING_CHARSET:UTF-8}
+      force: ${SPRING_SERVLET_ENCODING_FORCE:true}
 
   jpa:
     hibernate:
       ddl-auto: ${DB_DDL_AUTO}
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
-        show_sql: false
-        format_sql: true
-    open-in-view: false
+        dialect: ${HIBERNATE_DIALECT:org.hibernate.dialect.PostgreSQLDialect}
+        show_sql: ${HIBERNATE_SHOW_SQL:false}
+        format_sql: ${HIBERNATE_FORMAT_SQL:true}
+        jdbc:
+          time_zone: ${HIBERNATE_JDBC_TIME_ZONE:UTC}
+    open-in-view: ${SPRING_JPA_OPEN_IN_VIEW:false}
+    defer-datasource-initialization: false
+
+  flyway:
+    enabled: false
+    baseline-on-migrate: ${FLYWAY_BASELINE_ON_MIGRATE:true}
+    locations: ${FLYWAY_LOCATIONS:classpath:db/migration}
+    validate-on-migrate: ${FLYWAY_VALIDATE_ON_MIGRATE:false}
+    clean-disabled: ${FLYWAY_CLEAN_DISABLED:true}
+    schemas: ${FLYWAY_SCHEMAS:public}
+    default-schema: ${FLYWAY_DEFAULT_SCHEMA:public}
+
   datasource:
-    url: jdbc:postgresql://localhost:${POSTGRESQL_EXTERNAL_PORT}/${POSTGRESQL_DB}
+    url: jdbc:postgresql://${POSTGRESQL_HOST:localhost}:${POSTGRESQL_EXTERNAL_PORT}/${POSTGRESQL_DB}?serverTimezone=${POSTGRESQL_SERVER_TIMEZONE:UTC}
     username: ${POSTGRESQL_USER}
     password: ${POSTGRESQL_PASSWORD}
 
   data:
     redis:
-      host: localhost
+      host: ${REDIS_HOST:localhost}
       port: ${REDIS_EXTERNAL_PORT}
       password: ${REDIS_PASSWORD}
       database: ${REDIS_DATABASE}
+  cache:
+    type: redis
+  threads:
+    virtual:
+      enabled: ${SPRING_THREADS_VIRTUAL_ENABLED:true}
+
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: ${MAIL_SMTP_AUTH:true}
+          starttls:
+            enable: ${MAIL_SMTP_STARTTLS_ENABLE:true}
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
 
 app:
   secret: ${JWT_SECRET_KEY}
+  default-locale: ${APP_DEFAULT_LOCALE}
+  default-timezone: ${APP_DEFAULT_TIMEZONE}
   jwt:
+    secret: ${JWT_SECRET_KEY}
     token:
       expires-in: ${JWT_ACCESS_EXPIRES_IN}
     refresh-token:
       expires-in: ${JWT_REFRESH_EXPIRES_IN}
+      expires-in-with-rememberme: ${JWT_REFRESH_EXPIRES_IN_WITH_REMEMBERME}
+  otp:
+    expiration-minutes: ${OTP_EXPIRATION_MINUTES:5}
 
 springdoc:
   api-docs:
-    path: /v3/api-docs
+    path: ${SPRINGDOC_API_DOCS_PATH:/v3/api-docs}
 
 scalar:
-  path: /docs
-  url: /v3/api-docs
-  enabled: true
+  path: ${SCALAR_PATH:/docs}
+  url: ${SCALAR_URL:/v3/api-docs}
+  enabled: ${SCALAR_ENABLED:true}
