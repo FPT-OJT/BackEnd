@@ -4,6 +4,7 @@ import com.fpt.ojt.exceptions.ForbiddenException;
 import com.fpt.ojt.exceptions.NotFoundException;
 import com.fpt.ojt.exceptions.QueryErrorException;
 import com.fpt.ojt.infrastructure.configs.CacheNames;
+import com.fpt.ojt.models.postgres.card.CardProduct;
 import com.fpt.ojt.models.postgres.card.CardRule;
 import com.fpt.ojt.models.postgres.card.UserCreditCard;
 import com.fpt.ojt.presentations.dtos.requests.card.AddCardToUserRequest;
@@ -78,20 +79,19 @@ public class CardServiceImpl implements CardService {
 
     @Override
     public List<CardProductDto> searchCardProducts(String keyword, int limit) {
-        var cardProducts = cardProductRepository.search(keyword, limit);
+        
+        List<CardProduct> cardProducts;
+        if (keyword.length() < 3) {
+            cardProducts = cardProductRepository.searchShort(keyword, limit);
+        } else {
+            cardProducts = cardProductRepository.searchLong(keyword, limit);
+        }
         return cardProducts.stream()
                 .map(CardProductDto::fromEntity)
                 .toList();
     }
 
-    private CardProductDto mapToCardProductDto(com.fpt.ojt.models.postgres.card.CardProduct cardProduct) {
-        return CardProductDto.builder()
-                .cardName(cardProduct.getCardName())
-                .cardType(cardProduct.getCardType())
-                .imageUrl(cardProduct.getImageUrl())
-                .cardCode(cardProduct.getCardCode())
-                .build();
-    }
+
 
     @Cacheable(value = CacheNames.USER_CARDS_CACHE_NAME, key = "#userId")
     @Override
@@ -169,5 +169,10 @@ public class CardServiceImpl implements CardService {
     public boolean isUserCardEmpty(UUID userId) {
         var userCards = userCreditCardRepository.existsByUserIdAndDeletedAtIsNull(userId);
         return !userCards;
+    }
+
+    @Override
+    public boolean isUserCardExists(UUID cardId, UUID userId) {
+        return userCreditCardRepository.existsByIdAndUserIdAndDeletedAtIsNull(cardId, userId);
     }
 }

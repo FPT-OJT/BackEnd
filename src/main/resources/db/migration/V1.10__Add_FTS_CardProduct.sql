@@ -3,7 +3,8 @@ CREATE EXTENSION IF NOT EXISTS pg_trgm;
 
 ALTER TABLE card_products
 ADD COLUMN search_text TEXT
-GENERATED ALWAYS AS (COALESCE(card_code, '') || ' ' || COALESCE(card_name, '')) STORED;
+GENERATED ALWAYS AS (COALESCE(card_code, '') || ' ' || COALESCE(card_name, '') || ' ' || COALESCE(card_type, '')) STORED;
+
 
 
 CREATE INDEX idx_card_products_search 

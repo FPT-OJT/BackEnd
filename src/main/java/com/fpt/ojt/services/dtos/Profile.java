@@ -2,37 +2,32 @@ package com.fpt.ojt.services.dtos;
 
 import java.util.UUID;
 
-import com.fpt.ojt.models.enums.EnumConstants;
 import com.fpt.ojt.models.postgres.user.User;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import lombok.Builder;
 import lombok.Data;
 
 @Data
 @Builder
-public class UserDto {
+public class Profile {
     private UUID id;
-    private String userName;
-    private String email;
-    private EnumConstants.RoleEnum role;
     private String firstName;
     private String lastName;
     private String countryCode;
     private String phoneNumber;
+    private String email;
 
-    public static UserDto fromEntity(User user) {
-        return UserDto.builder()
+    public static Profile fromEntity(User user) {
+        if (user == null) {
+            return null;
+        }
+        return Profile.builder()
                 .id(user.getId())
-                .userName(user.getUserName())
-                .email(user.getEmail())
-                .role(user.getRole())
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
                 .countryCode(user.getCountryCode())
                 .phoneNumber(user.getPhoneNumber())
+                .email(user.getEmail())
                 .build();
     }
 }

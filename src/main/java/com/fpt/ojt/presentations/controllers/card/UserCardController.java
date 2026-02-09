@@ -74,4 +74,11 @@ public class UserCardController {
                 return ResponseEntity.ok(SingleResponse.<List<UserCardDto>>builder().data(userCards)
                                 .statusCode(200).message("ok").build());
         }
+
+        @GetMapping("/is-exists/{cardId}")
+        public ResponseEntity<SingleResponse<Boolean>> isUserCardExists(@PathVariable UUID cardId) {
+                Boolean isUserCardExists = cardService.isUserCardExists(cardId, authService.getCurrentUserId());
+                return ResponseEntity.ok(SingleResponse.<Boolean>builder().data(isUserCardExists)
+                                .statusCode(200).message("ok").build());
+        }
 }

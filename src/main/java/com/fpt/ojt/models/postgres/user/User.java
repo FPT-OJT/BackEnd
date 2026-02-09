@@ -35,4 +35,10 @@ public class User extends AbstractBaseEntity {
 
     @Column(name = "last_name", nullable = false)
     private String lastName;
+
+    @Column(name = "country_code")
+    private String countryCode;
+
+    @Column(name = "phone_number")
+    private String phoneNumber;
 }
