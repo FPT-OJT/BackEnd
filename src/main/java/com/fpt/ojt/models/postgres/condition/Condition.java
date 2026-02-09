@@ -1,6 +1,6 @@
 package com.fpt.ojt.models.postgres.condition;
 
-import com.fpt.ojt.constants.Constants;
+import com.fpt.ojt.models.enums.EnumConstants;
 import com.fpt.ojt.models.postgres.AbstractBaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -16,7 +16,7 @@ import lombok.*;
 public class Condition extends AbstractBaseEntity {
     @Column(name = "type")
     @Enumerated(EnumType.STRING)
-    private Constants.ConditionTypeEnum type;
+    private EnumConstants.ConditionTypeEnum type;
 
     @Column(name = "label")
     private String label;

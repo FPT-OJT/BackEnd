@@ -39,7 +39,13 @@ VALUES ('019c02b1-00e5-771c-ab2a-a29038f14e43', 'Starbucks New World', '019c02b1
        ('019c02b5-e5cd-7c77-a341-19e0794d5205', 'CGV Liberty Citypoint', '019c02b1-00e5-77f1-aa24-f427d5c6771b', 106.701389, 10.774444, NULL),
        ('019c02b5-e5cd-7f03-a877-fd848930f6e5', 'CGV Vivo City', '019c02b1-00e5-77f1-aa24-f427d5c6771b', 106.700833, 10.730833, NULL),
        ('019c02b5-e5cd-7106-bc93-b35b7357bc80', 'Watsons Bitexco', '019c02b1-00e5-7815-81ce-97f53591e962', 106.704500, 10.771500, NULL),
-       ('019c02b5-e5cd-7858-8130-c2a8503cb25d', 'Watsons Aeon Tan Phu', '019c02b1-00e5-7815-81ce-97f53591e962', 106.615278, 10.801667, NULL);
+       ('019c02b5-e5cd-7858-8130-c2a8503cb25d', 'Watsons Aeon Tan Phu', '019c02b1-00e5-7815-81ce-97f53591e962', 106.615278, 10.801667, NULL),
+       -- Additional agencies for universal deals
+       ('019c02b6-aa01-0000-0000-000000000001', 'KFC District 1', '019c02b2-1111-7000-aaaa-000000000001', 106.698889, 10.773056, NULL),
+       ('019c02b6-aa02-0000-0000-000000000002', 'Highlands Coffee Nguyen Hue', '019c02b2-1111-7000-aaaa-000000000002', 106.703333, 10.776944, NULL),
+       ('019c02b6-aa03-0000-0000-000000000005', 'Co.opmart District 1', '019c02b2-1111-7000-aaaa-000000000005', 106.697222, 10.772778, NULL),
+       ('019c02b6-aa04-0000-0000-000000000006', 'Bach Hoa Xanh Vo Van Tan', '019c02b2-1111-7000-aaaa-000000000006', 106.691111, 10.776667, NULL),
+       ('019c02b6-aa05-0000-0000-000000000007', 'Galaxy Nguyen Du', '019c02b2-1111-7000-aaaa-000000000007', 106.697500, 10.779167, NULL);
 
 
 INSERT INTO merchant_deals (id, merchant_agency_id, deal_name, discount_rate, cashback_rate, points_multiplier, description, valid_from, valid_to)
@@ -56,14 +62,14 @@ VALUES ('019c02b5-e5cd-719e-8412-ce5fe28dc468', '019c02b1-00e5-771c-ab2a-a29038f
 -- =====================================================
 -- UNIVERSAL DEALS (Apply to ALL credit cards - no card_merchant_deals entries)
 -- =====================================================
-       ('019c02b6-aaaa-0001-0000-universal000001', '019c02b5-e5cd-76a1-a5bd-3aa7b05d6cdd', 'All Cards Welcome - Starbucks Landmark 81', 15.0, NULL, 1.0, 'All credit cards accepted. Get 15% off any beverage.', '2026-01-15', '2026-06-30'),
-       ('019c02b6-aaaa-0002-0000-universal000002', '019c02b5-e5cd-7ed5-817e-ece3461c225a', 'Universal Hotpot Deal', NULL, 8.0, 1.5, 'Any card, 8% cashback on dine-in orders above $50.', '2026-02-01', '2026-05-31'),
-       ('019c02b6-aaaa-0003-0000-universal000003', '019c02b5-e5cd-7e3c-8e8d-fe7a6ca2177e', 'All Cards Fashion Week', 20.0, NULL, 1.2, 'Fashion week special! 20% off with any credit card.', '2026-03-01', '2026-03-31'),
-       ('019c02b6-aaaa-0004-0000-universal000004', '019c02b5-e5cd-7b46-a00a-4c78dab90823', 'Universal Convenience Deal', NULL, 3.0, 1.0, '3% cashback on all purchases, any card accepted.', '2026-01-01', '2026-12-31'),
-       ('019c02b6-aaaa-0005-0000-universal000005', '019c02b5-e5cd-7f03-a877-fd848930f6e5', 'Everyone Loves Movies', NULL, 10.0, 2.0, '10% cashback + double points for all cardholders.', '2026-02-15', '2026-04-30'),
-       ('019c02b6-aaaa-0006-0000-universal000006', '019c02b5-e5cd-7858-8130-c2a8503cb25d', 'Beauty For All', 18.0, NULL, 1.3, 'All credit cards get 18% discount on skincare products.', '2026-02-01', '2026-03-15'),
-       ('019c02b6-aaaa-0007-0000-universal000007', '019c02b2-1111-7000-aaaa-000000000001', 'KFC Universal Cashback', NULL, 7.0, 1.0, 'Any card gets 7% cashback on orders above $20.', '2026-01-20', '2026-07-31'),
-       ('019c02b6-aaaa-0008-0000-universal000008', '019c02b2-1111-7000-aaaa-000000000002', 'Highlands Coffee All Day', 12.0, NULL, 1.1, 'All cardholders enjoy 12% off all day, every day.', '2026-02-01', '2026-08-31'),
-       ('019c02b6-aaaa-0009-0000-universal000009', '019c02b2-1111-7000-aaaa-000000000005', 'Co.opmart Welcome Deal', NULL, 5.0, 1.5, 'Any credit card: 5% cashback on grocery shopping.', '2026-01-10', '2026-06-30'),
-       ('019c02b6-aaaa-0010-0000-universal000010', '019c02b2-1111-7000-aaaa-000000000006', 'Bach Hoa Xanh Universal', 10.0, NULL, 1.0, 'All cards get 10% off fresh produce and dairy.', '2026-02-05', '2026-05-05'),
-       ('019c02b6-aaaa-0011-0000-universal000011', '019c02b2-1111-7000-aaaa-000000000007', 'Galaxy Cinema No Restriction', NULL, 12.0, 1.8, '12% cashback for all credit card users on weekends.', '2026-02-10', '2026-04-30');
+       ('019c02b6-aaaa-0001-0000-000000000001', '019c02b5-e5cd-76a1-a5bd-3aa7b05d6cdd', 'All Cards Welcome - Starbucks Landmark 81', 15.0, NULL, 1.0, 'All credit cards accepted. Get 15% off any beverage.', '2026-01-15', '2026-06-30'),
+       ('019c02b6-aaaa-0002-0000-000000000002', '019c02b5-e5cd-7ed5-817e-ece3461c225a', 'Universal Hotpot Deal', NULL, 8.0, 1.5, 'Any card, 8% cashback on dine-in orders above $50.', '2026-02-01', '2026-05-31'),
+       ('019c02b6-aaaa-0003-0000-000000000003', '019c02b5-e5cd-7e3c-8e8d-fe7a6ca2177e', 'All Cards Fashion Week', 20.0, NULL, 1.2, 'Fashion week special! 20% off with any credit card.', '2026-03-01', '2026-03-31'),
+       ('019c02b6-aaaa-0004-0000-000000000004', '019c02b5-e5cd-7b46-a00a-4c78dab90823', 'Universal Convenience Deal', NULL, 3.0, 1.0, '3% cashback on all purchases, any card accepted.', '2026-01-01', '2026-12-31'),
+       ('019c02b6-aaaa-0005-0000-000000000005', '019c02b5-e5cd-7f03-a877-fd848930f6e5', 'Everyone Loves Movies', NULL, 10.0, 2.0, '10% cashback + double points for all cardholders.', '2026-02-15', '2026-04-30'),
+       ('019c02b6-aaaa-0006-0000-000000000006', '019c02b5-e5cd-7858-8130-c2a8503cb25d', 'Beauty For All', 18.0, NULL, 1.3, 'All credit cards get 18% discount on skincare products.', '2026-02-01', '2026-03-15'),
+       ('019c02b6-aaaa-0007-0000-000000000007', '019c02b6-aa01-0000-0000-000000000001', 'KFC Universal Cashback', NULL, 7.0, 1.0, 'Any card gets 7% cashback on orders above $20.', '2026-01-20', '2026-07-31'),
+       ('019c02b6-aaaa-0008-0000-000000000008', '019c02b6-aa02-0000-0000-000000000002', 'Highlands Coffee All Day', 12.0, NULL, 1.1, 'All cardholders enjoy 12% off all day, every day.', '2026-02-01', '2026-08-31'),
+       ('019c02b6-aaaa-0009-0000-000000000009', '019c02b6-aa03-0000-0000-000000000005', 'Co.opmart Welcome Deal', NULL, 5.0, 1.5, 'Any credit card: 5% cashback on grocery shopping.', '2026-01-10', '2026-06-30'),
+       ('019c02b6-aaaa-000a-0000-00000000000a', '019c02b6-aa04-0000-0000-000000000006', 'Bach Hoa Xanh Universal', 10.0, NULL, 1.0, 'All cards get 10% off fresh produce and dairy.', '2026-02-05', '2026-05-05'),
+       ('019c02b6-aaaa-000b-0000-00000000000b', '019c02b6-aa05-0000-0000-000000000007', 'Galaxy Cinema No Restriction', NULL, 12.0, 1.8, '12% cashback for all credit card users on weekends.', '2026-02-10', '2026-04-30');

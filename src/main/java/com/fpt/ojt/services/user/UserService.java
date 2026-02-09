@@ -1,12 +1,11 @@
 package com.fpt.ojt.services.user;
 
 import java.util.UUID;
-
-import com.fpt.ojt.constants.Constants;
-import com.fpt.ojt.models.postgres.User;
+import com.fpt.ojt.models.enums.EnumConstants;
+import com.fpt.ojt.models.postgres.user.User;
 
 public interface UserService {
-        void createUser(Constants.RoleEnum roleEnum, String googleId, String firstName, String lastName,
+        void createUser(EnumConstants.RoleEnum roleEnum, String googleId, String firstName, String lastName,
                         String userName,
                         String email, String password);
 

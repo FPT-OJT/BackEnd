@@ -1,7 +1,7 @@
 package com.fpt.ojt.models.postgres.card;
 
 import com.fpt.ojt.models.postgres.AbstractBaseEntity;
-import com.fpt.ojt.models.postgres.User;
+import com.fpt.ojt.models.postgres.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 
