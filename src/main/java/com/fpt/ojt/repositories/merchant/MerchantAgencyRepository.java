@@ -82,10 +82,10 @@ public interface MerchantAgencyRepository
                     longitude
                 FROM merchant_agencies
                 WHERE merchant_id = m.id
+                AND search_text ILIKE CONCAT('%', :s, '%')
                 ORDER BY location <-> u.point
                 LIMIT :limit
             ) a ON TRUE
-            WHERE m.name ILIKE CONCAT('%', :s, '%')
             ORDER BY distance_meters ASC
             """, nativeQuery = true)
     List<NearestAgencyProjection> searchNearestAgencies(

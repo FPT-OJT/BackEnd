@@ -42,6 +42,7 @@ public class CardServiceImpl implements CardService {
     private final CardProductRepository cardProductRepository;
     private final UserCreditCardRepository userCreditCardRepository;
     private final EntityManager entityManager;
+    private static final int MIN_SEARCH_LENGTH = 4;
 
     @Cacheable(cacheNames = CacheNames.USER_CARD_RULES_CACHE_NAME, key = "#userId")
     @Override
@@ -81,7 +82,7 @@ public class CardServiceImpl implements CardService {
     public List<CardProductDto> searchCardProducts(String keyword, int limit) {
         
         List<CardProduct> cardProducts;
-        if (keyword.length() < 3) {
+        if (keyword.length() < MIN_SEARCH_LENGTH) {
             cardProducts = cardProductRepository.searchShort(keyword, limit);
         } else {
             cardProducts = cardProductRepository.searchLong(keyword, limit);
