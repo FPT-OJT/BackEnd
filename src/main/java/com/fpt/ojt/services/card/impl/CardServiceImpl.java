@@ -14,6 +14,7 @@ import com.fpt.ojt.repositories.card.UserCreditCardRepository;
 import com.fpt.ojt.services.card.CardService;
 import com.fpt.ojt.services.dtos.AvailableCardRulesDto;
 import com.fpt.ojt.services.dtos.CardProductDto;
+import com.fpt.ojt.services.dtos.UserCardDetailDto;
 import com.fpt.ojt.services.dtos.UserCardDto;
 
 import org.springframework.cache.annotation.CacheEvict;
@@ -79,7 +80,7 @@ public class CardServiceImpl implements CardService {
     public List<CardProductDto> searchCardProducts(String keyword, int limit) {
         var cardProducts = cardProductRepository.search(keyword, limit);
         return cardProducts.stream()
-                .map(this::mapToCardProductDto)
+                .map(CardProductDto::fromEntity)
                 .toList();
     }
 
@@ -123,14 +124,14 @@ public class CardServiceImpl implements CardService {
 
     @CacheEvict(value = CacheNames.USER_CARDS_CACHE_NAME, key = "#userId")
     @Override
-    public void editUserCard(UUID userCardId, UUID userId, EditUserCard userCardDto) {
+    public void editUserCard(UUID userCardId, UUID userId, EditUserCard request) {
         var userCard = userCreditCardRepository.findById(userCardId)
                 .orElseThrow(() -> new NotFoundException("User card not found with id: " + userCardId));
         if (!userCard.getUser().getId().equals(userId)) {
             throw new ForbiddenException("User does not own this card");
         }
-        userCard.setFirstPaymentDate(userCardDto.getFirstPaymentDate());
-        userCard.setExpiryDate(userCardDto.getExpiryDate());
+        userCard.setFirstPaymentDate(request.getFirstPaymentDate());
+        userCard.setExpiryDate(request.getExpiryDate());
         userCreditCardRepository.save(userCard);
     }
 
@@ -147,5 +148,26 @@ public class CardServiceImpl implements CardService {
         }
         userCard.setDeletedAt(LocalDateTime.now());
         userCreditCardRepository.save(userCard);
+    }
+
+    @Override
+    public UserCardDetailDto getUserCardDetail(UUID userCardId, UUID userId) {
+        var userCard = userCreditCardRepository.findByIdAndUserIdAndDeletedAtIsNull(userCardId, userId)
+                .orElseThrow(() -> new NotFoundException("User card not found with id: " + userCardId));
+        return UserCardDetailDto.fromEntity(userCard);
+    }
+
+    @Override
+    public List<UserCardDto> getUserCardsByCardType(UUID userId, String cardType) {
+        var userCards = userCreditCardRepository.findByUserIdAndCardType(userId, cardType);
+        return userCards.stream()
+                .map(UserCardDto::fromEntity)
+                .toList();
+    }
+
+    @Override
+    public boolean isUserCardEmpty(UUID userId) {
+        var userCards = userCreditCardRepository.existsByUserIdAndDeletedAtIsNull(userId);
+        return !userCards;
     }
 }

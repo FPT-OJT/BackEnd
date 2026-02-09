@@ -5,7 +5,6 @@ import java.util.UUID;
 
 import com.fpt.ojt.models.postgres.card.UserCreditCard;
 
-import jakarta.persistence.Column;
 import lombok.Builder;
 import lombok.Data;
 
@@ -13,24 +12,21 @@ import lombok.Data;
 @Builder
 public class UserCardDto {
 
-    private UUID id;
+    private UUID userCardId;
 
-    private CardProductDto cardProduct;
+    private String cardImageUrl;
 
-    private LocalDate firstPaymentDate;
-
-    private LocalDate expiryDate;
+    private String cardName;
 
     public static UserCardDto fromEntity(UserCreditCard userCreditCard) {
         if (userCreditCard == null) {
             return null;
         }
         UserCardDto.UserCardDtoBuilder builder = UserCardDto.builder()
-                .id(userCreditCard.getId())
-                .firstPaymentDate(userCreditCard.getFirstPaymentDate())
-                .expiryDate(userCreditCard.getExpiryDate());
+                .userCardId(userCreditCard.getId());
         if (userCreditCard.getCardProduct() != null) {
-            builder.cardProduct(CardProductDto.fromEntity(userCreditCard.getCardProduct()));
+            builder.cardName(userCreditCard.getCardProduct().getCardName())
+                 .cardImageUrl(userCreditCard.getCardProduct().getImageUrl());
         }
         return builder.build();
     }

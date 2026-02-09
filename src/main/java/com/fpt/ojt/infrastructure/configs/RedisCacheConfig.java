@@ -4,13 +4,13 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 
@@ -22,6 +22,8 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 @EnableCaching
 @Configuration
 public class RedisCacheConfig {
+        @Value("${app.cache.default-ttl:10}")
+        private int DEFAULT_CACHE_TTL;
         public ObjectMapper redisObjectMapper() {
                 return JsonMapper.builder()
                                 .addModule(new JavaTimeModule())
@@ -35,7 +37,7 @@ public class RedisCacheConfig {
 
                 serializer.setObjectMapper(redisObjectMapper());
                 return RedisCacheConfiguration.defaultCacheConfig()
-                                .entryTtl(Duration.ofMinutes(10))
+                                .entryTtl(Duration.ofMinutes(DEFAULT_CACHE_TTL))
                                 .disableCachingNullValues()
                                 .serializeValuesWith(
                                                 RedisSerializationContext.SerializationPair.fromSerializer(serializer));
