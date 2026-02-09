@@ -173,6 +173,7 @@ public class CardServiceImpl implements CardService {
 
     @Override
     public boolean isUserCardExists(UUID cardId, UUID userId) {
-        return userCreditCardRepository.existsByIdAndUserIdAndDeletedAtIsNull(cardId, userId);
+        log.info("Checking if user card exists for cardId: {} and userId: {}", cardId, userId);
+        return userCreditCardRepository.existsByCardProductIdAndUserIdAndDeletedAtIsNull(cardId, userId);
     }
 }

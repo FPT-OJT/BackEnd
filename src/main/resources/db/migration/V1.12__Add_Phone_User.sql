@@ -1,2 +1,13 @@
-ALTER TABLE users ADD COLUMN IF NOT EXISTS country_code VARCHAR(10);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS country_phone_code VARCHAR(10);
 ALTER TABLE users ADD COLUMN IF NOT EXISTS phone_number VARCHAR(20);
+
+-- Countries table
+CREATE TABLE countries (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name VARCHAR(255) NOT NULL UNIQUE,
+    iso_code VARCHAR(10) NOT NULL,
+    phone_code VARCHAR(10) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP
+);

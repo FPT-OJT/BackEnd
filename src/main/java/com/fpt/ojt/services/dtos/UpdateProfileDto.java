@@ -6,7 +6,7 @@ import lombok.Data;
 public class UpdateProfileDto {
     private String firstName;
     private String lastName;
-    private String countryCode;
+    private String countryPhoneCode;
     private String phoneNumber;
     private String email;
 }

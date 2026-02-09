@@ -20,7 +20,7 @@ public class UserDto {
     private EnumConstants.RoleEnum role;
     private String firstName;
     private String lastName;
-    private String countryCode;
+    private String countryPhoneCode;
     private String phoneNumber;
 
     public static UserDto fromEntity(User user) {
@@ -31,7 +31,7 @@ public class UserDto {
                 .role(user.getRole())
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
-                .countryCode(user.getCountryCode())
+                .countryPhoneCode(user.getCountryPhoneCode())
                 .phoneNumber(user.getPhoneNumber())
                 .build();
     }

@@ -31,6 +31,6 @@ public interface UserCreditCardRepository extends JpaRepository<UserCreditCard, 
             """)
     List<UserCreditCard> findByUserIdAndCardType(UUID userId, String cardType);
     boolean existsByUserIdAndDeletedAtIsNull(UUID userId);
-    boolean existsByIdAndUserIdAndDeletedAtIsNull(UUID id, UUID userId);
+    boolean existsByCardProductIdAndUserIdAndDeletedAtIsNull(UUID cardProductId, UUID userId);
 
 }

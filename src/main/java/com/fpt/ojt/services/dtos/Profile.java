@@ -13,7 +13,7 @@ public class Profile {
     private UUID id;
     private String firstName;
     private String lastName;
-    private String countryCode;
+    private String countryPhoneCode;
     private String phoneNumber;
     private String email;
 
@@ -25,7 +25,7 @@ public class Profile {
                 .id(user.getId())
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
-                .countryCode(user.getCountryCode())
+                .countryPhoneCode(user.getCountryPhoneCode())
                 .phoneNumber(user.getPhoneNumber())
                 .email(user.getEmail())
                 .build();
