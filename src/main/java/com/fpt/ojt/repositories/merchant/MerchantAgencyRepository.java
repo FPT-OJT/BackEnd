@@ -55,11 +55,7 @@ public interface MerchantAgencyRepository
 
     @Query(value = """
             WITH user_point AS (
-                SELECT
-                    ST_SetSRID(
-                        ST_MakePoint(:userLng, :userLat),
-                        4326 -- WGS 84
-                    )::geography AS point
+                SELECT ST_SetSRID(ST_MakePoint(:userLng, :userLat), 4326)::geography AS point
             )
             SELECT
                 m.name AS brand_name,
@@ -68,26 +64,14 @@ public interface MerchantAgencyRepository
                 a.longitude,
                 m.logo_url,
                 m.description,
-                ROUND(
-                    ST_Distance(a.location, u.point)::numeric,
-                    2
-                ) AS distance_meters
-            FROM merchants m
-            CROSS JOIN user_point u
-            JOIN LATERAL (
-                SELECT
-                    name,
-                    location,
-                    latitude,
-                    longitude
-                FROM merchant_agencies
-                WHERE merchant_id = m.id
-                AND search_text ILIKE CONCAT('%', :s, '%')
-                ORDER BY location <-> u.point
-                LIMIT :limit
-            ) a ON TRUE
-            ORDER BY distance_meters ASC
-            """, nativeQuery = true)
+                ROUND(ST_Distance(a.location, u.point)::numeric, 2) AS distance_meters
+            FROM merchant_agencies a
+            JOIN user_point u ON TRUE
+            JOIN merchants m ON a.merchant_id = m.id
+            WHERE a.search_text ILIKE CONCAT('%', :s, '%')
+            ORDER BY a.location <-> u.point
+            LIMIT :limit;
+                        """, nativeQuery = true)
     List<NearestAgencyProjection> searchNearestAgencies(
             @Param("s") String searchKeyword,
             @Param("userLat") double userLat,
@@ -95,7 +79,5 @@ public interface MerchantAgencyRepository
             @Param("limit") int limit);
 
     List<MerchantAgency> findByMerchantId(UUID merchantId);
-
-  
 
 }

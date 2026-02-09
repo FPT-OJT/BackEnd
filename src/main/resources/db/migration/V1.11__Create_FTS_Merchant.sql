@@ -41,3 +41,7 @@ CREATE TRIGGER update_search_text_trigger
 BEFORE INSERT OR UPDATE ON merchant_agencies
 FOR EACH ROW
 EXECUTE FUNCTION update_search_text();
+
+CREATE INDEX idx_merchant_agencies_search_text_trgm 
+ON merchant_agencies 
+USING GIN (search_text gin_trgm_ops);
