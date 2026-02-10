@@ -79,7 +79,7 @@ public class UserCardController extends AbstractBaseController {
         @Operation(summary = "Get user cards by card type", description = "Retrieve all user cards filtered by a specific card type")
         @GetMapping("/card-type/{cardType}")
         public ResponseEntity<SingleResponse<List<UserCardDto>>> getUserCardsByCardType(
-                        @Parameter(description = "Type of card to filter by", required = true, example = "CREDIT") @PathVariable String cardType) {
+                        @Parameter(description = "Type of card to filter by", required = true, example = "PAYMENT_APP") @PathVariable String cardType) {
                 List<UserCardDto> userCards = cardService.getUserCardsByCardType(authService.getCurrentUserId(),
                                 cardType);
                 return responseFactory.successSingle(userCards, "Get user cards by card type successful");
