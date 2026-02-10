@@ -48,7 +48,7 @@ public class UserCardController extends AbstractBaseController {
         @PostMapping("")
         public ResponseEntity<SingleResponse<String>> addCardToUser(@RequestBody AddCardToUserRequest request) {
                 cardService.addCardToUser(authService.getCurrentUserId(), request);
-                return responseFactory.successSingle(null, "Add card to user successful");
+                return responseFactory.successSingle("ok", "Add card to user successful");
         }
 
         @Operation(summary = "Edit user card", description = "Update details of a specific user card")
@@ -57,7 +57,7 @@ public class UserCardController extends AbstractBaseController {
                         @Parameter(description = "UUID of the card to edit", required = true) @PathVariable UUID id,
                         @RequestBody EditUserCard request) {
                 cardService.editUserCard(id, authService.getCurrentUserId(), request);
-                return responseFactory.successSingle(null, "Edit card to user successful");
+                return responseFactory.successSingle("ok", "Edit card to user successful");
         }
 
         @Operation(summary = "Delete user card", description = "Remove a specific card from the user's collection")
@@ -65,7 +65,7 @@ public class UserCardController extends AbstractBaseController {
         public ResponseEntity<SingleResponse<String>> deleteCardToUser(
                         @Parameter(description = "UUID of the card to delete", required = true) @PathVariable UUID id) {
                 cardService.removeUserCard(id, authService.getCurrentUserId());
-                return responseFactory.successSingle(null, "Delete card to user successful");
+                return responseFactory.successSingle("ok", "Delete card to user successful");
         }
 
         @Operation(summary = "Get user card details", description = "Retrieve detailed information about a specific user card")
