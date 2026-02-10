@@ -15,6 +15,7 @@ import com.fpt.ojt.services.dtos.FavoriteMerchantDto;
 import com.fpt.ojt.services.user.FavoriteMerchantService;
 
 import jakarta.persistence.EntityManager;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -32,17 +33,13 @@ public class FavoriteMerchantServiceImpl implements FavoriteMerchantService {
     }
 
     @Override
+    @Transactional
     public void addFavoriteMerchant(UUID userId, UUID merchantAgencyId) {
-        var userEntity = userRepository.findById(userId).orElseThrow();
-        var merchantEntity = merchantAgencyRepository.findById(merchantAgencyId).orElseThrow();
-        var favoriteMerchant = FavoriteMerchant.builder()
-                .user(userEntity)
-                .merchantAgency(merchantEntity)
-                .build();
-        favoriteMerchantRepository.save(favoriteMerchant);
+        favoriteMerchantRepository.insertOrRestore(userId, merchantAgencyId);
     }
 
     @Override
+    @Transactional
     public void removeFavoriteMerchant(UUID userId, UUID favoriteMerchantId) {
         favoriteMerchantRepository.deleteByUserIdAndId(userId, favoriteMerchantId);
     }
