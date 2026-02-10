@@ -24,10 +24,6 @@ import com.fpt.ojt.services.dtos.UserCardDto;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -50,8 +46,7 @@ public class UserCardController extends AbstractBaseController {
 
         @Operation(summary = "Add a new card to user", description = "Add a new card to the authenticated user's collection")
         @PostMapping("")
-        public ResponseEntity<SingleResponse<String>> addCardToUser(
-                        @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Card details to add to user", required = true, content = @Content(schema = @Schema(implementation = AddCardToUserRequest.class))) @RequestBody @Valid AddCardToUserRequest request) {
+        public ResponseEntity<SingleResponse<String>> addCardToUser(@RequestBody AddCardToUserRequest request) {
                 cardService.addCardToUser(authService.getCurrentUserId(), request);
                 return responseFactory.successSingle(null, "Add card to user successful");
         }
@@ -60,7 +55,7 @@ public class UserCardController extends AbstractBaseController {
         @PutMapping("/{id}")
         public ResponseEntity<SingleResponse<String>> editCardToUser(
                         @Parameter(description = "UUID of the card to edit", required = true) @PathVariable UUID id,
-                        @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Updated card details", required = true, content = @Content(schema = @Schema(implementation = EditUserCard.class))) @RequestBody EditUserCard request) {
+                        @RequestBody EditUserCard request) {
                 cardService.editUserCard(id, authService.getCurrentUserId(), request);
                 return responseFactory.successSingle(null, "Edit card to user successful");
         }
