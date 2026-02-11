@@ -109,7 +109,7 @@ public class CardServiceImpl implements CardService {
             @CacheEvict(value = CacheNames.USER_CARD_RULES_CACHE_NAME, key = "#userId")
     })
     @Override
-    public void addCardToUser(UUID userId, AddCardToUserRequest request) {
+    public UUID addCardToUser(UUID userId, AddCardToUserRequest request) {
         var cardProduct = cardProductRepository.findById(request.getCardId())
                 .orElseThrow(() -> new NotFoundException("Card product not found with id: " + request.getCardId()));
         var user = entityManager.getReference(com.fpt.ojt.models.postgres.user.User.class, userId);
@@ -121,6 +121,7 @@ public class CardServiceImpl implements CardService {
                 .user(user)
                 .build();
         userCreditCardRepository.save(userCard);
+        return userCard.getId();
     }
 
     @CacheEvict(value = CacheNames.USER_CARDS_CACHE_NAME, key = "#userId")

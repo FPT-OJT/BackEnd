@@ -46,9 +46,9 @@ public class UserCardController extends AbstractBaseController {
 
         @Operation(summary = "Add a new card to user", description = "Add a new card to the authenticated user's collection")
         @PostMapping("")
-        public ResponseEntity<SingleResponse<String>> addCardToUser(@RequestBody AddCardToUserRequest request) {
-                cardService.addCardToUser(authService.getCurrentUserId(), request);
-                return responseFactory.successSingle("ok", "Add card to user successful");
+        public ResponseEntity<SingleResponse<UUID>> addCardToUser(@RequestBody AddCardToUserRequest request) {
+                UUID userCardId = cardService.addCardToUser(authService.getCurrentUserId(), request);
+                return responseFactory.successSingle(userCardId, "Add card to user successful");
         }
 
         @Operation(summary = "Edit user card", description = "Update details of a specific user card")

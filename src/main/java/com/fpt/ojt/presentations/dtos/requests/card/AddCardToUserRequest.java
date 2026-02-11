@@ -13,11 +13,11 @@ import io.swagger.v3.oas.annotations.media.Schema;
 @Schema(description = "Request to add a card to user")
 public class AddCardToUserRequest {
     @NotNull(message = "Card ID is required")
-    @Schema(description = "UUID of the card to add", example = "550e8400-e29b-41d4-a716-446655440000")
+    @Schema(description = "UUID of the card to add", example = "55efeb5d-87ae-4bb5-a01c-506bbd8981c3")
     private UUID cardId;
 
     // @NotNull(message = "First payment date is required")
-    @Schema(description = "First payment date for the card", example = "2024-03-15")
+    @Schema(description = "First payment date for the card", example = "1")
     private int firstPaymentDate;
 
     // @NotNull(message = "Expiry date is required")
