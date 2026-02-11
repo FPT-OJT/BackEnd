@@ -26,7 +26,7 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/users/subscribed-merchants")
 @RequiredArgsConstructor
 @Tag(name = "Subscribed Merchants", description = "APIs for managing user merchant subscriptions")
-public class SubscribedMerchantControllerImpl extends AbstractBaseController {
+public class SubscribedMerchantController extends AbstractBaseController {
     private final SubscribedMerchantService subscribedMerchantService;
     private final AuthService authService;
     
