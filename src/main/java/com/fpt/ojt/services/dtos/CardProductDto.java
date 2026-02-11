@@ -16,6 +16,8 @@ public class CardProductDto {
 
     private String cardType;
 
+    private String imageUrl;
+    private String cardCode;
     
 
     public static CardProductDto fromEntity(CardProduct cardProduct) {
@@ -26,6 +28,8 @@ public class CardProductDto {
                 .id(cardProduct.getId())
                 .cardName(cardProduct.getCardName())
                 .cardType(cardProduct.getCardType())
+                .cardCode(cardProduct.getCardCode())
+                .imageUrl(cardProduct.getImageUrl())
                 .build();
     }
 

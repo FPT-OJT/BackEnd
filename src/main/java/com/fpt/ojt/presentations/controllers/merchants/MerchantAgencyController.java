@@ -1,16 +1,20 @@
 package com.fpt.ojt.presentations.controllers.merchants;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fpt.ojt.presentations.dtos.responses.SingleResponse;
+import com.fpt.ojt.presentations.dtos.responses.merchant.MerchantAgencyCardsDealsResponse;
+import com.fpt.ojt.services.auth.AuthService;
 import com.fpt.ojt.services.dtos.NearestAgencyDto;
+import com.fpt.ojt.services.merchantdetail.MerchantDetailService;
 import com.fpt.ojt.services.merchants.MerchantAgencyService;
 
 import lombok.RequiredArgsConstructor;
@@ -21,6 +25,8 @@ import lombok.RequiredArgsConstructor;
 public class MerchantAgencyController {
 
     private final MerchantAgencyService merchantAgencyService;
+    private final MerchantDetailService merchantDetailService;
+    private final AuthService authService;
 
     private static final String DEFAULT_SEARCH_LIMIT = "10";
 
@@ -35,6 +41,21 @@ public class MerchantAgencyController {
         return ResponseEntity.ok(
                 SingleResponse.<List<NearestAgencyDto>>builder()
                         .data(agencies)
+                        .statusCode(200)
+                        .message("ok")
+                        .build());
+    }
+
+    @GetMapping("/{merchantAgencyId}/cards-deals")
+    public ResponseEntity<SingleResponse<MerchantAgencyCardsDealsResponse>> getCardsWithDeals(
+            @PathVariable UUID merchantAgencyId) {
+
+        UUID currentUserId = authService.getCurrentUserId();
+        var cardsWithDeals = merchantDetailService.getCardsWithDeals(merchantAgencyId, currentUserId);
+
+        return ResponseEntity.ok(
+                SingleResponse.<MerchantAgencyCardsDealsResponse>builder()
+                        .data(cardsWithDeals)
                         .statusCode(200)
                         .message("ok")
                         .build());

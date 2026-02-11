@@ -11,6 +11,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -94,4 +95,6 @@ public interface MerchantAgencyRepository
       @Param("userLng") double userLng,
       @Param("limit") int limit);
 
+    @EntityGraph(attributePaths = { "merchant" })
+    Optional<MerchantAgency> findById(@Param("id") UUID id);
 }

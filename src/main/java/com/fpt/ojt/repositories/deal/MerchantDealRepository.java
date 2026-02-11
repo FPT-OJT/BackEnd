@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import org.springframework.data.repository.query.Param;
+
 import java.util.List;
 import java.util.UUID;
 
@@ -21,4 +23,14 @@ public interface MerchantDealRepository extends JpaRepository<MerchantDeal, UUID
               AND md.validTo >= CURRENT_DATE
             """)
     List<MerchantDeal> findAllAvailableMerchantDeals();
+
+    @EntityGraph(attributePaths = {"merchantAgency", "merchantAgency.merchant"})
+    @Query("""
+            SELECT md FROM MerchantDeal md
+            WHERE md.merchantAgency.id = :agencyId
+              AND md.deletedAt IS NULL
+              AND md.validFrom <= CURRENT_DATE
+              AND md.validTo >= CURRENT_DATE
+            """)
+    List<MerchantDeal> findAvailableByMerchantAgencyId(@Param("agencyId") UUID agencyId);
 }
