@@ -3,6 +3,7 @@ package com.fpt.ojt.services.card.impl;
 import com.fpt.ojt.exceptions.ForbiddenException;
 import com.fpt.ojt.exceptions.NotFoundException;
 import com.fpt.ojt.exceptions.QueryErrorException;
+import com.fpt.ojt.infrastructure.configs.CacheNames;
 import com.fpt.ojt.models.postgres.card.CardRule;
 import com.fpt.ojt.models.postgres.card.UserCreditCard;
 import com.fpt.ojt.presentations.dtos.requests.card.AddCardToUserRequest;
@@ -18,6 +19,8 @@ import com.fpt.ojt.services.dtos.UserCardDto;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
+
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,6 +42,7 @@ public class CardServiceImpl implements CardService {
     private final UserCreditCardRepository userCreditCardRepository;
     private final EntityManager entityManager;
 
+    @Cacheable(cacheNames = CacheNames.USER_CARD_RULES_CACHE_NAME, key = "#userId")
     @Override
     public List<AvailableCardRulesDto> getAvailableCardRulesByUserId(UUID userId) {
         try {
@@ -80,8 +84,16 @@ public class CardServiceImpl implements CardService {
                 .toList();
     }
 
-   
-    @Cacheable(value = "userCards", key = "#userId")
+    private CardProductDto mapToCardProductDto(com.fpt.ojt.models.postgres.card.CardProduct cardProduct) {
+        return CardProductDto.builder()
+                .cardName(cardProduct.getCardName())
+                .cardType(cardProduct.getCardType())
+                .imageUrl(cardProduct.getImageUrl())
+                .cardCode(cardProduct.getCardCode())
+                .build();
+    }
+
+    @Cacheable(value = CacheNames.USER_CARDS_CACHE_NAME, key = "#userId")
     @Override
     public List<UserCardDto> getUserCards(UUID userId) {
         var userCards = userCreditCardRepository.findByUserIdAndDeletedAtIsNull(userId);
@@ -91,7 +103,10 @@ public class CardServiceImpl implements CardService {
 
     }
 
-    @CacheEvict(value = "userCards", key = "#userId")
+    @Caching(evict = {
+            @CacheEvict(value = CacheNames.USER_CARDS_CACHE_NAME, key = "#userId"),
+            @CacheEvict(value = CacheNames.USER_CARD_RULES_CACHE_NAME, key = "#userId")
+    })
     @Override
     public void addCardToUser(UUID userId, AddCardToUserRequest request) {
         var cardProduct = cardProductRepository.findById(request.getCardId())
@@ -107,7 +122,7 @@ public class CardServiceImpl implements CardService {
         userCreditCardRepository.save(userCard);
     }
 
-    @CacheEvict(value = "userCards", key = "#userId")
+    @CacheEvict(value = CacheNames.USER_CARDS_CACHE_NAME, key = "#userId")
     @Override
     public void editUserCard(UUID userCardId, UUID userId, EditUserCard request) {
         var userCard = userCreditCardRepository.findById(userCardId)
@@ -120,7 +135,10 @@ public class CardServiceImpl implements CardService {
         userCreditCardRepository.save(userCard);
     }
 
-    @CacheEvict(value = "userCards", key = "#userId")
+    @Caching(evict = {
+            @CacheEvict(value = CacheNames.USER_CARDS_CACHE_NAME, key = "#userId"),
+            @CacheEvict(value = CacheNames.USER_CARD_RULES_CACHE_NAME, key = "#userId")
+    })
     @Override
     public void removeUserCard(UUID userCardId, UUID userId) {
         var userCard = userCreditCardRepository.findById(userCardId)
