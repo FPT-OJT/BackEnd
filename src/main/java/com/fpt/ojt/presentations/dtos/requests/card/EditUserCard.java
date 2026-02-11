@@ -8,7 +8,7 @@ import lombok.Data;
 public class EditUserCard {
 
     @NotNull(message = "First payment date is required")
-    private LocalDate firstPaymentDate;
+    private int firstPaymentDate;
 
     @NotNull(message = "Expiry date is required")
     private LocalDate expiryDate;
