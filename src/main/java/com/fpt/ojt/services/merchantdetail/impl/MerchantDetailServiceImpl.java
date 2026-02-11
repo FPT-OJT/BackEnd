@@ -7,6 +7,7 @@ import com.fpt.ojt.models.postgres.card.UserCreditCard;
 import com.fpt.ojt.models.postgres.deal.MerchantDeal;
 import com.fpt.ojt.models.postgres.merchant.MerchantAgency;
 import com.fpt.ojt.presentations.dtos.responses.merchant.MerchantAgencyCardsDealsResponse;
+import com.fpt.ojt.presentations.dtos.responses.merchant.MerchantAgencyCardsDealsResponse.DealType;
 import com.fpt.ojt.repositories.card.CardRuleRepository;
 import com.fpt.ojt.repositories.card.UserCreditCardRepository;
 import com.fpt.ojt.repositories.deal.CardMerchantDealRepository;
@@ -42,18 +43,17 @@ public class MerchantDetailServiceImpl implements MerchantDetailService {
     public MerchantAgencyCardsDealsResponse getCardsWithDeals(UUID merchantAgencyId, UUID userId) {
         try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
             // Parallel fetch all required data
-            var agencyFuture = executor.submit(() ->
-                    merchantAgencyRepository.findById(merchantAgencyId)
-                            .orElseThrow(() -> new NotFoundException("Merchant agency not found")));
+            var agencyFuture = executor.submit(() -> merchantAgencyRepository.findById(merchantAgencyId)
+                    .orElseThrow(() -> new NotFoundException("Merchant agency not found")));
 
-            var userCardsFuture = executor.submit(() ->
-                    userCreditCardRepository.findByUserIdAndDeletedAtIsNull(userId));
+            var userCardsFuture = executor
+                    .submit(() -> userCreditCardRepository.findByUserIdAndDeletedAtIsNull(userId));
 
-            var merchantDealsFuture = executor.submit(() ->
-                    merchantDealRepository.findAvailableByMerchantAgencyId(merchantAgencyId));
+            var merchantDealsFuture = executor
+                    .submit(() -> merchantDealRepository.findAvailableByMerchantAgencyId(merchantAgencyId));
 
-            var cardRulesFuture = executor.submit(() ->
-                    cardRuleRepository.findAllAvailableByCardRulesWithConditionByUserId(userId));
+            var cardRulesFuture = executor
+                    .submit(() -> cardRuleRepository.findAllAvailableByCardRulesWithConditionByUserId(userId));
 
             // Wait for results
             MerchantAgency agency = agencyFuture.get();
@@ -79,7 +79,7 @@ public class MerchantDetailServiceImpl implements MerchantDetailService {
                         for (MerchantDeal merchantDeal : merchantDeals) {
                             if (isCardEligibleForDeal(merchantDeal.getId(), cardProductId)) {
                                 deals.add(MerchantAgencyCardsDealsResponse.DealItem.builder()
-                                        .type("merchant-deal")
+                                        .type(DealType.MERCHANT_DEAL)
                                         .dealId(merchantDeal.getId())
                                         .dealName(merchantDeal.getDealName())
                                         .discountRate(merchantDeal.getDiscountRate())
@@ -98,7 +98,7 @@ public class MerchantDetailServiceImpl implements MerchantDetailService {
                                 double benefit = calculateCardBenefit(rule);
                                 if (benefit > 0) {
                                     deals.add(MerchantAgencyCardsDealsResponse.DealItem.builder()
-                                            .type("card-deal")
+                                            .type(DealType.CARD_DEAL)
                                             .dealId(null)
                                             .dealName("Card Benefit")
                                             .discountRate(calculateDiscountRate(rule))
@@ -167,7 +167,9 @@ public class MerchantDetailServiceImpl implements MerchantDetailService {
 
     private double calculateCardBenefit(CardRule rule) {
         double rebateRate = rule.getEffectRebateRate() != null ? rule.getEffectRebateRate() : 0.0;
-        double merchantDiscountRate = rule.getEffectMerchantDiscountRate() != null ? rule.getEffectMerchantDiscountRate() : 0.0;
+        double merchantDiscountRate = rule.getEffectMerchantDiscountRate() != null
+                ? rule.getEffectMerchantDiscountRate()
+                : 0.0;
         double feeRate = rule.getEffectFeeRate() != null ? rule.getEffectFeeRate() : 0.0;
         double cashbackRate = rule.getEffectCashbackRate() != null ? rule.getEffectCashbackRate() : 0.0;
 
@@ -177,7 +179,9 @@ public class MerchantDetailServiceImpl implements MerchantDetailService {
 
     private Double calculateDiscountRate(CardRule rule) {
         double rebateRate = rule.getEffectRebateRate() != null ? rule.getEffectRebateRate() : 0.0;
-        double merchantDiscountRate = rule.getEffectMerchantDiscountRate() != null ? rule.getEffectMerchantDiscountRate() : 0.0;
+        double merchantDiscountRate = rule.getEffectMerchantDiscountRate() != null
+                ? rule.getEffectMerchantDiscountRate()
+                : 0.0;
         double feeRate = rule.getEffectFeeRate() != null ? rule.getEffectFeeRate() : 0.0;
         return rebateRate + merchantDiscountRate - feeRate;
     }

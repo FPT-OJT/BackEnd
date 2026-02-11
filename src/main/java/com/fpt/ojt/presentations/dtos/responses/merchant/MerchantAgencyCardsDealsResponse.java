@@ -15,6 +15,10 @@ public class MerchantAgencyCardsDealsResponse {
     private String imageUrl;
     private List<CardWithDeals> cards;
 
+    public enum DealType {
+        MERCHANT_DEAL,
+        CARD_DEAL
+    }
     @Data
     @Builder
     public static class CardWithDeals {
@@ -29,8 +33,8 @@ public class MerchantAgencyCardsDealsResponse {
     @Data
     @Builder
     public static class DealItem {
-        private String type;           // "merchant-deal" | "card-deal"
-        private UUID dealId;           // null if card-deal
+        private DealType type;         
+        private UUID dealId;        
         private String dealName;
         private Double discountRate;
         private Double cashbackRate;

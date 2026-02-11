@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fpt.ojt.presentations.controllers.base.AbstractBaseController;
 import com.fpt.ojt.presentations.dtos.responses.SingleResponse;
 import com.fpt.ojt.presentations.dtos.responses.merchant.MerchantAgencyCardsDealsResponse;
 import com.fpt.ojt.services.auth.AuthService;
@@ -22,42 +23,34 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/merchants/agencies")
 @RequiredArgsConstructor
-public class MerchantAgencyController {
+public class MerchantAgencyController extends AbstractBaseController {
 
-    private final MerchantAgencyService merchantAgencyService;
-    private final MerchantDetailService merchantDetailService;
-    private final AuthService authService;
+        private final MerchantAgencyService merchantAgencyService;
+        private final MerchantDetailService merchantDetailService;
+        private final AuthService authService;
 
-    private static final String DEFAULT_SEARCH_LIMIT = "10";
+        private static final String DEFAULT_SEARCH_LIMIT = "10";
 
-    @GetMapping("/nearest")
-    public ResponseEntity<SingleResponse<List<NearestAgencyDto>>> getNearestAgencies(
-            @RequestParam(required = true) String keyword,
-            @RequestParam(required = true) Double latitude,
-            @RequestParam(required = true) Double longitude,
-            @RequestParam(defaultValue = DEFAULT_SEARCH_LIMIT, required = false) int limit) {
+        @GetMapping("/nearest")
+        public ResponseEntity<SingleResponse<List<NearestAgencyDto>>> getNearestAgencies(
+                        @RequestParam(required = true) String keyword,
+                        @RequestParam(required = true) Double latitude,
+                        @RequestParam(required = true) Double longitude,
+                        @RequestParam(defaultValue = DEFAULT_SEARCH_LIMIT, required = false) int limit) {
 
-        var agencies = merchantAgencyService.findNearestAgencies(keyword, latitude, longitude, limit);
-        return ResponseEntity.ok(
-                SingleResponse.<List<NearestAgencyDto>>builder()
-                        .data(agencies)
-                        .statusCode(200)
-                        .message("ok")
-                        .build());
-    }
+                var agencies = merchantAgencyService.findNearestAgencies(keyword, latitude, longitude, limit);
+                return responseFactory.successSingle(
+                                agencies,
+                                "Get nearest agencies successfully");
+        }
 
-    @GetMapping("/{merchantAgencyId}/cards-deals")
-    public ResponseEntity<SingleResponse<MerchantAgencyCardsDealsResponse>> getCardsWithDeals(
-            @PathVariable UUID merchantAgencyId) {
+        @GetMapping("/{merchantAgencyId}/cards-deals")
+        public ResponseEntity<SingleResponse<MerchantAgencyCardsDealsResponse>> getCardsWithDeals(
+                        @PathVariable UUID merchantAgencyId) {
 
-        UUID currentUserId = authService.getCurrentUserId();
-        var cardsWithDeals = merchantDetailService.getCardsWithDeals(merchantAgencyId, currentUserId);
+                UUID currentUserId = authService.getCurrentUserId();
+                var cardsWithDeals = merchantDetailService.getCardsWithDeals(merchantAgencyId, currentUserId);
 
-        return ResponseEntity.ok(
-                SingleResponse.<MerchantAgencyCardsDealsResponse>builder()
-                        .data(cardsWithDeals)
-                        .statusCode(200)
-                        .message("ok")
-                        .build());
-    }
+                return responseFactory.successSingle(cardsWithDeals, "Get cards with deals successfully");
+        }
 }
