@@ -40,7 +40,7 @@ public interface FavoriteMerchantRepository
     @Modifying
     @Query(value = """
                 WITH restored AS (
-                    UPDATE favorite_merchant
+                    UPDATE favorite_merchants
                     SET deleted_at = NULL,
                         updated_at = now()
                     WHERE user_id = :userId
@@ -48,7 +48,7 @@ public interface FavoriteMerchantRepository
                       AND deleted_at IS NOT NULL
                     RETURNING id
                 )
-                INSERT INTO favorite_merchant (id, user_id, merchant_agency_id, created_at)
+                INSERT INTO favorite_merchants (id, user_id, merchant_agency_id, created_at)
                 SELECT gen_random_uuid(), :userId, :merchantAgencyId, now()
                 WHERE NOT EXISTS (SELECT 1 FROM restored)
                 ON CONFLICT (user_id, merchant_agency_id)
