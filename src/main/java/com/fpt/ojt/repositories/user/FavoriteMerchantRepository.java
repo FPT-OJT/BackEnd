@@ -31,11 +31,11 @@ public interface FavoriteMerchantRepository
     @Query("""
                 UPDATE FavoriteMerchant fm
                 SET fm.deletedAt = CURRENT_TIMESTAMP
-                WHERE fm.id = :favoriteMerchantId
+                WHERE fm.merchantAgency.id = :merchantAgencyId
                   AND fm.user.id = :userId
                   AND fm.deletedAt IS NULL
             """)
-    int deleteByUserIdAndId(UUID userId, UUID favoriteMerchantId);
+    int deleteByUserIdAndMerchantAgencyId(UUID userId, UUID merchantAgencyId);
 
     @Modifying
     @Query(value = """
