@@ -1,15 +1,19 @@
 package com.fpt.ojt.presentations.dtos.responses.merchant;
 
-import lombok.Builder;
-import lombok.Data;
-
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class MerchantAgencyCardsDealsResponse {
+
     private UUID merchantAgencyId;
     private String merchantAgencyName;
     private String imageUrl;
@@ -17,11 +21,15 @@ public class MerchantAgencyCardsDealsResponse {
 
     public enum DealType {
         MERCHANT_DEAL,
-        CARD_DEAL
+        CARD_DEAL,
     }
+
     @Data
     @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class CardWithDeals {
+
         private UUID userCardId;
         private UUID cardProductId;
         private String cardName;
@@ -32,9 +40,12 @@ public class MerchantAgencyCardsDealsResponse {
 
     @Data
     @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class DealItem {
-        private DealType type;         
-        private UUID dealId;        
+
+        private DealType type;
+        private UUID dealId;
         private String dealName;
         private Double discountRate;
         private Double cashbackRate;
