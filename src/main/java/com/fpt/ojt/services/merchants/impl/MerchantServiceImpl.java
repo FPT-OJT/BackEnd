@@ -1,5 +1,6 @@
 package com.fpt.ojt.services.merchants.impl;
 
+import com.fpt.ojt.infrastructure.configs.CacheNames;
 import com.fpt.ojt.models.postgres.merchant.MerchantAgency;
 import com.fpt.ojt.models.postgres.merchant.MerchantCategory;
 import com.fpt.ojt.presentations.dtos.responses.home.HomePageResponse;
@@ -16,6 +17,8 @@ import com.fpt.ojt.services.merchants.MerchantService;
 import com.fpt.ojt.services.dtos.MerchantOfferDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -42,6 +45,7 @@ public class MerchantServiceImpl implements MerchantService {
     private final SubscribedMerchantRepository subscribedMerchantRepository;
 
 
+    @Cacheable(value = CacheNames.MERCHANT_OFFERS_CACHE_NAME, key = "#currentUserId")
     @Override
     public List<HomePageResponse.MerchantOffer> getMerchantOffers(int limit, UUID currentUserId) {
         try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
