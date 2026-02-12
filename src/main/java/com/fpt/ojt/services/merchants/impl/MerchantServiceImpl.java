@@ -11,6 +11,7 @@ import com.fpt.ojt.services.auth.AuthService;
 import com.fpt.ojt.services.card.CardService;
 import com.fpt.ojt.services.deal.DealService;
 import com.fpt.ojt.services.dtos.AvailableCardRulesDto;
+import com.fpt.ojt.services.dtos.Coordinate;
 import com.fpt.ojt.services.dtos.MerchantAgencyWithAvailableDealsDto;
 import com.fpt.ojt.services.merchants.MerchantService;
 import com.fpt.ojt.services.dtos.MerchantOfferDto;
@@ -40,12 +41,13 @@ public class MerchantServiceImpl implements MerchantService {
     private final MerchantAgencyRepository merchantAgencyRepository;
     private final FavoriteMerchantRepository favoriteMerchantRepository;
     private final SubscribedMerchantRepository subscribedMerchantRepository;
+    static final int NEAREST_MERCHANT_DEALS_RADIUS_METERS = 20_000; // 20km
 
 
     @Override
-    public List<HomePageResponse.MerchantOffer> getMerchantOffers(int limit, UUID currentUserId) {
+    public List<HomePageResponse.MerchantOffer> getMerchantOffers(int limit, UUID currentUserId, Coordinate userLocation) {
         try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
-            var offersWithMerchantsFuture = executor.submit(() -> getOffersWithMerchants(currentUserId));
+            var offersWithMerchantsFuture = executor.submit(() -> getOffersWithMerchants(currentUserId, userLocation));
             var offersWithoutMerchantsFuture = executor.submit(() -> getOffersWithoutMerchants(currentUserId));
 
             List<MerchantOfferDto> offersWithMerchant =  offersWithMerchantsFuture.get();
@@ -79,14 +81,14 @@ public class MerchantServiceImpl implements MerchantService {
         return cardService.getAvailableCardRulesByUserId(currentUserId);
     }
 
-    private List<MerchantAgencyWithAvailableDealsDto> getUserAvailableMerchantDeals() {
-        return dealService.getAvailableMerchantDeals();
+    private List<MerchantAgencyWithAvailableDealsDto> getUserAvailableMerchantDeals(Coordinate userLocation) {
+        return dealService.getNearestMerchantDeals(userLocation, NEAREST_MERCHANT_DEALS_RADIUS_METERS);
     }
 
-    private List<MerchantOfferDto> getOffersWithMerchants(UUID currentUserId) {
+    private List<MerchantOfferDto> getOffersWithMerchants(UUID currentUserId, Coordinate userLocation) {
         try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
             var availableCardRulesFuture = executor.submit(() -> getUserAvailableCardRules(currentUserId));
-            var allMerchantDealsFuture = executor.submit(this::getUserAvailableMerchantDeals);
+            var allMerchantDealsFuture = executor.submit(() -> getUserAvailableMerchantDeals(userLocation));
 
             List<AvailableCardRulesDto> availableCardRulesDtos = availableCardRulesFuture.get();
             List<MerchantAgencyWithAvailableDealsDto> agencies = allMerchantDealsFuture.get();
