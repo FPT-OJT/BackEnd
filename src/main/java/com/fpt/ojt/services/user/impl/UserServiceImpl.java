@@ -10,6 +10,9 @@ import com.fpt.ojt.exceptions.DuplicateException;
 import com.fpt.ojt.exceptions.NotFoundException;
 import com.fpt.ojt.models.postgres.user.User;
 import com.fpt.ojt.repositories.user.UserRepository;
+import com.fpt.ojt.services.dtos.Profile;
+import com.fpt.ojt.services.dtos.UpdateProfileDto;
+import com.fpt.ojt.services.user.CountryService;
 import com.fpt.ojt.services.user.UserService;
 
 import lombok.RequiredArgsConstructor;
@@ -21,15 +24,16 @@ import lombok.extern.slf4j.Slf4j;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final CountryService countryService;
 
     @Override
     public void createUser(EnumConstants.RoleEnum roleEnum,
-                           String googleId,
-                           String firstName,
-                           String lastName,
-                           String userName,
-                           String email,
-                           String passwordEncoded) {
+            String googleId,
+            String firstName,
+            String lastName,
+            String userName,
+            String email,
+            String passwordEncoded) {
         // Check for duplicate username
         if (userName != null && userRepository.existsByUserName(userName)) {
             throw new DuplicateException("Username '" + userName + "' is already taken");
@@ -114,4 +118,32 @@ public class UserServiceImpl implements UserService {
 
         return userRepository.findByGoogleId(googleId);
     }
+
+    @Override
+    public Profile getProfileById(UUID userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("User with id " + userId + " not found"));
+        return Profile.fromEntity(user);
+    }
+
+    @Override
+    public void updateProfile(UUID userId, UpdateProfileDto updateProfileDto) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("User with id " + userId + " not found"));
+        var existByEmail = userRepository.findByEmail(updateProfileDto.getEmail());
+        if (existByEmail != null && !existByEmail.getId().equals(userId)) {
+            throw new DuplicateException("Email '" + updateProfileDto.getEmail() + "' is already registered");
+        }
+        boolean isPhoneCodeExists = countryService.isPhoneCodeExists(updateProfileDto.getCountryPhoneCode());
+        if (!isPhoneCodeExists) {
+            throw new NotFoundException("Country phone code '" + updateProfileDto.getCountryPhoneCode() + "' is not valid");
+        }
+        user.setFirstName(updateProfileDto.getFirstName());
+        user.setLastName(updateProfileDto.getLastName());
+        user.setCountryPhoneCode(updateProfileDto.getCountryPhoneCode());
+        user.setPhoneNumber(updateProfileDto.getPhoneNumber());
+        user.setEmail(updateProfileDto.getEmail());
+        userRepository.save(user);
+    }
+
 }

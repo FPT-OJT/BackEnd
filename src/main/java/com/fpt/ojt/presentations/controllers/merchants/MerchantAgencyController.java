@@ -14,10 +14,14 @@ import com.fpt.ojt.presentations.controllers.base.AbstractBaseController;
 import com.fpt.ojt.presentations.dtos.responses.SingleResponse;
 import com.fpt.ojt.presentations.dtos.responses.merchant.MerchantAgencyCardsDealsResponse;
 import com.fpt.ojt.services.auth.AuthService;
+import com.fpt.ojt.services.dtos.MerchantSort;
 import com.fpt.ojt.services.dtos.NearestAgencyDto;
 import com.fpt.ojt.services.merchantdetail.MerchantDetailService;
 import com.fpt.ojt.services.merchants.MerchantAgencyService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
 @RestController
