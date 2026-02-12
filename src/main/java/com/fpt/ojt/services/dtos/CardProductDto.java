@@ -15,6 +15,7 @@ public class CardProductDto {
     private String cardName;
 
     private String cardType;
+    private String imageUrl;
 
     
 
@@ -26,6 +27,7 @@ public class CardProductDto {
                 .id(cardProduct.getId())
                 .cardName(cardProduct.getCardName())
                 .cardType(cardProduct.getCardType())
+                .imageUrl(cardProduct.getImageUrl())
                 .build();
     }
 

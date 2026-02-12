@@ -25,7 +25,7 @@ public class UserCreditCard extends AbstractBaseEntity {
     private CardProduct cardProduct;
 
     @Column(name = "first_payment_date")
-    private LocalDate firstPaymentDate;
+    private int firstPaymentDate;
 
     @Column(name = "expiry_date")
     private LocalDate expiryDate;

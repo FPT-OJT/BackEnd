@@ -3,6 +3,9 @@ package com.fpt.ojt.services.user;
 import java.util.UUID;
 import com.fpt.ojt.models.enums.EnumConstants;
 import com.fpt.ojt.models.postgres.user.User;
+import com.fpt.ojt.services.dtos.Profile;
+import com.fpt.ojt.services.dtos.UpdateProfileDto;
+import com.fpt.ojt.services.dtos.UserDto;
 
 public interface UserService {
         void createUser(EnumConstants.RoleEnum roleEnum, String googleId, String firstName, String lastName,
@@ -19,4 +22,6 @@ public interface UserService {
         User getUserByUserName(String userName);
 
         User getUserByEmail(String email);
+        Profile getProfileById(UUID userId);
+        void updateProfile(UUID userId, UpdateProfileDto updateProfileDto);
 }

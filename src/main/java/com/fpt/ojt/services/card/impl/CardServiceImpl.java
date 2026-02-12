@@ -4,6 +4,7 @@ import com.fpt.ojt.exceptions.ForbiddenException;
 import com.fpt.ojt.exceptions.NotFoundException;
 import com.fpt.ojt.exceptions.QueryErrorException;
 import com.fpt.ojt.infrastructure.configs.CacheNames;
+import com.fpt.ojt.models.postgres.card.CardProduct;
 import com.fpt.ojt.models.postgres.card.CardRule;
 import com.fpt.ojt.models.postgres.card.UserCreditCard;
 import com.fpt.ojt.presentations.dtos.requests.card.AddCardToUserRequest;
@@ -41,6 +42,7 @@ public class CardServiceImpl implements CardService {
     private final CardProductRepository cardProductRepository;
     private final UserCreditCardRepository userCreditCardRepository;
     private final EntityManager entityManager;
+    private static final int MIN_SEARCH_LENGTH = 4;
 
     @Cacheable(cacheNames = CacheNames.USER_CARD_RULES_CACHE_NAME, key = "#userId")
     @Override
@@ -78,20 +80,19 @@ public class CardServiceImpl implements CardService {
 
     @Override
     public List<CardProductDto> searchCardProducts(String keyword, int limit) {
-        var cardProducts = cardProductRepository.search(keyword, limit);
+        
+        List<CardProduct> cardProducts;
+        if (keyword.length() < MIN_SEARCH_LENGTH) {
+            cardProducts = cardProductRepository.searchShort(keyword, limit);
+        } else {
+            cardProducts = cardProductRepository.searchLong(keyword, limit);
+        }
         return cardProducts.stream()
                 .map(CardProductDto::fromEntity)
                 .toList();
     }
 
-    private CardProductDto mapToCardProductDto(com.fpt.ojt.models.postgres.card.CardProduct cardProduct) {
-        return CardProductDto.builder()
-                .cardName(cardProduct.getCardName())
-                .cardType(cardProduct.getCardType())
-                .imageUrl(cardProduct.getImageUrl())
-                .cardCode(cardProduct.getCardCode())
-                .build();
-    }
+
 
     @Cacheable(value = CacheNames.USER_CARDS_CACHE_NAME, key = "#userId")
     @Override
@@ -108,7 +109,7 @@ public class CardServiceImpl implements CardService {
             @CacheEvict(value = CacheNames.USER_CARD_RULES_CACHE_NAME, key = "#userId")
     })
     @Override
-    public void addCardToUser(UUID userId, AddCardToUserRequest request) {
+    public UUID addCardToUser(UUID userId, AddCardToUserRequest request) {
         var cardProduct = cardProductRepository.findById(request.getCardId())
                 .orElseThrow(() -> new NotFoundException("Card product not found with id: " + request.getCardId()));
         var user = entityManager.getReference(com.fpt.ojt.models.postgres.user.User.class, userId);
@@ -120,6 +121,7 @@ public class CardServiceImpl implements CardService {
                 .user(user)
                 .build();
         userCreditCardRepository.save(userCard);
+        return userCard.getId();
     }
 
     @CacheEvict(value = CacheNames.USER_CARDS_CACHE_NAME, key = "#userId")
@@ -169,5 +171,11 @@ public class CardServiceImpl implements CardService {
     public boolean isUserCardEmpty(UUID userId) {
         var userCards = userCreditCardRepository.existsByUserIdAndDeletedAtIsNull(userId);
         return !userCards;
+    }
+
+    @Override
+    public boolean isUserCardExists(UUID cardId, UUID userId) {
+        log.info("Checking if user card exists for cardId: {} and userId: {}", cardId, userId);
+        return userCreditCardRepository.existsByCardProductIdAndUserIdAndDeletedAtIsNull(cardId, userId);
     }
 }

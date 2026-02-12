@@ -1,5 +1,8 @@
 package com.fpt.ojt.models.postgres.user;
 
+
+import org.hibernate.annotations.SQLRestriction;
+
 import com.fpt.ojt.models.postgres.AbstractBaseEntity;
 import com.fpt.ojt.models.postgres.merchant.MerchantAgency;
 import jakarta.persistence.*;
@@ -12,6 +15,7 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@SQLRestriction("deleted_at IS NULL")
 public class FavoriteMerchant extends AbstractBaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)

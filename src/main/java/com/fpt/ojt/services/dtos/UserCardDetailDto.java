@@ -14,7 +14,7 @@ public class UserCardDetailDto {
 
     private UUID userCardId;
 
-    private LocalDate firstPaymentDate;
+    private int firstPaymentDate;
 
     private LocalDate expiryDate;
 

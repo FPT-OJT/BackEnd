@@ -17,7 +17,7 @@ public interface CardService {
 
     List<UserCardDto> getUserCards(UUID userId);
 
-    void addCardToUser(UUID userId, AddCardToUserRequest userCardDto);
+    UUID addCardToUser(UUID userId, AddCardToUserRequest userCardDto);
 
     void editUserCard(UUID userCardId, UUID userId, EditUserCard userCardDto);
 
@@ -27,4 +27,5 @@ public interface CardService {
 
     List<UserCardDto> getUserCardsByCardType(UUID userId, String cardType);
     boolean isUserCardEmpty(UUID userId);
+    boolean isUserCardExists(UUID cardId, UUID userId);
 }

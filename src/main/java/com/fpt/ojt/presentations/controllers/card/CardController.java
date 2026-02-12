@@ -12,6 +12,8 @@ import com.fpt.ojt.presentations.dtos.responses.SingleResponse;
 import com.fpt.ojt.services.card.CardService;
 import com.fpt.ojt.services.dtos.CardProductDto;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
@@ -24,10 +26,11 @@ public class CardController {
 
     private static final String DEFAULT_SEARCH_LIMIT = "10";
 
+    @Operation(summary = "Search card products", description = "Search for card products by keyword with optional limit")
     @GetMapping("/search")
     public ResponseEntity<SingleResponse<List<CardProductDto>>> searchCardProducts(
-            @RequestParam(defaultValue = "", required = false) String keyword,
-            @RequestParam(required = false, defaultValue = DEFAULT_SEARCH_LIMIT) Integer limit) {
+            @Parameter(description = "Search keyword for card products") @RequestParam(defaultValue = "", required = false) String keyword,
+            @Parameter(description = "Maximum number of results to return", example = "10") @RequestParam(required = false, defaultValue = DEFAULT_SEARCH_LIMIT) Integer limit) {
         return ResponseEntity.ok(
                 SingleResponse.<List<CardProductDto>>builder()
                         .data(cardService.searchCardProducts(keyword, limit))

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import com.fpt.ojt.infrastructure.configs.CacheNames;
 import com.fpt.ojt.models.postgres.merchant.NearestAgencyProjection;
 import com.fpt.ojt.repositories.merchant.MerchantAgencyRepository;
+import com.fpt.ojt.services.dtos.MerchantSort;
 import com.fpt.ojt.services.dtos.NearestAgencyDto;
 import com.fpt.ojt.services.merchants.MerchantAgencyService;
 
@@ -22,9 +23,9 @@ public class MerchantAgencyServiceImpl implements MerchantAgencyService {
 
     @Cacheable(cacheNames = CacheNames.SEARCH_NEAREST_MERCHANT_CACHE_NAME, keyGenerator = "nearestMerchantCacheKeyGenerator")
     @Override
-    public List<NearestAgencyDto> findNearestAgencies(String keyword, Double latitude, Double longitude, int limit) {
+    public List<NearestAgencyDto> findNearestAgencies(String keyword, Double latitude, Double longitude, int limit, MerchantSort sort) {
 
-        var result = merchantAgencyRepository.searchNearestAgencies(keyword, latitude, longitude, limit);
+        var result = merchantAgencyRepository.searchNearestAgenciesWithSort(keyword, latitude, longitude, limit, sort.name());
         return result.stream()
                 .map(this::mapToNearestAgencyDto)
                 .toList();
