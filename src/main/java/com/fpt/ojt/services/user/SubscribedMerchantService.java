@@ -15,6 +15,8 @@ public interface SubscribedMerchantService {
 
     void unsubscribeMerchantAgency(UUID userId, UUID merchantAgencyId);
 
+    boolean toggleSubscribedMerchantAgency(UUID userId, UUID merchantAgencyId);
+
     void subscribeMerchant(UUID userId, UUID merchantId);
 
     void unsubscribeMerchant(UUID userId, UUID merchantId);

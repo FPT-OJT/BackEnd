@@ -48,4 +48,17 @@ public class FavoriteMerchantServiceImpl implements FavoriteMerchantService {
         favoriteMerchantRepository.deleteByUserIdAndMerchantAgencyId(userId, favoriteMerchantId);
        
     }
+
+    @Override
+    @Transactional
+    public boolean toggleFavoriteMerchantAgency(UUID userId, UUID merchantAgencyId) {
+        if (favoriteMerchantRepository.existsByUserIdAndMerchantAgencyId(userId, merchantAgencyId)) {
+            favoriteMerchantRepository.deleteByUserIdAndMerchantAgencyId(userId, merchantAgencyId);
+            return false;
+        }
+        else {
+            favoriteMerchantRepository.insertOrRestore(userId, merchantAgencyId);
+            return true;
+        }
+    }
 }

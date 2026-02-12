@@ -42,10 +42,12 @@ public class FavoriteMerchantController {
 
     @Operation(summary = "Add favorite merchant agency", description = "Add a merchant agency to the current user's favorites")
     @PostMapping
-    public ResponseEntity<SingleResponse<Void>> addFavoriteMerchant(@RequestBody AddFavoriteMerchantRequest request) {
+    public ResponseEntity<SingleResponse<Boolean>> toggleFavoriteMerchantAgency(
+            @RequestBody AddFavoriteMerchantRequest request) {
         var userId = authService.getCurrentUserId();
-        favoriteMerchantService.addFavoriteMerchant(userId, request.getMerchantAgencyId());
-        return responseFactory.successSingle(null, "Favorite merchant added successfully");
+        var isFavorite = favoriteMerchantService.toggleFavoriteMerchantAgency(userId, request.getMerchantAgencyId());
+        return responseFactory.successSingle(isFavorite, isFavorite ? "Favorite merchant agency added successfully"
+                : "Favorite merchant agency removed successfully");
     }
 
     @Operation(summary = "Remove favorite merchant", description = "Remove a merchant from the current user's favorites")

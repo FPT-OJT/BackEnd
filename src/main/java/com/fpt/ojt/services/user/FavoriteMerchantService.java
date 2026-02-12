@@ -11,4 +11,6 @@ public interface FavoriteMerchantService {
     void addFavoriteMerchant(UUID userId, UUID merchantAgencyId);
 
     void removeFavoriteMerchant(UUID userId, UUID merchantId);
+
+    boolean toggleFavoriteMerchantAgency(UUID userId, UUID merchantAgencyId);
 }

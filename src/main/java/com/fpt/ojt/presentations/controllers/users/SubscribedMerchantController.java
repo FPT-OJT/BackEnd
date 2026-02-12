@@ -22,6 +22,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+
 @RestController
 @RequestMapping("/users/subscribed-merchants")
 @RequiredArgsConstructor
@@ -29,29 +30,33 @@ import lombok.RequiredArgsConstructor;
 public class SubscribedMerchantController extends AbstractBaseController {
     private final SubscribedMerchantService subscribedMerchantService;
     private final AuthService authService;
-    
+
     @Operation(summary = "Get subscribed merchants", description = "Retrieve all merchants that the current user has subscribed to")
     @GetMapping
-    public ResponseEntity<SingleResponse<List<SubscribedMerchantDto >>> getSubscribedMerchants() {
-        return responseFactory.successSingle(subscribedMerchantService.getSubscribedMerchants(authService.getCurrentUserId()),
+    public ResponseEntity<SingleResponse<List<SubscribedMerchantDto>>> getSubscribedMerchants() {
+        return responseFactory.successSingle(
+                subscribedMerchantService.getSubscribedMerchants(authService.getCurrentUserId()),
                 "Get subscribed merchants successful");
     }
-    
+
     @Operation(summary = "Get subscribed merchant agencies", description = "Retrieve all merchant agencies that the current user has subscribed to")
     @GetMapping("/agencies")
     public ResponseEntity<SingleResponse<List<SubscribedMerchantAgencyDto>>> getSubscribedMerchantAgencies() {
-        return responseFactory.successSingle(subscribedMerchantService.getSubscribedMerchantAgencies(authService.getCurrentUserId()),
+        return responseFactory.successSingle(
+                subscribedMerchantService.getSubscribedMerchantAgencies(authService.getCurrentUserId()),
                 "Get subscribed merchant agencies successful");
     }
-    
-    @Operation(summary = "Subscribe to merchant agency", description = "Subscribe the current user to a specific merchant agency")
+
+    @Operation(summary = "Toggle subscribed merchant agency", description = "Toggle the current user's subscription to a specific merchant agency")
     @PostMapping("/agencies/{merchantAgencyId}")
-    public ResponseEntity<SingleResponse<Void>> subscribeMerchantAgency(
+    public ResponseEntity<SingleResponse<Boolean>> toggleSubscribedMerchantAgency(
             @Parameter(description = "UUID of the merchant agency to subscribe to", required = true) @PathVariable UUID merchantAgencyId) {
-        subscribedMerchantService.subscribeMerchantAgency(authService.getCurrentUserId(), merchantAgencyId);
-        return responseFactory.successSingle(null, "Subscribe merchant agency successful");
+        var userId = authService.getCurrentUserId();
+        var isSubscribed = subscribedMerchantService.toggleSubscribedMerchantAgency(userId, merchantAgencyId);
+        return responseFactory.successSingle(isSubscribed,
+                isSubscribed ? "Subscribed merchant agency successful" : "Unsubscribed merchant agency successful");
     }
-    
+
     @Operation(summary = "Unsubscribe from merchant agency", description = "Unsubscribe the current user from a specific merchant agency")
     @DeleteMapping("/agencies/{merchantAgencyId}")
     public ResponseEntity<SingleResponse<Void>> unsubscribeMerchantAgency(
@@ -59,7 +64,7 @@ public class SubscribedMerchantController extends AbstractBaseController {
         subscribedMerchantService.unsubscribeMerchantAgency(authService.getCurrentUserId(), merchantAgencyId);
         return responseFactory.successSingle(null, "Unsubscribe merchant agency successful");
     }
-    
+
     @Operation(summary = "Subscribe to merchant", description = "Subscribe the current user to a specific merchant")
     @PostMapping("/{merchantId}")
     public ResponseEntity<SingleResponse<Void>> subscribeMerchant(
@@ -67,7 +72,7 @@ public class SubscribedMerchantController extends AbstractBaseController {
         subscribedMerchantService.subscribeMerchant(authService.getCurrentUserId(), merchantId);
         return responseFactory.successSingle(null, "Subscribe merchant successful");
     }
-    
+
     @Operation(summary = "Unsubscribe from merchant", description = "Unsubscribe the current user from a specific merchant")
     @DeleteMapping("/{merchantId}")
     public ResponseEntity<SingleResponse<Void>> unsubscribeMerchant(

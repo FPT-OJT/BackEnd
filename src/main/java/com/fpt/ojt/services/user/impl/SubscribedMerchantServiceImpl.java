@@ -73,4 +73,15 @@ public class SubscribedMerchantServiceImpl implements SubscribedMerchantService 
         subscribedMerchantRepository.deleteByUserIdAndMerchantId(userId, merchantId);
     }
 
+    @Transactional
+    public boolean toggleSubscribedMerchantAgency(UUID userId, UUID merchantAgencyId) {
+        if (subscribedMerchantRepository.existsByUserIdAndMerchantAgencyId(userId, merchantAgencyId)) {
+            subscribedMerchantRepository.deleteByUserIdAndMerchantAgencyId(userId, merchantAgencyId);
+            return false;
+        } else {
+            subscribedMerchantRepository.insertOrRestore(userId, merchantAgencyId);
+            return true;
+        }
+    }
+
 }
