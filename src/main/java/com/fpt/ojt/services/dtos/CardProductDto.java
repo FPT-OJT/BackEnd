@@ -15,7 +15,6 @@ public class CardProductDto {
     private String cardName;
 
     private String cardType;
-    private String imageUrl;
 
     private String imageUrl;
     private String cardCode;
