@@ -39,96 +39,24 @@ public class MerchantDetailServiceImpl implements MerchantDetailService {
     private final CardMerchantDealRepository cardMerchantDealRepository;
 
     @Override
-    @Cacheable(value = CacheNames.MERCHANT_DETAIL_CACHE_NAME, key = "#merchantAgencyId + '-' + #userId")
     public MerchantAgencyCardsDealsResponse getCardsWithDeals(UUID merchantAgencyId, UUID userId) {
         try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
-            // Parallel fetch all required data
-            var agencyFuture = executor.submit(() -> merchantAgencyRepository.findById(merchantAgencyId)
-                    .orElseThrow(() -> new NotFoundException("Merchant agency not found")));
+            var agencyFuture = executor.submit(() -> getMerchantAgency(merchantAgencyId));
+            var userCardsFuture = executor.submit(() -> getUserCards(userId));
+            var merchantDealsFuture = executor.submit(() -> getMerchantDeals(merchantAgencyId));
+            var cardRulesFuture = executor.submit(() -> getCardRules(userId));
 
-            var userCardsFuture = executor
-                    .submit(() -> userCreditCardRepository.findByUserIdAndDeletedAtIsNull(userId));
-
-            var merchantDealsFuture = executor
-                    .submit(() -> merchantDealRepository.findAvailableByMerchantAgencyId(merchantAgencyId));
-
-            var cardRulesFuture = executor
-                    .submit(() -> cardRuleRepository.findAllAvailableByCardRulesWithConditionByUserId(userId));
-
-            // Wait for results
             MerchantAgency agency = agencyFuture.get();
             List<UserCreditCard> userCards = userCardsFuture.get();
             List<MerchantDeal> merchantDeals = merchantDealsFuture.get();
             List<CardRule> cardRules = cardRulesFuture.get();
 
             String mcc = agency.getMerchant().getMcc();
+            Map<UUID, List<CardRule>> cardRulesByProduct = groupCardRulesByProduct(cardRules);
+            List<MerchantAgencyCardsDealsResponse.CardWithDeals> cardsWithDeals = processCardsWithDeals(
+                    userCards, cardRulesByProduct, merchantDeals, mcc);
 
-            // Group card rules by cardProductId
-            Map<UUID, List<CardRule>> cardRulesByProduct = cardRules.stream()
-                    .collect(Collectors.groupingBy(rule -> rule.getCardProduct().getId()));
-
-            // Process each user card
-            List<MerchantAgencyCardsDealsResponse.CardWithDeals> cardsWithDeals = userCards.stream()
-                    .map(userCard -> {
-                        UUID cardProductId = userCard.getCardProduct().getId();
-                        List<CardRule> rulesForThisCard = cardRulesByProduct.getOrDefault(cardProductId, List.of());
-
-                        List<MerchantAgencyCardsDealsResponse.DealItem> deals = new ArrayList<>();
-
-                        // 1. Add merchant deals
-                        for (MerchantDeal merchantDeal : merchantDeals) {
-                            if (isCardEligibleForDeal(merchantDeal.getId(), cardProductId)) {
-                                deals.add(MerchantAgencyCardsDealsResponse.DealItem.builder()
-                                        .type(DealType.MERCHANT_DEAL)
-                                        .dealId(merchantDeal.getId())
-                                        .dealName(merchantDeal.getDealName())
-                                        .discountRate(merchantDeal.getDiscountRate())
-                                        .cashbackRate(merchantDeal.getCashbackRate())
-                                        .pointsMultiplier(merchantDeal.getPointsMultiplier())
-                                        .description(merchantDeal.getDescription())
-                                        .validFrom(merchantDeal.getValidFrom())
-                                        .validTo(merchantDeal.getValidTo())
-                                        .build());
-                            }
-                        }
-
-                        // 2. Add card deals
-                        for (CardRule rule : rulesForThisCard) {
-                            if (isMccMatching(mcc, rule.getMatchAllowMccs(), rule.getMatchRejectMccs())) {
-                                double benefit = calculateCardBenefit(rule);
-                                if (benefit > 0) {
-                                    deals.add(MerchantAgencyCardsDealsResponse.DealItem.builder()
-                                            .type(DealType.CARD_DEAL)
-                                            .dealId(null)
-                                            .dealName("Card Benefit")
-                                            .discountRate(calculateDiscountRate(rule))
-                                            .cashbackRate(rule.getEffectCashbackRate())
-                                            .pointsMultiplier(null)
-                                            .description(null)
-                                            .validFrom(null)
-                                            .validTo(null)
-                                            .build());
-                                }
-                            }
-                        }
-
-                        return MerchantAgencyCardsDealsResponse.CardWithDeals.builder()
-                                .userCardId(userCard.getId())
-                                .cardProductId(cardProductId)
-                                .cardName(userCard.getCardProduct().getCardName())
-                                .cardImageUrl(userCard.getCardProduct().getImageUrl())
-                                .cardType(userCard.getCardProduct().getCardType())
-                                .deals(deals)
-                                .build();
-                    })
-                    .toList();
-
-            return MerchantAgencyCardsDealsResponse.builder()
-                    .merchantAgencyId(agency.getId())
-                    .merchantAgencyName(agency.getName())
-                    .imageUrl(agency.getImageUrl())
-                    .cards(cardsWithDeals)
-                    .build();
+            return buildResponse(agency, cardsWithDeals);
 
         } catch (InterruptedException | ExecutionException e) {
             log.error("Error fetching cards with deals for merchant agency: {}", merchantAgencyId, e);
@@ -136,32 +64,167 @@ public class MerchantDetailServiceImpl implements MerchantDetailService {
         }
     }
 
+
+    @Cacheable(value = CacheNames.MERCHANT_AGENCY_CACHE_NAME, key = "#merchantAgencyId")
+    private MerchantAgency getMerchantAgency(UUID merchantAgencyId) {
+        return merchantAgencyRepository.findById(merchantAgencyId)
+                .orElseThrow(() -> new NotFoundException("Merchant agency not found"));
+    }
+
+    @Cacheable(value = CacheNames.USER_CARDS_CACHE_NAME, key = "#userId")
+    private List<UserCreditCard> getUserCards(UUID userId) {
+        return userCreditCardRepository.findByUserIdAndDeletedAtIsNull(userId);
+    }
+
+    @Cacheable(value = CacheNames.MERCHANT_DEALS_CACHE_NAME, key = "#merchantAgencyId")
+    private List<MerchantDeal> getMerchantDeals(UUID merchantAgencyId) {
+        return merchantDealRepository.findAvailableByMerchantAgencyId(merchantAgencyId);
+    }
+
+    @Cacheable(value = CacheNames.CARD_RULES_CACHE_NAME, key = "#userId")
+    private List<CardRule> getCardRules(UUID userId) {
+        return cardRuleRepository.findAllAvailableByCardRulesWithConditionByUserId(userId);
+    }
+
+
+    private Map<UUID, List<CardRule>> groupCardRulesByProduct(List<CardRule> cardRules) {
+        return cardRules.stream()
+                .collect(Collectors.groupingBy(rule -> rule.getCardProduct().getId()));
+    }
+
+    private List<MerchantAgencyCardsDealsResponse.CardWithDeals> processCardsWithDeals(
+            List<UserCreditCard> userCards,
+            Map<UUID, List<CardRule>> cardRulesByProduct,
+            List<MerchantDeal> merchantDeals,
+            String mcc) {
+        
+        return userCards.stream()
+                .map(userCard -> processCardWithDeals(userCard, cardRulesByProduct, merchantDeals, mcc))
+                .toList();
+    }
+
+    private MerchantAgencyCardsDealsResponse.CardWithDeals processCardWithDeals(
+            UserCreditCard userCard,
+            Map<UUID, List<CardRule>> cardRulesByProduct,
+            List<MerchantDeal> merchantDeals,
+            String mcc) {
+        
+        UUID cardProductId = userCard.getCardProduct().getId();
+        List<CardRule> rulesForThisCard = cardRulesByProduct.getOrDefault(cardProductId, List.of());
+
+        List<MerchantAgencyCardsDealsResponse.DealItem> deals = new ArrayList<>();
+        
+        addMerchantDeals(deals, merchantDeals, cardProductId);
+        
+        addCardDeals(deals, rulesForThisCard, mcc);
+
+        return buildCardWithDeals(userCard, cardProductId, deals);
+    }
+
+    private void addMerchantDeals(
+            List<MerchantAgencyCardsDealsResponse.DealItem> deals,
+            List<MerchantDeal> merchantDeals,
+            UUID cardProductId) {
+        
+        for (MerchantDeal merchantDeal : merchantDeals) {
+            if (isCardEligibleForDeal(merchantDeal.getId(), cardProductId)) {
+                deals.add(buildMerchantDealItem(merchantDeal));
+            }
+        }
+    }
+
+    private void addCardDeals(
+            List<MerchantAgencyCardsDealsResponse.DealItem> deals,
+            List<CardRule> rulesForThisCard,
+            String mcc) {
+        
+        for (CardRule rule : rulesForThisCard) {
+            if (isMccMatching(mcc, rule.getMatchAllowMccs(), rule.getMatchRejectMccs())) {
+                double benefit = calculateCardBenefit(rule);
+                if (benefit > 0) {
+                    deals.add(buildCardDealItem(rule));
+                }
+            }
+        }
+    }
+
+
+    private MerchantAgencyCardsDealsResponse buildResponse(
+            MerchantAgency agency,
+            List<MerchantAgencyCardsDealsResponse.CardWithDeals> cardsWithDeals) {
+        
+        return MerchantAgencyCardsDealsResponse.builder()
+                .merchantAgencyId(agency.getId())
+                .merchantAgencyName(agency.getName())
+                .imageUrl(agency.getImageUrl())
+                .cards(cardsWithDeals)
+                .build();
+    }
+
+    private MerchantAgencyCardsDealsResponse.CardWithDeals buildCardWithDeals(
+            UserCreditCard userCard,
+            UUID cardProductId,
+            List<MerchantAgencyCardsDealsResponse.DealItem> deals) {
+        
+        return MerchantAgencyCardsDealsResponse.CardWithDeals.builder()
+                .userCardId(userCard.getId())
+                .cardProductId(cardProductId)
+                .cardName(userCard.getCardProduct().getCardName())
+                .cardImageUrl(userCard.getCardProduct().getImageUrl())
+                .cardType(userCard.getCardProduct().getCardType())
+                .deals(deals)
+                .build();
+    }
+
+    private MerchantAgencyCardsDealsResponse.DealItem buildMerchantDealItem(MerchantDeal merchantDeal) {
+        return MerchantAgencyCardsDealsResponse.DealItem.builder()
+                .type(DealType.MERCHANT_DEAL)
+                .dealId(merchantDeal.getId())
+                .dealName(merchantDeal.getDealName())
+                .discountRate(merchantDeal.getDiscountRate())
+                .cashbackRate(merchantDeal.getCashbackRate())
+                .pointsMultiplier(merchantDeal.getPointsMultiplier())
+                .description(merchantDeal.getDescription())
+                .validFrom(merchantDeal.getValidFrom())
+                .validTo(merchantDeal.getValidTo())
+                .build();
+    }
+
+    private MerchantAgencyCardsDealsResponse.DealItem buildCardDealItem(CardRule rule) {
+        return MerchantAgencyCardsDealsResponse.DealItem.builder()
+                .type(DealType.CARD_DEAL)
+                .dealId(null)
+                .dealName("Card Benefit")
+                .discountRate(calculateDiscountRate(rule))
+                .cashbackRate(rule.getEffectCashbackRate())
+                .pointsMultiplier(null)
+                .description(null)
+                .validFrom(null)
+                .validTo(null)
+                .build();
+    }
+
+
     private boolean isCardEligibleForDeal(UUID dealId, UUID cardProductId) {
-        // If deal is available for all cards, return true
         if (cardMerchantDealRepository.isDealAvailableForAllCards(dealId)) {
             return true;
         }
-        // Otherwise check if this specific card is linked to the deal
         return cardMerchantDealRepository.existsByDealAndCard(dealId, cardProductId);
     }
 
     private boolean isMccMatching(String mcc, List<String> allowMccs, List<String> rejectMccs) {
-        // If both lists are null or empty, match all
         if ((allowMccs == null || allowMccs.isEmpty()) && (rejectMccs == null || rejectMccs.isEmpty())) {
             return true;
         }
 
-        // If MCC is in reject list, don't match
         if (rejectMccs != null && rejectMccs.contains(mcc)) {
             return false;
         }
 
-        // If allowMccs is specified and not empty, only match if MCC is in the list
         if (allowMccs != null && !allowMccs.isEmpty()) {
             return allowMccs.contains(mcc);
         }
 
-        // Otherwise match
         return true;
     }
 

@@ -8,4 +8,8 @@ public class CacheNames {
     public static final String MERCHANT_OFFERS_CACHE_NAME = "merchantOffers";
     public static final String MERCHANT_CATEGORIES_CACHE_NAME = "merchantCategories";
     public static final String USER_CARD_EMPTY_CACHE_NAME = "userCardEmpty";
+    
+    public static final String MERCHANT_AGENCY_CACHE_NAME = "merchantAgency";
+    public static final String MERCHANT_DEALS_CACHE_NAME = "merchantDeals";
+    public static final String CARD_RULES_CACHE_NAME = "cardRules";
 }
