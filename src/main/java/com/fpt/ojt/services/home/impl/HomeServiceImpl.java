@@ -16,9 +16,11 @@ import com.fpt.ojt.services.merchants.CategoryService;
 import com.fpt.ojt.services.merchants.MerchantService;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class HomeServiceImpl implements HomeService {
     private final MerchantService merchantService;
     private final CardService cardService;
@@ -34,15 +36,24 @@ public class HomeServiceImpl implements HomeService {
 
             var merchantFuture = CompletableFuture.supplyAsync(
                     () -> merchantService.getMerchantOffers(MERCHANT_OFFERS_LIMIT, userId), executor)
-                    .exceptionally(ex -> List.of());
+                    .exceptionally(ex -> {
+                        log.error("Error getting merchant offers", ex);
+                        return List.of();
+                    });
 
             var categoryFuture = CompletableFuture.supplyAsync(
                     () -> categoryService.getMerchantCategories(MERCHANT_CATEGORIES_LIMIT), executor)
-                    .exceptionally(ex -> Collections.emptyList());
+                    .exceptionally(ex -> {
+                        log.error("Error getting merchant categories", ex);
+                        return Collections.emptyList();
+                    });
 
             var cardFuture = CompletableFuture.supplyAsync(
                     () -> cardService.isUserCardEmpty(userId), executor)
-                    .exceptionally(ex -> false);
+                    .exceptionally(ex -> {
+                        log.error("Error getting user card empty", ex);
+                        return false;
+                    });
 
             return HomePageResponse.builder()
                     .merchantOffers(merchantFuture.join())

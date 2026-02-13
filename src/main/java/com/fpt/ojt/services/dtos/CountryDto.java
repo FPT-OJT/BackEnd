@@ -1,6 +1,5 @@
 package com.fpt.ojt.services.dtos;
 
-import java.util.UUID;
 
 import com.fpt.ojt.models.postgres.card.Country;
 
