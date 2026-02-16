@@ -80,4 +80,12 @@ public class SubscribedMerchantController extends AbstractBaseController {
         subscribedMerchantService.unsubscribeMerchant(authService.getCurrentUserId(), merchantId);
         return responseFactory.successSingle(null, "Unsubscribe merchant successful");
     }
+
+  
+    @GetMapping("/agencies/{merchantAgencyId}/is-subscribed")
+    public ResponseEntity<SingleResponse<Boolean>> isSubscribedMerchantAgency(
+            @Parameter(description = "UUID of the merchant agency to check if the current user is subscribed to", required = true) @PathVariable UUID merchantAgencyId) {
+        var isSubscribed = subscribedMerchantService.isSubscribedMerchantAgency(authService.getCurrentUserId(), merchantAgencyId);
+        return responseFactory.successSingle(isSubscribed, "Is subscribed merchant agency successful");
+    }
 }

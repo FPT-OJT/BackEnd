@@ -20,4 +20,6 @@ public interface SubscribedMerchantService {
     void subscribeMerchant(UUID userId, UUID merchantId);
 
     void unsubscribeMerchant(UUID userId, UUID merchantId);
+
+    boolean isSubscribedMerchantAgency(UUID userId, UUID merchantAgencyId);
 }
