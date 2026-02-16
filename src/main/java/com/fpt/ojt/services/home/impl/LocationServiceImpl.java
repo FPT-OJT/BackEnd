@@ -1,16 +1,13 @@
 package com.fpt.ojt.services.home.impl;
 
 import java.net.InetAddress;
-import java.util.Map;
 
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.client.support.RestTemplateAdapter;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fpt.ojt.exceptions.BadRequestException;
 import com.fpt.ojt.services.dtos.Coordinate;
 import com.fpt.ojt.services.home.LocationService;
+import com.fpt.ojt.utils.IpUtils;
 import com.maxmind.geoip2.DatabaseReader;
 import com.maxmind.geoip2.model.CityResponse;
 
@@ -20,8 +17,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class LocationServiceImpl implements LocationService {
     private final DatabaseReader databaseReader;
+    private final IpUtils ipUtils;
 
-    @Override
     public Coordinate mapFromIpAddress(String ip) {
         try {
             InetAddress ipAddress = InetAddress.getByName(ip);
@@ -34,5 +31,11 @@ public class LocationServiceImpl implements LocationService {
         } catch (Exception e) {
             throw new BadRequestException("Failed to map IP address to coordinate: " + e.getMessage());
         }
+    }
+
+    @Override
+    public Coordinate getCurrentUserLocation() {
+        String ip = ipUtils.getClientIp();
+        return mapFromIpAddress(ip);
     }
 }

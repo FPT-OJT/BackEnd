@@ -38,8 +38,8 @@ public class MerchantAgencyController extends AbstractBaseController {
         @GetMapping("/nearest")
         public ResponseEntity<SingleResponse<List<NearestAgencyDto>>> getNearestAgencies(
                         @Parameter(description = "Search keyword for merchant agencies", required = true) @RequestParam(required = true) String keyword,
-                        @Parameter(description = "Latitude coordinate", required = true, example = "10.762622") @RequestParam(required = true) Double latitude,
-                        @Parameter(description = "Longitude coordinate", required = true, example = "106.660172") @RequestParam(required = true) Double longitude,
+                        @Parameter(description = "Latitude coordinate", required = false, example = "10.762622") @RequestParam(required = false, defaultValue = "0") Double latitude,
+                        @Parameter(description = "Longitude coordinate", required = false, example = "106.660172") @RequestParam(required = false, defaultValue = "0") Double longitude,
                         @Parameter(description = "Maximum number of results to return", example = "10") @RequestParam(defaultValue = DEFAULT_SEARCH_LIMIT, required = false) int limit,
                         @Parameter(description = "Sort order for results", example = "NAME_ASC") @RequestParam(defaultValue = "NAME_ASC", required = false) MerchantSort sort) {
                 var agencies = merchantAgencyService.findNearestAgencies(keyword, latitude, longitude, limit, sort);

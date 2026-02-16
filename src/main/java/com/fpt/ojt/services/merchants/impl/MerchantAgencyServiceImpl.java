@@ -12,6 +12,7 @@ import com.fpt.ojt.models.postgres.merchant.NearestAgencyProjection;
 import com.fpt.ojt.repositories.merchant.MerchantAgencyRepository;
 import com.fpt.ojt.services.dtos.MerchantSort;
 import com.fpt.ojt.services.dtos.NearestAgencyDto;
+import com.fpt.ojt.services.home.LocationService;
 import com.fpt.ojt.services.merchants.MerchantAgencyService;
 
 import lombok.RequiredArgsConstructor;
@@ -20,12 +21,21 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class MerchantAgencyServiceImpl implements MerchantAgencyService {
     private final MerchantAgencyRepository merchantAgencyRepository;
+    private final LocationService locationService;
 
     @Cacheable(cacheNames = CacheNames.SEARCH_NEAREST_MERCHANT_CACHE_NAME, keyGenerator = "nearestMerchantCacheKeyGenerator")
     @Override
-    public List<NearestAgencyDto> findNearestAgencies(String keyword, Double latitude, Double longitude, int limit, MerchantSort sort) {
+    public List<NearestAgencyDto> findNearestAgencies(String keyword, Double latitude, Double longitude, int limit,
+            MerchantSort sort) {
 
-        var result = merchantAgencyRepository.searchNearestAgenciesWithSort(keyword, latitude, longitude, limit, sort.name());
+        if (latitude == 0 || longitude == 0) {
+            var coordinate = locationService.getCurrentUserLocation();
+            latitude = coordinate.getLatitude();
+            longitude = coordinate.getLongitude();
+        }
+
+        var result = merchantAgencyRepository.searchNearestAgenciesWithSort(keyword, latitude, longitude, limit,
+                sort.name());
         return result.stream()
                 .map(this::mapToNearestAgencyDto)
                 .toList();

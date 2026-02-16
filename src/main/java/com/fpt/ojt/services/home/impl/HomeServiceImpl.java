@@ -37,7 +37,7 @@ public class HomeServiceImpl implements HomeService {
     public HomePageResponse getHomeData(HomeParam homeParam) {
         try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
             Coordinate userLocation = homeParam.getUserLocation().orElse(
-                    locationService.mapFromIpAddress(homeParam.getIpAddress()));
+                    locationService.getCurrentUserLocation());
             UUID userId = authService.getCurrentUserId();
 
             var merchantFuture = CompletableFuture.supplyAsync(

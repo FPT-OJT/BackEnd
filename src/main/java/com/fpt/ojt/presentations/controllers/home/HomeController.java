@@ -51,7 +51,7 @@ public class HomeController extends AbstractBaseController {
     @Operation(summary = "Location endpoint", description = "Get location")
     public ResponseEntity<SingleResponse<Coordinate>> getLocation(@RequestParam String ipAddress) {
         return responseFactory.successSingle(
-                locationService.mapFromIpAddress(ipAddress),
+                locationService.getCurrentUserLocation(),
                 "Retrieve location successfully");
     }
 }
