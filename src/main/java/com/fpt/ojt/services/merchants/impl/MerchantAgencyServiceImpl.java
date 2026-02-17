@@ -1,15 +1,16 @@
 package com.fpt.ojt.services.merchants.impl;
 
-import java.time.Duration;
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import com.fpt.ojt.infrastructure.configs.CacheNames;
 import com.fpt.ojt.models.postgres.merchant.NearestAgencyProjection;
+import com.fpt.ojt.repositories.deal.MerchantDealRepository;
 import com.fpt.ojt.repositories.merchant.MerchantAgencyRepository;
+import com.fpt.ojt.services.dtos.MerchantDealDto;
 import com.fpt.ojt.services.dtos.MerchantSort;
 import com.fpt.ojt.services.dtos.NearestAgencyDto;
 import com.fpt.ojt.services.location.LocationService;
@@ -22,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 public class MerchantAgencyServiceImpl implements MerchantAgencyService {
     private final MerchantAgencyRepository merchantAgencyRepository;
     private final LocationService locationService;
+    private final MerchantDealRepository merchantDealRepository;
 
     @Cacheable(cacheNames = CacheNames.SEARCH_NEAREST_MERCHANT_CACHE_NAME, keyGenerator = "nearestMerchantCacheKeyGenerator")
     @Override
@@ -50,6 +52,29 @@ public class MerchantAgencyServiceImpl implements MerchantAgencyService {
                 .logoUrl(projection.getLogoUrl())
                 .description(projection.getDescription())
                 .distanceMeters(projection.getDistanceMeters())
+                .build();
+    }
+
+    @Override
+    public List<MerchantDealDto> findAvailableDeals(UUID merchantAgencyId) {
+        var deals = merchantDealRepository.findAvailableByMerchantAgencyId(merchantAgencyId);
+        return deals.stream()
+                .map(this::mapToMerchantDealDto)
+                .toList();
+    }
+
+    private MerchantDealDto mapToMerchantDealDto(com.fpt.ojt.models.postgres.deal.MerchantDeal deal) {
+        return MerchantDealDto.builder()
+                .id(deal.getId())
+                .merchantName(deal.getMerchantAgency().getMerchant().getName())
+                .logoUrl(deal.getMerchantAgency().getMerchant().getLogoUrl())
+                .merchantDescription(deal.getMerchantAgency().getMerchant().getDescription())
+                .agencyName(deal.getMerchantAgency().getName())
+                .dealName(deal.getDealName())
+                .discountRate(deal.getDiscountRate())
+                .cashbackRate(deal.getCashbackRate())
+                .pointsMultiplier(deal.getPointsMultiplier())
+                .description(deal.getDescription())
                 .build();
     }
 

@@ -14,6 +14,7 @@ import com.fpt.ojt.presentations.controllers.base.AbstractBaseController;
 import com.fpt.ojt.presentations.dtos.responses.SingleResponse;
 import com.fpt.ojt.presentations.dtos.responses.merchant.MerchantAgencyCardsDealsResponse;
 import com.fpt.ojt.services.auth.AuthService;
+import com.fpt.ojt.services.dtos.MerchantDealDto;
 import com.fpt.ojt.services.dtos.MerchantSort;
 import com.fpt.ojt.services.dtos.NearestAgencyDto;
 import com.fpt.ojt.services.merchantdetail.MerchantDetailService;
@@ -56,5 +57,12 @@ public class MerchantAgencyController extends AbstractBaseController {
                 var cardsWithDeals = merchantDetailService.getCardsWithDeals(merchantAgencyId, currentUserId);
 
                 return responseFactory.successSingle(cardsWithDeals, "Get cards with deals successfully");
+        }
+
+        @GetMapping("/{merchantAgencyId}/deals")
+        public ResponseEntity<SingleResponse<List<MerchantDealDto>>> getAvailableDeals(
+                        @PathVariable UUID merchantAgencyId) {
+                var deals = merchantAgencyService.findAvailableDeals(merchantAgencyId);
+                return responseFactory.successSingle(deals, "Get available deals successfully");
         }
 }
