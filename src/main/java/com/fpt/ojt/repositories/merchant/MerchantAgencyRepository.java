@@ -1,8 +1,8 @@
 package com.fpt.ojt.repositories.merchant;
 
+import com.fpt.ojt.models.postgres.merchant.GeofenceAgencyProjection;
 import com.fpt.ojt.models.postgres.merchant.MerchantAgency;
 import com.fpt.ojt.models.postgres.merchant.NearestAgencyProjection;
-import com.fpt.ojt.services.dtos.locations.GeofenceRegistrationDto;
 
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -174,7 +174,7 @@ public interface MerchantAgencyRepository
                 ORDER BY a.location <-> u.point
                 LIMIT :limit
             """, nativeQuery = true)
-    List<GeofenceRegistrationDto> getNearestMerchantAgencies(
+    List<GeofenceAgencyProjection> getNearestMerchantAgencies(
             @Param("userLat") double userLat,
             @Param("userLng") double userLng,
             @Param("limit") int limit);

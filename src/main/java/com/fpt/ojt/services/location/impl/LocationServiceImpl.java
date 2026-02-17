@@ -3,10 +3,12 @@ package com.fpt.ojt.services.location.impl;
 import java.net.InetAddress;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
 import com.fpt.ojt.exceptions.BadRequestException;
+import com.fpt.ojt.models.postgres.merchant.GeofenceAgencyProjection;
 import com.fpt.ojt.repositories.merchant.MerchantAgencyRepository;
 import com.fpt.ojt.services.dtos.Coordinate;
 import com.fpt.ojt.services.dtos.locations.GeofenceRegistrationDto;
@@ -48,9 +50,17 @@ public class LocationServiceImpl implements LocationService {
     @Override
     public List<GeofenceRegistrationDto> getGeofenceRegistrations(Optional<Coordinate> userLocation) {
         Coordinate coordinate = userLocation.orElseGet(this::getCurrentUserLocation);
-        return merchantAgencyRepository.getNearestMerchantAgencies(
+        List<GeofenceAgencyProjection> projections = merchantAgencyRepository.getNearestMerchantAgencies(
                 coordinate.getLatitude(),
                 coordinate.getLongitude(),
                 GEOFENCE_REGISTRATIONS_LIMIT);
+
+        return projections.stream()
+                .map(projection -> GeofenceRegistrationDto.builder()
+                        .id(projection.getId())
+                        .latitude(projection.getLatitude())
+                        .longitude(projection.getLongitude())
+                        .build())
+                .collect(Collectors.toList());
     }
 }
