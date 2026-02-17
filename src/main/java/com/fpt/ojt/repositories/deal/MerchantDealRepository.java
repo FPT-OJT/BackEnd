@@ -47,7 +47,7 @@ public interface MerchantDealRepository
           ma.longitude AS longitude,
 
           m.mcc AS merchantMcc,
-          m.image_url AS merchantLogoUrl,
+          m.logo_url AS merchantLogoUrl,
 
           md.id AS dealId,
           md.deal_name AS dealName,

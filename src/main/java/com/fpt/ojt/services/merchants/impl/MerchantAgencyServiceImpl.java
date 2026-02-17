@@ -12,7 +12,7 @@ import com.fpt.ojt.models.postgres.merchant.NearestAgencyProjection;
 import com.fpt.ojt.repositories.merchant.MerchantAgencyRepository;
 import com.fpt.ojt.services.dtos.MerchantSort;
 import com.fpt.ojt.services.dtos.NearestAgencyDto;
-import com.fpt.ojt.services.home.LocationService;
+import com.fpt.ojt.services.location.LocationService;
 import com.fpt.ojt.services.merchants.MerchantAgencyService;
 
 import lombok.RequiredArgsConstructor;

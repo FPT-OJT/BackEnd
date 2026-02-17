@@ -14,7 +14,7 @@ import com.fpt.ojt.services.card.CardService;
 import com.fpt.ojt.services.dtos.Coordinate;
 import com.fpt.ojt.services.dtos.HomeParam;
 import com.fpt.ojt.services.home.HomeService;
-import com.fpt.ojt.services.home.LocationService;
+import com.fpt.ojt.services.location.LocationService;
 import com.fpt.ojt.services.merchants.CategoryService;
 import com.fpt.ojt.services.merchants.MerchantService;
 
@@ -36,8 +36,9 @@ public class HomeServiceImpl implements HomeService {
     @Override
     public HomePageResponse getHomeData(HomeParam homeParam) {
         try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
-            Coordinate userLocation = homeParam.getUserLocation().orElse(
-                    locationService.getCurrentUserLocation());
+            Coordinate userLocation = homeParam.getUserLocation()
+                    .orElseGet(locationService::getCurrentUserLocation);
+            log.info("User location: {}", userLocation);
             UUID userId = authService.getCurrentUserId();
 
             var merchantFuture = CompletableFuture.supplyAsync(

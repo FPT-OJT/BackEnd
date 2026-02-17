@@ -6,12 +6,14 @@ import com.fpt.ojt.presentations.dtos.responses.home.HomePageResponse;
 import com.fpt.ojt.services.dtos.Coordinate;
 import com.fpt.ojt.services.dtos.HomeParam;
 import com.fpt.ojt.services.home.HomeService;
-import com.fpt.ojt.services.home.LocationService;
+import com.fpt.ojt.services.location.LocationService;
 import com.fpt.ojt.services.merchants.MerchantService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,6 +24,7 @@ import java.util.concurrent.ExecutionException;
 @RequiredArgsConstructor
 @RequestMapping("/home")
 @Tag(name = "Home Screen", description = "Home Screen API endpoints")
+@Slf4j
 public class HomeController extends AbstractBaseController {
 
     private final HomeService homeService;
@@ -35,6 +38,7 @@ public class HomeController extends AbstractBaseController {
             HttpServletRequest request)
             throws ExecutionException, InterruptedException {
         Optional<Coordinate> userLocation;
+        log.info("latitude: {}, longitude: {}", latitude, longitude);
         if (latitude != null && longitude != null) {
             userLocation = Optional.of(Coordinate.builder().latitude(latitude).longitude(longitude).build());
         } else {
