@@ -19,9 +19,20 @@ public class AppConfig {
 
     @Bean
     public LocaleResolver localResolver(@Value("${app.default-locale:vi}") final String defaultLocale,
-                                        @Value("${app.default-timezone:Asia/Ho_Chi_Minh}") final String defaultTimezone) {
+            @Value("${app.default-timezone:Asia/Ho_Chi_Minh}") final String defaultTimezone) {
         AcceptHeaderLocaleResolver localResolver = new AcceptHeaderLocaleResolver();
-        localResolver.setDefaultLocale(new Locale.Builder().setLanguage(defaultLocale).build());
+
+        // Parse locale string (handles both "en" and "en_US" formats)
+        String[] parts = defaultLocale.split("_");
+        Locale.Builder builder = new Locale.Builder();
+        if (parts.length >= 1) {
+            builder.setLanguage(parts[0]);
+        }
+        if (parts.length >= 2) {
+            builder.setRegion(parts[1]);
+        }
+        localResolver.setDefaultLocale(builder.build());
+
         TimeZone.setDefault(TimeZone.getTimeZone(defaultTimezone));
         return localResolver;
     }
