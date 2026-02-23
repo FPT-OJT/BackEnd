@@ -22,11 +22,11 @@ jobs:
           distribution: "temurin"
           cache: maven
 
-      - name: Grant execute permission for gradlew
+      - name: Grant execute permission for mvnw
         run: chmod +x mvnw
 
       - name: Build and Test with Maven
-        run: .\mvnw clean verify
+        run: ./mvnw clean verify
 
       - name: Publish Test Results
         uses: dorny/test-reporter@v1
