@@ -1,24 +1,23 @@
-# Stage 1: Build
-FROM eclipse-temurin:25-jdk AS builder
-
+FROM eclipse-temurin:21-jdk AS builder
 WORKDIR /app
 
-COPY mvnw .
-COPY .mvn .mvn
-COPY pom.xml .
-
+COPY .mvn/ .mvn
+COPY mvnw pom.xml ./
 RUN chmod +x mvnw
-RUN ./mvnw dependency:go-offline -B
+
+RUN ./mvnw dependency:resolve
 
 COPY src ./src
-
 RUN ./mvnw clean package -DskipTests -B
 
-# Stage 2: Runtime
-FROM eclipse-temurin:25-jre AS runtime
+RUN java -Djarmode=layertools -jar target/*.jar extract
 
+FROM eclipse-temurin:21-jre AS runtime
 WORKDIR /app
 
-COPY --from=builder /app/target/*.jar app.jar
+COPY --from=builder /app/dependencies/ ./
+COPY --from=builder /app/spring-boot-loader/ ./
+COPY --from=builder /app/snapshot-dependencies/ ./
+COPY --from=builder /app/application/ ./
 
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java", "org.springframework.boot.loader.launch.JarLauncher"]

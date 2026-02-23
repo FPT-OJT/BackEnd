@@ -1,10 +1,11 @@
 package com.fpt.ojt.infrastructure.securities;
 
-import module java.base;
-
 import com.fpt.ojt.infrastructure.securities.dto.AccessTokenData;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
+
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 public interface JwtTokenProvider {
