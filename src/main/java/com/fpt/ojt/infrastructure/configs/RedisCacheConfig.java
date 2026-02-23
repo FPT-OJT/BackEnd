@@ -24,6 +24,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 public class RedisCacheConfig {
         @Value("${app.cache.default-ttl:10}")
         private int DEFAULT_CACHE_TTL;
+
         public ObjectMapper redisObjectMapper() {
                 return JsonMapper.builder()
                                 .addModule(new JavaTimeModule())
@@ -31,6 +32,7 @@ public class RedisCacheConfig {
                                 .build();
         }
 
+        @SuppressWarnings("removal")
         @Bean
         public RedisCacheConfiguration redisCacheConfiguration() {
                 Jackson2JsonRedisSerializer<Object> serializer = new Jackson2JsonRedisSerializer<>(Object.class);

@@ -1,6 +1,5 @@
 package com.fpt.ojt.services.dtos;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
@@ -14,5 +13,5 @@ public class NearestAgencyDto {
     private String logoUrl;
     private String description;
     private Double distanceMeters;
- 
+
 }

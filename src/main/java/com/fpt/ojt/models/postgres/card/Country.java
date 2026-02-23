@@ -1,7 +1,5 @@
 package com.fpt.ojt.models.postgres.card;
 
-import org.checkerframework.checker.units.qual.A;
-
 import com.fpt.ojt.models.postgres.AbstractBaseEntity;
 
 import jakarta.persistence.Column;
@@ -9,7 +7,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

@@ -5,9 +5,6 @@ import java.util.UUID;
 import com.fpt.ojt.models.enums.EnumConstants;
 import com.fpt.ojt.models.postgres.user.User;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import lombok.Builder;
 import lombok.Data;
 

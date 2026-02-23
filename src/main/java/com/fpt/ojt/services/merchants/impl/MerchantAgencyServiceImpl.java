@@ -1,10 +1,8 @@
 package com.fpt.ojt.services.merchants.impl;
 
-import java.time.Duration;
 import java.util.List;
 
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import com.fpt.ojt.infrastructure.configs.CacheNames;
@@ -23,9 +21,11 @@ public class MerchantAgencyServiceImpl implements MerchantAgencyService {
 
     @Cacheable(cacheNames = CacheNames.SEARCH_NEAREST_MERCHANT_CACHE_NAME, keyGenerator = "nearestMerchantCacheKeyGenerator")
     @Override
-    public List<NearestAgencyDto> findNearestAgencies(String keyword, Double latitude, Double longitude, int limit, MerchantSort sort) {
+    public List<NearestAgencyDto> findNearestAgencies(String keyword, Double latitude, Double longitude, int limit,
+            MerchantSort sort) {
 
-        var result = merchantAgencyRepository.searchNearestAgenciesWithSort(keyword, latitude, longitude, limit, sort.name());
+        var result = merchantAgencyRepository.searchNearestAgenciesWithSort(keyword, latitude, longitude, limit,
+                sort.name());
         return result.stream()
                 .map(this::mapToNearestAgencyDto)
                 .toList();

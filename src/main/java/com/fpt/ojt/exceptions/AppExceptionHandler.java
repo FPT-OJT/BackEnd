@@ -66,13 +66,14 @@ public class AppExceptionHandler {
 
             // Provide user-friendly message for MultipartFile conversion errors
             if (message != null && message.contains("MultipartFile") && message.contains("String")) {
-                message = "Field '" + fieldName + "' should be a file upload. If you don't want to update this field, please omit it from the request instead of sending an empty string.";
+                message = "Field '" + fieldName
+                        + "' should be a file upload. If you don't want to update this field, please omit it from the request instead of sending an empty string.";
             }
 
             errors.put(fieldName, message);
         });
 
-        return build(HttpStatus.UNPROCESSABLE_CONTENT, "Validation error", errors);
+        return build(HttpStatus.BAD_REQUEST, "Validation error", errors);
     }
 
     @ExceptionHandler({
@@ -101,7 +102,7 @@ public class AppExceptionHandler {
         return build(HttpStatus.NOT_FOUND, e.getMessage());
     }
 
-    @ExceptionHandler({NotFoundException.class, NoResourceFoundException.class})
+    @ExceptionHandler({ NotFoundException.class, NoResourceFoundException.class })
     public final ResponseEntity<ErrorResponse> handleDomainNotFound(final Exception e) {
         log.error(e.toString(), e.getMessage());
         return build(HttpStatus.NOT_FOUND, e.getMessage());
@@ -130,7 +131,8 @@ public class AppExceptionHandler {
     }
 
     @ExceptionHandler(RefreshTokenExpiredException.class)
-    public final ResponseEntity<ErrorResponse> handleRefreshTokenExpiredException(final RefreshTokenExpiredException e) {
+    public final ResponseEntity<ErrorResponse> handleRefreshTokenExpiredException(
+            final RefreshTokenExpiredException e) {
         log.error("Refresh token expired: {}", e.getMessage());
         return build(HttpStatus.UNAUTHORIZED, "Refresh token expired. Please login again.");
     }
@@ -168,15 +170,15 @@ public class AppExceptionHandler {
      * @return ResponseEntity
      */
     private ResponseEntity<ErrorResponse> build(final HttpStatus httpStatus,
-                                                final String message,
-                                                final Map<String, String> errors) {
+            final String message,
+            final Map<String, String> errors) {
         if (!errors.isEmpty()) {
             return ResponseEntity.status(httpStatus).body(
                     DetailedErrorResponse.builder()
-                        .message(message)
-                        .statusCode(httpStatus.value())
-                        .items(errors)
-                        .build());
+                            .message(message)
+                            .statusCode(httpStatus.value())
+                            .items(errors)
+                            .build());
         }
 
         return ResponseEntity.status(httpStatus).body(ErrorResponse.builder()

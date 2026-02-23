@@ -1,0 +1,7 @@
+{
+    "java.compile.nullAnalysis.mode": "automatic",
+    "terminal.integrated.env.windows": {
+        "SPRING_PROFILES_ACTIVE": "dev"
+    },
+    "java.configuration.updateBuildConfiguration": "automatic"
+}
