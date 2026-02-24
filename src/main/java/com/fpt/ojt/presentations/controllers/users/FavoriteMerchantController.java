@@ -58,4 +58,11 @@ public class FavoriteMerchantController {
         favoriteMerchantService.removeFavoriteMerchant(userId, favoriteMerchantId);
         return responseFactory.successSingle(null, "Favorite merchant removed successfully");
     }
+
+    @GetMapping("/agencies/{merchantAgencyId}/is-favorite")
+    public ResponseEntity<SingleResponse<Boolean>> isFavoriteMerchantAgency(
+            @Parameter(description = "UUID of the merchant agency to check if the current user has it in favorites", required = true) @PathVariable UUID merchantAgencyId) {
+        var isFavorite = favoriteMerchantService.isFavoriteMerchantAgency(authService.getCurrentUserId(), merchantAgencyId);
+        return responseFactory.successSingle(isFavorite, "Is favorite merchant agency successful");
+    }
 }

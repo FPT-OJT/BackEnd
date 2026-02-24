@@ -13,6 +13,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.scheduling.annotation.Async;
@@ -27,12 +28,17 @@ import static com.fpt.ojt.infrastructure.constants.Constants.ACCESS_TOKEN_HEADER
 
 @Component
 @Slf4j
-@RequiredArgsConstructor
 public class JwtTokenProviderImpl implements JwtTokenProvider {
 
     private final RefreshTokenRepository refreshTokenRepository;
     private final RedisTemplate<String, Object> redisTemplate;
     private final RedisScript<Long> revokeTokenScript;
+
+    public JwtTokenProviderImpl(RefreshTokenRepository refreshTokenRepository,@Lazy RedisTemplate<String, Object> redisTemplate,@Lazy RedisScript<Long> revokeTokenScript) {
+        this.refreshTokenRepository = refreshTokenRepository;
+        this.redisTemplate = redisTemplate;
+        this.revokeTokenScript = revokeTokenScript;
+    }
 
     @Value("${app.jwt.secret}")
     private String jwtSecretKey;

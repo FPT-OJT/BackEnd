@@ -1,5 +1,6 @@
 package com.fpt.ojt.repositories.merchant;
 
+import com.fpt.ojt.models.postgres.merchant.GeofenceAgencyProjection;
 import com.fpt.ojt.models.postgres.merchant.MerchantAgency;
 import com.fpt.ojt.models.postgres.merchant.NearestAgencyProjection;
 
@@ -11,6 +12,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -122,4 +124,59 @@ public interface MerchantAgencyRepository
 
         List<MerchantAgency> findByMerchantId(UUID merchantId);
 
+    @EntityGraph(attributePaths = { "merchant" })
+    Optional<MerchantAgency> findById(@Param("id") UUID id);
+
+    /**
+     * Get nearby merchant agencies based on latitude, longitude, and limit
+     * Returns agencies ordered by distance from the given point
+     */
+    @Query(value = """
+                WITH user_point AS (
+                    SELECT ST_SetSRID(ST_MakePoint(:userLng, :userLat), 4326)::geography AS point
+                )
+                SELECT
+                    m.name AS brand_name,
+                    a.name AS agency_name,
+                    a.latitude,
+                    a.longitude,
+                    m.logo_url,
+                    m.description,
+                    ROUND(ST_Distance(a.location, u.point)::numeric, 2) AS distance_meters
+                FROM merchant_agencies a
+                JOIN user_point u ON TRUE
+                JOIN merchants m ON a.merchant_id = m.id
+                WHERE a.deleted_at IS NULL
+                  AND m.deleted_at IS NULL
+                ORDER BY a.location <-> u.point
+                LIMIT :limit
+            """, nativeQuery = true)
+    List<NearestAgencyProjection> findNearbyAgencies(
+            @Param("userLat") double userLat,
+            @Param("userLng") double userLng,
+            @Param("limit") int limit);
+
+    /**
+     * Get nearest merchant agencies for geofence registration
+     * Returns agency IDs with their coordinates for geofence setup
+     */
+    @Query(value = """
+                WITH user_point AS (
+                    SELECT ST_SetSRID(ST_MakePoint(:userLng, :userLat), 4326)::geography AS point
+                )
+                SELECT
+                    a.id,
+                    a.latitude,
+                    a.longitude
+                FROM merchant_agencies a
+                JOIN user_point u ON TRUE
+                WHERE a.deleted_at IS NULL
+                ORDER BY a.location <-> u.point
+                LIMIT :limit
+            """, nativeQuery = true)
+    List<GeofenceAgencyProjection> getNearestMerchantAgencies(
+            @Param("userLat") double userLat,
+            @Param("userLng") double userLng,
+            @Param("limit") int limit);
+   
 }

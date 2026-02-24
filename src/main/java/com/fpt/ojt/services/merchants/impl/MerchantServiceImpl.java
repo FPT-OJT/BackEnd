@@ -1,18 +1,24 @@
 package com.fpt.ojt.services.merchants.impl;
 
+import com.fpt.ojt.infrastructure.configs.CacheNames;
 import com.fpt.ojt.models.postgres.merchant.MerchantAgency;
 import com.fpt.ojt.presentations.dtos.responses.home.HomePageResponse;
 import com.fpt.ojt.repositories.merchant.MerchantAgencyRepository;
+
 import com.fpt.ojt.repositories.user.FavoriteMerchantRepository;
 import com.fpt.ojt.repositories.user.SubscribedMerchantRepository;
+
 import com.fpt.ojt.services.card.CardService;
 import com.fpt.ojt.services.deal.DealService;
 import com.fpt.ojt.services.dtos.AvailableCardRulesDto;
+import com.fpt.ojt.services.dtos.Coordinate;
 import com.fpt.ojt.services.dtos.MerchantAgencyWithAvailableDealsDto;
 import com.fpt.ojt.services.merchants.MerchantService;
 import com.fpt.ojt.services.dtos.MerchantOfferDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -31,11 +37,15 @@ public class MerchantServiceImpl implements MerchantService {
         private final MerchantAgencyRepository merchantAgencyRepository;
         private final FavoriteMerchantRepository favoriteMerchantRepository;
         private final SubscribedMerchantRepository subscribedMerchantRepository;
+        static final int NEAREST_MERCHANT_DEALS_RADIUS_METERS = 20_000; // 20km
 
+        @Cacheable(value = CacheNames.MERCHANT_OFFERS_CACHE_NAME, key = "#currentUserId")
         @Override
-        public List<HomePageResponse.MerchantOffer> getMerchantOffers(int limit, UUID currentUserId) {
+        public List<HomePageResponse.MerchantOffer> getMerchantOffers(int limit, UUID currentUserId,
+                        Coordinate userLocation) {
                 try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
-                        var offersWithMerchantsFuture = executor.submit(() -> getOffersWithMerchants(currentUserId));
+                        var offersWithMerchantsFuture = executor
+                                        .submit(() -> getOffersWithMerchants(currentUserId, userLocation));
                         var offersWithoutMerchantsFuture = executor
                                         .submit(() -> getOffersWithoutMerchants(currentUserId));
 
@@ -69,6 +79,73 @@ public class MerchantServiceImpl implements MerchantService {
                 return cardService.getAvailableCardRulesByUserId(currentUserId);
         }
 
+        private List<MerchantAgencyWithAvailableDealsDto> getUserAvailableMerchantDeals(Coordinate userLocation) {
+                return dealService.getNearestMerchantDeals(userLocation, NEAREST_MERCHANT_DEALS_RADIUS_METERS);
+        }
+
+        private List<MerchantOfferDto> getOffersWithMerchants(UUID currentUserId, Coordinate userLocation) {
+                try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
+                        var availableCardRulesFuture = executor.submit(() -> getUserAvailableCardRules(currentUserId));
+                        var allMerchantDealsFuture = executor.submit(() -> getUserAvailableMerchantDeals(userLocation));
+
+                        List<AvailableCardRulesDto> availableCardRulesDtos = availableCardRulesFuture.get();
+                        List<MerchantAgencyWithAvailableDealsDto> agencies = allMerchantDealsFuture.get();
+
+                        var offerFutures = agencies.stream()
+                                        .flatMap(agency -> agency.getMerchantDealItems().stream()
+                                                        .map(availableDeal -> executor.submit(() -> {
+                                                                var isFavoriteFuture = executor
+                                                                                .submit(() -> favoriteMerchantRepository
+                                                                                                .existsByUserIdAndMerchantAgencyId(
+                                                                                                                currentUserId,
+                                                                                                                agency.getMerchantAgencyId()));
+
+                                                                var isSubscribedFuture = executor.submit(
+                                                                                () -> subscribedMerchantRepository
+                                                                                                .existsByUserIdAndMerchantAgencyId(
+                                                                                                                currentUserId,
+                                                                                                                agency.getMerchantAgencyId()));
+
+                                                                var totalDiscountFuture = executor
+                                                                                .submit(() -> dealService
+                                                                                                .calculateMerchantOfferOnMerchantDealAndUserCardList(
+                                                                                                                agency.getMcc(),
+                                                                                                                availableDeal,
+                                                                                                                availableCardRulesDtos));
+
+                                                                boolean isFavorite = isFavoriteFuture.get();
+                                                                boolean isSubscribed = isSubscribedFuture.get();
+                                                                Double totalDiscount = totalDiscountFuture.get();
+
+                                                                return MerchantOfferDto.builder()
+                                                                                .merchantAgencyId(agency
+                                                                                                .getMerchantAgencyId())
+                                                                                .merchantAgencyName(agency
+                                                                                                .getMerchantAgencyName())
+                                                                                .mcc(agency.getMcc())
+                                                                                .imageUrl(agency.getImageUrl())
+                                                                                .merchantDealName(availableDeal
+                                                                                                .getDealName())
+                                                                                .isFavorite(isFavorite)
+                                                                                .isSubscribed(isSubscribed)
+                                                                                .lat(agency.getLat())
+                                                                                .lng(agency.getLng())
+                                                                                .totalDiscount(totalDiscount)
+                                                                                .build();
+                                                        })))
+                                        .toList();
+
+                        List<MerchantOfferDto> merchantOfferDtos = new ArrayList<>();
+                        for (var future : offerFutures) {
+                                merchantOfferDtos.add(future.get());
+                        }
+
+                        return merchantOfferDtos;
+                } catch (ExecutionException | InterruptedException e) {
+                        throw new RuntimeException(e);
+                }
+        }
+
         private List<MerchantAgencyWithAvailableDealsDto> getUserAvailableMerchantDeals() {
                 return dealService.getAvailableMerchantDeals();
         }
@@ -76,7 +153,7 @@ public class MerchantServiceImpl implements MerchantService {
         private List<MerchantOfferDto> getOffersWithMerchants(UUID currentUserId) {
                 try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
                         var availableCardRulesFuture = executor.submit(() -> getUserAvailableCardRules(currentUserId));
-                        var allMerchantDealsFuture = executor.submit(this::getUserAvailableMerchantDeals);
+                        var allMerchantDealsFuture = executor.submit(() -> getUserAvailableMerchantDeals());
 
                         List<AvailableCardRulesDto> availableCardRulesDtos = availableCardRulesFuture.get();
                         List<MerchantAgencyWithAvailableDealsDto> agencies = allMerchantDealsFuture.get();

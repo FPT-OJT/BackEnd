@@ -19,6 +19,7 @@ public class MerchantAgencyWithAvailableDealsDto {
     private Double lat;
     private Double lng;
     List<MerchantDealItem> merchantDealItems;
+    private Double distanceMeters;
 
     @Getter
     @Setter
