@@ -12,7 +12,6 @@ import org.springframework.data.redis.serializer.RedisSerializer;
 
 @Configuration
 @EnableRedisRepositories(basePackages = "com.fpt.ojt.repositories")
-@ConditionalOnBean(RedisConnectionFactory.class)
 public class RedisConfig {
 
     @Bean
