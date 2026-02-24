@@ -39,7 +39,7 @@ spring:
     defer-datasource-initialization: false
 
   flyway:
-    enabled: false
+    enabled: ${FLYWAY_ENABLED:true}
     baseline-on-migrate: ${FLYWAY_BASELINE_ON_MIGRATE:true}
     locations: ${FLYWAY_LOCATIONS:classpath:db/migration}
     validate-on-migrate: ${FLYWAY_VALIDATE_ON_MIGRATE:false}
@@ -89,11 +89,11 @@ spring:
             client-secret: ${GOOGLE_CLIENT_SECRET}
 
 app:
-  secret: ${JWT_SECRET_KEY}
   default-locale: ${APP_DEFAULT_LOCALE}
   default-timezone: ${APP_DEFAULT_TIMEZONE}
   jwt:
-    secret: ${JWT_SECRET_KEY}
+    private-key-path: ${JWT_PRIVATE_KEY_PATH:classpath:keys/private.pem}
+    public-key-path: ${JWT_PUBLIC_KEY_PATH:classpath:keys/public.pem}
     token:
       expires-in: ${JWT_ACCESS_EXPIRES_IN}
     refresh-token:

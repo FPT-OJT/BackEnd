@@ -30,5 +30,8 @@ build/
 !**/src/test/**/build/
 
 
+### Keys ###
+src/main/resources/keys/
+
 ### Env ###
 .env

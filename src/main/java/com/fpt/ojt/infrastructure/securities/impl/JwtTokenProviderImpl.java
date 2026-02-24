@@ -7,10 +7,8 @@ import com.fpt.ojt.repositories.RefreshTokenRepository;
 import com.fpt.ojt.infrastructure.securities.JwtTokenProvider;
 import com.fpt.ojt.infrastructure.securities.dto.AccessTokenData;
 import io.jsonwebtoken.*;
-import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
@@ -19,8 +17,8 @@ import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
-import javax.crypto.SecretKey;
-import java.nio.charset.StandardCharsets;
+import java.security.interfaces.RSAPrivateKey;
+import java.security.interfaces.RSAPublicKey;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
@@ -33,15 +31,22 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
     private final RefreshTokenRepository refreshTokenRepository;
     private final RedisTemplate<String, Object> redisTemplate;
     private final RedisScript<Long> revokeTokenScript;
+    private final RSAPrivateKey privateKey;
+    private final RSAPublicKey publicKey;
 
-    public JwtTokenProviderImpl(RefreshTokenRepository refreshTokenRepository,@Lazy RedisTemplate<String, Object> redisTemplate,@Lazy RedisScript<Long> revokeTokenScript) {
+    public JwtTokenProviderImpl(
+            RefreshTokenRepository refreshTokenRepository,
+            @Lazy RedisTemplate<String, Object> redisTemplate,
+            @Lazy RedisScript<Long> revokeTokenScript,
+            RSAPrivateKey privateKey,
+            RSAPublicKey publicKey
+    ) {
         this.refreshTokenRepository = refreshTokenRepository;
         this.redisTemplate = redisTemplate;
         this.revokeTokenScript = revokeTokenScript;
+        this.privateKey = privateKey;
+        this.publicKey = publicKey;
     }
-
-    @Value("${app.jwt.secret}")
-    private String jwtSecretKey;
 
     @Value("${app.jwt.token.expires-in}")
     private long jwtTokenExpiresIn;
@@ -177,7 +182,7 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
     public boolean validateToken(String token, HttpServletRequest request) {
         try {
             Jwts.parser()
-                    .verifyWith(getSigningKey())
+                    .verifyWith(publicKey)
                     .build()
                     .parseSignedClaims(token);
             return true;
@@ -223,7 +228,7 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
     @Override
     public Claims getClaimsFromToken(String token) {
         return Jwts.parser()
-                .verifyWith(getSigningKey())
+                .verifyWith(publicKey)
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
@@ -232,8 +237,6 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
     private String generateTokenByUserId(UUID userId, String userRole, String familyToken, long expiryTime) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + expiryTime);
-
-        SecretKey key = getSigningKey();
 
         var jwtBuilder = Jwts.builder()
                 .subject(String.valueOf(userId))
@@ -246,16 +249,12 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
         }
 
         String token = jwtBuilder
-                .signWith(key, Jwts.SIG.HS256)
+                .signWith(privateKey, Jwts.SIG.RS256)
                 .compact();
 
         log.trace("Token generated for userID: {}, familyToken: {}, ttl: {}ms",
                 userId, familyToken != null ? "present" : "null", expiryTime);
 
         return token;
-    }
-
-    private SecretKey getSigningKey() {
-        return Keys.hmacShaKeyFor(jwtSecretKey.getBytes(StandardCharsets.UTF_8));
     }
 }
