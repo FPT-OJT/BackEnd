@@ -8,6 +8,7 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,8 +21,8 @@ import org.springframework.data.redis.serializer.RedisSerializationContext;
 
 @EnableCaching
 @Configuration
+@ConditionalOnBean(RedisConnectionFactory.class)
 public class RedisCacheConfig {
-
     @Value("${app.cache.default-ttl:10}")
     private int DEFAULT_CACHE_TTL;
 

@@ -31,11 +31,10 @@ spring:
       ddl-auto: ${DB_DDL_AUTO}
     properties:
       hibernate:
-        dialect: ${HIBERNATE_DIALECT:org.hibernate.dialect.PostgreSQLDialect}
         show_sql: ${HIBERNATE_SHOW_SQL:false}
         format_sql: ${HIBERNATE_FORMAT_SQL:true}
         jdbc:
-          time_zone: ${HIBERNATE_JDBC_TIME_ZONE:UTC}
+          time_zone: ${APP_DEFAULT_TIMEZONE:Asia/Ho_Chi_Minh}
     open-in-view: ${SPRING_JPA_OPEN_IN_VIEW:false}
     defer-datasource-initialization: false
 
@@ -49,9 +48,13 @@ spring:
     default-schema: ${FLYWAY_DEFAULT_SCHEMA:public}
 
   datasource:
-    url: jdbc:postgresql://${POSTGRESQL_HOST:localhost}:${POSTGRESQL_EXTERNAL_PORT}/${POSTGRESQL_DB}?serverTimezone=${POSTGRESQL_SERVER_TIMEZONE:UTC}
+    # Bỏ hẳn param serverTimezone vô dụng đi
+    url: jdbc:postgresql://${POSTGRESQL_HOST:localhost}:${POSTGRESQL_EXTERNAL_PORT}/${POSTGRESQL_DB}
     username: ${POSTGRESQL_USER}
     password: ${POSTGRESQL_PASSWORD}
+    hikari:
+      # Lệnh này sẽ chạy mỗi khi 1 connection mới được tạo, ép cứng DB phải dùng đúng múi giờ của App
+      connection-init-sql: SET TIME ZONE '${APP_DEFAULT_TIMEZONE:Asia/Ho_Chi_Minh}';
 
   data:
     redis:

@@ -1,7 +1,6 @@
 package com.fpt.ojt.repositories.user;
 
 import com.fpt.ojt.models.postgres.merchant.Merchant;
-import com.fpt.ojt.models.postgres.merchant.MerchantAgency;
 import com.fpt.ojt.models.postgres.user.FavoriteMerchant;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;

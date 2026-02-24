@@ -1,5 +1,7 @@
 package com.fpt.ojt;
 
+import java.util.TimeZone;
+
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
@@ -9,23 +11,13 @@ import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
 
 @SpringBootApplication
-@OpenAPIDefinition(
-        info = @Info(
-                title = "FPT OJT Backend",
-                version = "1.0.0",
-                description = "OJT Backend API documentations"
-        )
-)
-@SecurityScheme(
-    name = "tokenAuth",
-    type = SecuritySchemeType.APIKEY,
-    in = SecuritySchemeIn.HEADER,
-    paramName = "Authorization"
-)
+@OpenAPIDefinition(info = @Info(title = "FPT OJT Backend", version = "1.0.0", description = "OJT Backend API documentations"))
+@SecurityScheme(name = "tokenAuth", type = SecuritySchemeType.APIKEY, in = SecuritySchemeIn.HEADER, paramName = "Authorization")
 
 public class OjtApplication {
 
-    static void main(String[] args) {
+    public static void main(String[] args) {
+        TimeZone.setDefault(TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
         SpringApplication.run(OjtApplication.class, args);
     }
 

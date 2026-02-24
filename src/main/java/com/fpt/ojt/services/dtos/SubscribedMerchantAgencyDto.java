@@ -2,7 +2,6 @@ package com.fpt.ojt.services.dtos;
 
 import java.util.UUID;
 
-import com.fpt.ojt.models.postgres.merchant.Merchant;
 import com.fpt.ojt.models.postgres.merchant.MerchantAgency;
 
 import lombok.Builder;

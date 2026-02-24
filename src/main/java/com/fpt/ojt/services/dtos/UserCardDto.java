@@ -1,6 +1,5 @@
 package com.fpt.ojt.services.dtos;
 
-import java.time.LocalDate;
 import java.util.UUID;
 
 import com.fpt.ojt.models.postgres.card.UserCreditCard;
@@ -26,7 +25,7 @@ public class UserCardDto {
                 .userCardId(userCreditCard.getId());
         if (userCreditCard.getCardProduct() != null) {
             builder.cardName(userCreditCard.getCardProduct().getCardName())
-                 .cardImageUrl(userCreditCard.getCardProduct().getImageUrl());
+                    .cardImageUrl(userCreditCard.getCardProduct().getImageUrl());
         }
         return builder.build();
     }
