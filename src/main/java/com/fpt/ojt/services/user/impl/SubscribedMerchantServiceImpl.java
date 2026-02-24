@@ -84,4 +84,9 @@ public class SubscribedMerchantServiceImpl implements SubscribedMerchantService 
         }
     }
 
+    @Override
+    public boolean isSubscribedMerchantAgency(UUID userId, UUID merchantAgencyId) {
+        return subscribedMerchantRepository.existsByUserIdAndMerchantAgencyId(userId, merchantAgencyId);
+    }
+
 }
