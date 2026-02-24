@@ -6,6 +6,9 @@ services:
       context: ../..
       dockerfile: docker/prod/Dockerfile
     container_name: ojt-backend
+    networks:
+      - default
+      - ojt_shared_network
     restart: always
     env_file:
       - ../../.env
@@ -26,6 +29,9 @@ services:
   postgres:
     image: postgis/postgis:18-3.6
     container_name: ${POSTGRES_CONTAINER_NAME}
+    networks:
+      - default
+      - ojt_shared_network
     restart: always
     environment:
       POSTGRES_DB: ${POSTGRESQL_DB}
@@ -56,3 +62,7 @@ services:
 volumes:
   postgres-data:
   redis-data:
+
+networks:
+  ojt_shared_network:
+    external: true

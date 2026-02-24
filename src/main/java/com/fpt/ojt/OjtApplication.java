@@ -1,7 +1,5 @@
 package com.fpt.ojt;
 
-import java.util.TimeZone;
-
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
@@ -17,7 +15,6 @@ import io.swagger.v3.oas.annotations.security.SecurityScheme;
 public class OjtApplication {
 
     public static void main(String[] args) {
-        TimeZone.setDefault(TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
         SpringApplication.run(OjtApplication.class, args);
     }
 
