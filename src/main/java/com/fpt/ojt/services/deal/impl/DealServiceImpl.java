@@ -4,15 +4,18 @@ import com.fpt.ojt.exceptions.QueryErrorException;
 import com.fpt.ojt.models.postgres.deal.MerchantDeal;
 import com.fpt.ojt.models.postgres.merchant.Merchant;
 import com.fpt.ojt.models.postgres.merchant.MerchantAgency;
+import com.fpt.ojt.models.postgres.merchant.MerchantDealFlatProjection;
 import com.fpt.ojt.repositories.deal.CardMerchantDealRepository;
 import com.fpt.ojt.repositories.deal.MerchantDealRepository;
 import com.fpt.ojt.services.deal.DealService;
 import com.fpt.ojt.services.dtos.AvailableCardRulesDto;
+import com.fpt.ojt.services.dtos.Coordinate;
 import com.fpt.ojt.services.dtos.MerchantAgencyWithAvailableDealsDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -63,8 +66,7 @@ public class DealServiceImpl implements DealService {
     public Double calculateMerchantOfferOnMerchantDealAndUserCardList(
             String mcc,
             MerchantAgencyWithAvailableDealsDto.MerchantDealItem merchantDealItem,
-            List<AvailableCardRulesDto> userCardList
-    ) {
+            List<AvailableCardRulesDto> userCardList) {
         try {
             double merchantDiscountRate = 0.0;
             double merchantCashbackRate = 0.0;
@@ -78,14 +80,15 @@ public class DealServiceImpl implements DealService {
                 for (AvailableCardRulesDto userCard : userCardList) {
                     if (!checkAvailableUserCardForMerchantDeal(
                             merchantDealItem.getDealId(),
-                            userCard.getCardProductId()
-                    )) continue;
+                            userCard.getCardProductId()))
+                        continue;
 
                     alreadySetMerchantRate = true;
 
                     for (AvailableCardRulesDto.CardRulesDto cardRule : userCard.getCardRules()) {
                         if (checkAvailableMcc(mcc, cardRule.getAllowMccs(), cardRule.getRejectMccs())) {
-                            totalCardDiscountRate += cardRule.getEffectRebateRate() + cardRule.getEffectMerchantDiscountRate();
+                            totalCardDiscountRate += cardRule.getEffectRebateRate()
+                                    + cardRule.getEffectMerchantDiscountRate();
                             totalCardCashbackRate += cardRule.getEffectCashbackRate();
                             totalCardEffectFeeRate += cardRule.getEffectFeeRate();
                         }
@@ -93,19 +96,24 @@ public class DealServiceImpl implements DealService {
                 }
 
                 if (alreadySetMerchantRate) {
-                    merchantDiscountRate = merchantDealItem.getDiscountRate() != null ? merchantDealItem.getDiscountRate() : 0.0;
-                    merchantCashbackRate = merchantDealItem.getCashbackRate() != null ? merchantDealItem.getCashbackRate() : 0.0;
+                    merchantDiscountRate = merchantDealItem.getDiscountRate() != null
+                            ? merchantDealItem.getDiscountRate()
+                            : 0.0;
+                    merchantCashbackRate = merchantDealItem.getCashbackRate() != null
+                            ? merchantDealItem.getCashbackRate()
+                            : 0.0;
                 }
 
                 double totalCardBenefit = totalCardDiscountRate - totalCardEffectFeeRate;
 
-                double totalDiscount =
-                        merchantDiscountRate + totalCardBenefit * (1 - merchantDiscountRate / 100);
+                double totalDiscount = merchantDiscountRate + totalCardBenefit * (1 - merchantDiscountRate / 100);
 
                 return totalDiscount + merchantCashbackRate + totalCardCashbackRate;
             } else {
-                merchantDiscountRate = merchantDealItem.getDiscountRate() != null ? merchantDealItem.getDiscountRate() : 0.0;
-                merchantCashbackRate = merchantDealItem.getCashbackRate() != null ? merchantDealItem.getCashbackRate() : 0.0;
+                merchantDiscountRate = merchantDealItem.getDiscountRate() != null ? merchantDealItem.getDiscountRate()
+                        : 0.0;
+                merchantCashbackRate = merchantDealItem.getCashbackRate() != null ? merchantDealItem.getCashbackRate()
+                        : 0.0;
 
                 return merchantDiscountRate + merchantCashbackRate * (1 - merchantDiscountRate / 100);
             }
@@ -157,7 +165,9 @@ public class DealServiceImpl implements DealService {
     public Double calculateCardOnlyBenefit(AvailableCardRulesDto.CardRulesDto cardRule) {
         try {
             double rebateRate = cardRule.getEffectRebateRate() != null ? cardRule.getEffectRebateRate() : 0.0;
-            double merchantDiscountRate = cardRule.getEffectMerchantDiscountRate() != null ? cardRule.getEffectMerchantDiscountRate() : 0.0;
+            double merchantDiscountRate = cardRule.getEffectMerchantDiscountRate() != null
+                    ? cardRule.getEffectMerchantDiscountRate()
+                    : 0.0;
             double feeRate = cardRule.getEffectFeeRate() != null ? cardRule.getEffectFeeRate() : 0.0;
             double cashbackRate = cardRule.getEffectCashbackRate() != null ? cardRule.getEffectCashbackRate() : 0.0;
 
@@ -166,5 +176,51 @@ public class DealServiceImpl implements DealService {
         } catch (RuntimeException e) {
             throw new RuntimeException("Error calculating card-only benefit: " + e.getMessage(), e);
         }
+    }
+
+    @Override
+    public List<MerchantAgencyWithAvailableDealsDto> getNearestMerchantDeals(Coordinate userLocation,
+            int radiusMeters) {
+        List<MerchantDealFlatProjection> flatData = merchantDealRepository.findAvailableDealsInRadius(
+                userLocation.getLatitude(),
+                userLocation.getLongitude(),
+                radiusMeters);
+
+        Map<UUID, List<MerchantDealFlatProjection>> grouped = flatData.stream()
+                .collect(Collectors.groupingBy(MerchantDealFlatProjection::getAgencyId));
+
+        return grouped.values().stream()
+                .map(projections -> {
+                    MerchantDealFlatProjection first = projections.getFirst();
+                    return MerchantAgencyWithAvailableDealsDto.builder()
+                            .merchantAgencyId(first.getAgencyId())
+                            .merchantAgencyName(first.getAgencyName())
+                            .mcc(first.getMerchantMcc())
+                            .imageUrl(first.getMerchantLogoUrl())
+                            .lat(first.getLatitude())
+                            .lng(first.getLongitude())
+                            .isFavorite(false)
+                            .isSubscribed(false)
+
+                            // Map danh sách deals
+                            .merchantDealItems(projections.stream()
+                                    .map(p -> MerchantAgencyWithAvailableDealsDto.MerchantDealItem.builder()
+                                            .dealId(p.getDealId())
+                                            .dealName(p.getDealName())
+                                            .discountRate(p.getDiscountRate())
+                                            .cashbackRate(p.getCashbackRate())
+                                            .pointsMultiplier(p.getPointsMultiplier())
+                                            .description(p.getDescription())
+                                            .validFrom(p.getValidFrom())
+                                            .validTo(p.getValidTo())
+                                            .build())
+                                    .collect(Collectors.toList()))
+                            .distanceMeters(first.getDistanceMeters())
+                            .build();
+                })
+                .sorted(Comparator.comparingDouble(dto -> {
+                    return dto.getDistanceMeters();
+                }))
+                .toList();
     }
 }

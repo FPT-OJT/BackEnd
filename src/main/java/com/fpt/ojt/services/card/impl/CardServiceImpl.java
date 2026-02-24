@@ -109,6 +109,7 @@ public class CardServiceImpl implements CardService {
             @CacheEvict(value = CacheNames.USER_CARD_RULES_CACHE_NAME, key = "#userId")
     })
     @Override
+    @CacheEvict(value = CacheNames.USER_CARD_EMPTY_CACHE_NAME, key = "#userId")
     public UUID addCardToUser(UUID userId, AddCardToUserRequest request) {
         var cardProduct = cardProductRepository.findById(request.getCardId())
                 .orElseThrow(() -> new NotFoundException("Card product not found with id: " + request.getCardId()));
@@ -141,6 +142,7 @@ public class CardServiceImpl implements CardService {
             @CacheEvict(value = CacheNames.USER_CARDS_CACHE_NAME, key = "#userId"),
             @CacheEvict(value = CacheNames.USER_CARD_RULES_CACHE_NAME, key = "#userId")
     })
+    @CacheEvict(value = CacheNames.USER_CARD_EMPTY_CACHE_NAME, key = "#userId")
     @Override
     public void removeUserCard(UUID userCardId, UUID userId) {
         var userCard = userCreditCardRepository.findById(userCardId)
@@ -168,6 +170,7 @@ public class CardServiceImpl implements CardService {
     }
 
     @Override
+    @Cacheable(value = CacheNames.USER_CARD_EMPTY_CACHE_NAME, key = "#userId")
     public boolean isUserCardEmpty(UUID userId) {
         var userCards = userCreditCardRepository.existsByUserIdAndDeletedAtIsNull(userId);
         return !userCards;

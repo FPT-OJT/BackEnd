@@ -61,4 +61,9 @@ public class FavoriteMerchantServiceImpl implements FavoriteMerchantService {
             return true;
         }
     }
+
+    @Override
+    public boolean isFavoriteMerchantAgency(UUID userId, UUID merchantAgencyId) {
+        return favoriteMerchantRepository.existsByUserIdAndMerchantAgencyId(userId, merchantAgencyId);
+    }
 }
