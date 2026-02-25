@@ -3,7 +3,9 @@ package com.fpt.ojt.repositories.merchant;
 import com.fpt.ojt.models.postgres.merchant.GeofenceAgencyProjection;
 import com.fpt.ojt.models.postgres.merchant.MerchantAgency;
 import com.fpt.ojt.models.postgres.merchant.NearestAgencyProjection;
-
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -11,118 +13,134 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
 @Repository
 public interface MerchantAgencyRepository
-                extends JpaRepository<MerchantAgency, UUID>, JpaSpecificationExecutor<MerchantAgency> {
+    extends
+        JpaRepository<MerchantAgency, UUID>,
+        JpaSpecificationExecutor<MerchantAgency>
+{
+    /**
+     * Find merchant agencies by MCC with eager loading of merchant
+     */
+    @EntityGraph(attributePaths = { "merchant" })
+    @Query(
+        """
+        SELECT DISTINCT ma FROM MerchantAgency ma
+        WHERE ma.merchant.mcc = :mcc
+          AND ma.deletedAt IS NULL
+          AND ma.merchant.deletedAt IS NULL
+        """
+    )
+    List<MerchantAgency> findByMerchantMcc(@Param("mcc") String mcc);
 
-        /**
-         * Find merchant agencies by MCC with eager loading of merchant
-         */
-        @EntityGraph(attributePaths = { "merchant" })
-        @Query("""
-                        SELECT DISTINCT ma FROM MerchantAgency ma
-                        WHERE ma.merchant.mcc = :mcc
-                          AND ma.deletedAt IS NULL
-                          AND ma.merchant.deletedAt IS NULL
-                        """)
-        List<MerchantAgency> findByMerchantMcc(@Param("mcc") String mcc);
+    /**
+     * Find all non-deleted merchant agencies with eager loading of merchant
+     */
+    @EntityGraph(attributePaths = { "merchant" })
+    @Query(
+        """
+        SELECT ma FROM MerchantAgency ma
+        WHERE ma.deletedAt IS NULL
+          AND ma.merchant.deletedAt IS NULL
+        """
+    )
+    List<MerchantAgency> findAllActiveWithMerchant();
 
-        /**
-         * Find all non-deleted merchant agencies with eager loading of merchant
-         */
-        @EntityGraph(attributePaths = { "merchant" })
-        @Query("""
-                        SELECT ma FROM MerchantAgency ma
-                        WHERE ma.deletedAt IS NULL
-                          AND ma.merchant.deletedAt IS NULL
-                        """)
-        List<MerchantAgency> findAllActiveWithMerchant();
+    /**
+     * Find all non-deleted merchant agencies excluding specific MCCs with eager
+     * loading
+     */
+    @EntityGraph(attributePaths = { "merchant" })
+    @Query(
+        """
+        SELECT ma FROM MerchantAgency ma
+        WHERE ma.deletedAt IS NULL
+          AND ma.merchant.deletedAt IS NULL
+          AND ma.merchant.mcc NOT IN :excludedMccs
+        """
+    )
+    List<MerchantAgency> findAllActiveExcludingMccs(
+        @Param("excludedMccs") List<String> excludedMccs
+    );
 
-        /**
-         * Find all non-deleted merchant agencies excluding specific MCCs with eager
-         * loading
-         */
-        @EntityGraph(attributePaths = { "merchant" })
-        @Query("""
-                        SELECT ma FROM MerchantAgency ma
-                        WHERE ma.deletedAt IS NULL
-                          AND ma.merchant.deletedAt IS NULL
-                          AND ma.merchant.mcc NOT IN :excludedMccs
-                        """)
-        List<MerchantAgency> findAllActiveExcludingMccs(@Param("excludedMccs") List<String> excludedMccs);
+    @Query(
+        value = """
+        WITH user_point AS (
+            SELECT ST_SetSRID(ST_MakePoint(:userLng, :userLat), 4326)::geography AS point
+        )
+        SELECT
+            m.name AS brand_name,
+            a.name AS agency_name,
+            a.latitude,
+            a.longitude,
+            m.logo_url,
+            m.description,
+            ROUND(ST_Distance(a.location, u.point)::numeric, 2) AS distance_meters
+        FROM merchant_agencies a
+        JOIN user_point u ON TRUE
+        JOIN merchants m ON a.merchant_id = m.id
+        WHERE a.search_text ILIKE CONCAT('%', :s, '%')
+        ORDER BY a.location <-> u.point
+        LIMIT :limit;
+                    """,
+        nativeQuery = true
+    )
+    List<NearestAgencyProjection> searchNearestAgencies(
+        @Param("s") String searchKeyword,
+        @Param("userLat") double userLat,
+        @Param("userLng") double userLng,
+        @Param("limit") int limit
+    );
 
-        @Query(value = """
-                        WITH user_point AS (
-                            SELECT ST_SetSRID(ST_MakePoint(:userLng, :userLat), 4326)::geography AS point
-                        )
-                        SELECT
-                            m.name AS brand_name,
-                            a.name AS agency_name,
-                            a.latitude,
-                            a.longitude,
-                            m.logo_url,
-                            m.description,
-                            ROUND(ST_Distance(a.location, u.point)::numeric, 2) AS distance_meters
-                        FROM merchant_agencies a
-                        JOIN user_point u ON TRUE
-                        JOIN merchants m ON a.merchant_id = m.id
-                        WHERE a.search_text ILIKE CONCAT('%', :s, '%')
-                        ORDER BY a.location <-> u.point
-                        LIMIT :limit;
-                                    """, nativeQuery = true)
-        List<NearestAgencyProjection> searchNearestAgencies(
-                        @Param("s") String searchKeyword,
-                        @Param("userLat") double userLat,
-                        @Param("userLng") double userLng,
-                        @Param("limit") int limit);
+    @Query(
+        value = """
+            WITH user_point AS (
+                SELECT ST_SetSRID(ST_MakePoint(:userLng, :userLat), 4326)::geography AS point
+            ),
+            unique_merchants AS (
+                SELECT DISTINCT ON (a.merchant_id)
+                    m.name AS merchant_name,
+                    a.name AS agency_name,
+                    a.id as agency_id,
+                    a.latitude,
+                    a.longitude,
+                    m.logo_url,
+                    m.description,
+                    ST_Distance(a.location, u.point) AS raw_distance
+                FROM merchant_agencies a
+                JOIN user_point u ON TRUE
+                JOIN merchants m ON a.merchant_id = m.id
+                WHERE a.search_text ILIKE CONCAT('%', :s, '%')
+                ORDER BY a.merchant_id, a.location <-> u.point
+            )
+            SELECT
+                merchant_name,
+                agency_name,
+                agency_id,
+                latitude,
+                longitude,
+                logo_url,
+                description,
+                ROUND(raw_distance::numeric, 2) AS distance_meters
+            FROM unique_merchants
+            ORDER BY
+                CASE WHEN :sort = 'NAME_ASC' THEN merchant_name END ASC,
+                CASE WHEN :sort = 'NAME_DESC' THEN merchant_name END DESC,
+                CASE WHEN :sort = 'DISTANCE_ASC' THEN raw_distance END ASC,
+                CASE WHEN :sort = 'DISTANCE_DESC' THEN raw_distance END DESC
+            LIMIT :limit
+        """,
+        nativeQuery = true
+    )
+    List<NearestAgencyProjection> searchNearestAgenciesWithSort(
+        @Param("s") String searchKeyword,
+        @Param("userLat") double userLat,
+        @Param("userLng") double userLng,
+        @Param("limit") int limit,
+        @Param("sort") String sortStr
+    );
 
-        @Query(value = """
-                            WITH user_point AS (
-                                SELECT ST_SetSRID(ST_MakePoint(:userLng, :userLat), 4326)::geography AS point
-                            ),
-                            unique_merchants AS (
-                                SELECT DISTINCT ON (a.merchant_id)
-                                    m.name AS brand_name,
-                                    a.name AS agency_name,
-                                    a.latitude,
-                                    a.longitude,
-                                    m.logo_url,
-                                    m.description,
-                                    ST_Distance(a.location, u.point) AS raw_distance
-                                FROM merchant_agencies a
-                                JOIN user_point u ON TRUE
-                                JOIN merchants m ON a.merchant_id = m.id
-                                WHERE a.search_text ILIKE CONCAT('%', :s, '%')
-                                ORDER BY a.merchant_id, a.location <-> u.point
-                            )
-                            SELECT
-                                brand_name,
-                                agency_name,
-                                latitude,
-                                longitude,
-                                logo_url,
-                                description,
-                                ROUND(raw_distance::numeric, 2) AS distance_meters
-                            FROM unique_merchants
-                            ORDER BY
-                                CASE WHEN :sort = 'NAME_ASC' THEN brand_name END ASC,
-                                CASE WHEN :sort = 'NAME_DESC' THEN brand_name END DESC,
-                                CASE WHEN :sort = 'DISTANCE_ASC' THEN raw_distance END ASC,
-                                CASE WHEN :sort = 'DISTANCE_DESC' THEN raw_distance END DESC
-                            LIMIT :limit
-                        """, nativeQuery = true)
-        List<NearestAgencyProjection> searchNearestAgenciesWithSort(
-                        @Param("s") String searchKeyword,
-                        @Param("userLat") double userLat,
-                        @Param("userLng") double userLng,
-                        @Param("limit") int limit,
-                        @Param("sort") String sortStr);
-
-        List<MerchantAgency> findByMerchantId(UUID merchantId);
+    List<MerchantAgency> findByMerchantId(UUID merchantId);
 
     @EntityGraph(attributePaths = { "merchant" })
     Optional<MerchantAgency> findById(@Param("id") UUID id);
@@ -131,52 +149,59 @@ public interface MerchantAgencyRepository
      * Get nearby merchant agencies based on latitude, longitude, and limit
      * Returns agencies ordered by distance from the given point
      */
-    @Query(value = """
-                WITH user_point AS (
-                    SELECT ST_SetSRID(ST_MakePoint(:userLng, :userLat), 4326)::geography AS point
-                )
-                SELECT
-                    m.name AS brand_name,
-                    a.name AS agency_name,
-                    a.latitude,
-                    a.longitude,
-                    m.logo_url,
-                    m.description,
-                    ROUND(ST_Distance(a.location, u.point)::numeric, 2) AS distance_meters
-                FROM merchant_agencies a
-                JOIN user_point u ON TRUE
-                JOIN merchants m ON a.merchant_id = m.id
-                WHERE a.deleted_at IS NULL
-                  AND m.deleted_at IS NULL
-                ORDER BY a.location <-> u.point
-                LIMIT :limit
-            """, nativeQuery = true)
+    @Query(
+        value = """
+            WITH user_point AS (
+                SELECT ST_SetSRID(ST_MakePoint(:userLng, :userLat), 4326)::geography AS point
+            )
+            SELECT
+                m.name AS brand_name,
+                a.name AS agency_name,
+                a.latitude,
+                a.longitude,
+                m.logo_url,
+                m.description,
+                ROUND(ST_Distance(a.location, u.point)::numeric, 2) AS distance_meters
+            FROM merchant_agencies a
+            JOIN user_point u ON TRUE
+            JOIN merchants m ON a.merchant_id = m.id
+            WHERE a.deleted_at IS NULL
+              AND m.deleted_at IS NULL
+            ORDER BY a.location <-> u.point
+            LIMIT :limit
+        """,
+        nativeQuery = true
+    )
     List<NearestAgencyProjection> findNearbyAgencies(
-            @Param("userLat") double userLat,
-            @Param("userLng") double userLng,
-            @Param("limit") int limit);
+        @Param("userLat") double userLat,
+        @Param("userLng") double userLng,
+        @Param("limit") int limit
+    );
 
     /**
      * Get nearest merchant agencies for geofence registration
      * Returns agency IDs with their coordinates for geofence setup
      */
-    @Query(value = """
-                WITH user_point AS (
-                    SELECT ST_SetSRID(ST_MakePoint(:userLng, :userLat), 4326)::geography AS point
-                )
-                SELECT
-                    a.id,
-                    a.latitude,
-                    a.longitude
-                FROM merchant_agencies a
-                JOIN user_point u ON TRUE
-                WHERE a.deleted_at IS NULL
-                ORDER BY a.location <-> u.point
-                LIMIT :limit
-            """, nativeQuery = true)
+    @Query(
+        value = """
+            WITH user_point AS (
+                SELECT ST_SetSRID(ST_MakePoint(:userLng, :userLat), 4326)::geography AS point
+            )
+            SELECT
+                a.id,
+                a.latitude,
+                a.longitude
+            FROM merchant_agencies a
+            JOIN user_point u ON TRUE
+            WHERE a.deleted_at IS NULL
+            ORDER BY a.location <-> u.point
+            LIMIT :limit
+        """,
+        nativeQuery = true
+    )
     List<GeofenceAgencyProjection> getNearestMerchantAgencies(
-            @Param("userLat") double userLat,
-            @Param("userLng") double userLng,
-            @Param("limit") int limit);
-   
+        @Param("userLat") double userLat,
+        @Param("userLng") double userLng,
+        @Param("limit") int limit
+    );
 }
