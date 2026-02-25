@@ -40,7 +40,7 @@ public class FavoriteMerchantController {
         return responseFactory.successSingle(favoriteMerchantService.getFavoriteMerchants(userId), "ok");
     }
 
-    @Operation(summary = "Add favorite merchant agency", description = "Add a merchant agency to the current user's favorites")
+    @Operation(summary = "toggle favorite merchant agency", description = "toggle a merchant agency to the current user's favorites")
     @PostMapping
     public ResponseEntity<SingleResponse<Boolean>> toggleFavoriteMerchantAgency(
             @RequestBody AddFavoriteMerchantRequest request) {
