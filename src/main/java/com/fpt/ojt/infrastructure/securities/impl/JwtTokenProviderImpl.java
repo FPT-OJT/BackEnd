@@ -222,7 +222,11 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
 
     @Override
     public String extractAccessTokenFromHttpRequest(HttpServletRequest request) {
-        return request.getHeader(ACCESS_TOKEN_HEADER);
+        String header = request.getHeader(ACCESS_TOKEN_HEADER);
+        if (header != null && header.regionMatches(true, 0, "Bearer ", 0, 7)) {
+            return header.substring(7);
+        }
+        return header;
     }
 
     @Override
