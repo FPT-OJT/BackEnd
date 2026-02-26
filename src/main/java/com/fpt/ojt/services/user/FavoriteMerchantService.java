@@ -1,9 +1,8 @@
 package com.fpt.ojt.services.user;
 
+import com.fpt.ojt.services.dtos.FavoriteMerchantDto;
 import java.util.List;
 import java.util.UUID;
-
-import com.fpt.ojt.services.dtos.FavoriteMerchantDto;
 
 public interface FavoriteMerchantService {
     List<FavoriteMerchantDto> getFavoriteMerchants(UUID userId);

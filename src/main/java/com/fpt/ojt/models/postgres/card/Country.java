@@ -1,7 +1,6 @@
 package com.fpt.ojt.models.postgres.card;
 
 import com.fpt.ojt.models.postgres.AbstractBaseEntity;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;

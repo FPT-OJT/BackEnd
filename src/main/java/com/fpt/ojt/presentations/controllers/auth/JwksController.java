@@ -1,14 +1,13 @@
 package com.fpt.ojt.presentations.controllers.auth;
 
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import java.security.interfaces.RSAPublicKey;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
@@ -24,8 +23,7 @@ public class JwksController {
                 "use", "sig",
                 "kid", "default",
                 "n", base64UrlEncode(publicKey.getModulus().toByteArray()),
-                "e", base64UrlEncode(publicKey.getPublicExponent().toByteArray())
-        );
+                "e", base64UrlEncode(publicKey.getPublicExponent().toByteArray()));
         return Map.of("keys", List.of(jwk));
     }
 

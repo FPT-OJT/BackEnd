@@ -1,9 +1,8 @@
 package com.fpt.ojt.infrastructure.securities.dto;
 
+import java.util.UUID;
 import lombok.Builder;
 import lombok.Getter;
-
-import java.util.UUID;
 
 @Getter
 @Builder

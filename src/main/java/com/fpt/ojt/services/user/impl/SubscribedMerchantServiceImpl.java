@@ -1,10 +1,5 @@
 package com.fpt.ojt.services.user.impl;
 
-import java.util.List;
-import java.util.UUID;
-
-import org.springframework.stereotype.Service;
-
 import com.fpt.ojt.exceptions.NotFoundException;
 import com.fpt.ojt.repositories.merchant.MerchantAgencyRepository;
 import com.fpt.ojt.repositories.merchant.MerchantRepository;
@@ -12,9 +7,11 @@ import com.fpt.ojt.repositories.user.SubscribedMerchantRepository;
 import com.fpt.ojt.services.dtos.SubscribedMerchantAgencyDto;
 import com.fpt.ojt.services.dtos.SubscribedMerchantDto;
 import com.fpt.ojt.services.user.SubscribedMerchantService;
-
 import jakarta.transaction.Transactional;
+import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
@@ -52,12 +49,10 @@ public class SubscribedMerchantServiceImpl implements SubscribedMerchantService 
     @Override
     @Transactional
     public void subscribeMerchant(UUID userId, UUID merchantId) {
-        merchantRepository.findById(merchantId)
-                .orElseThrow(() -> new NotFoundException("Merchant not found"));
+        merchantRepository.findById(merchantId).orElseThrow(() -> new NotFoundException("Merchant not found"));
 
         var agencies = merchantAgencyRepository.findByMerchantId(merchantId);
-        if (agencies.isEmpty())
-            return;
+        if (agencies.isEmpty()) return;
 
         for (var agency : agencies) {
             subscribedMerchantRepository.insertOrRestore(userId, agency.getId());
@@ -67,8 +62,7 @@ public class SubscribedMerchantServiceImpl implements SubscribedMerchantService 
     @Override
     @Transactional
     public void unsubscribeMerchant(UUID userId, UUID merchantId) {
-        merchantRepository.findById(merchantId)
-                .orElseThrow(() -> new NotFoundException("Merchant not found"));
+        merchantRepository.findById(merchantId).orElseThrow(() -> new NotFoundException("Merchant not found"));
 
         subscribedMerchantRepository.deleteByUserIdAndMerchantId(userId, merchantId);
     }
@@ -88,5 +82,4 @@ public class SubscribedMerchantServiceImpl implements SubscribedMerchantService 
     public boolean isSubscribedMerchantAgency(UUID userId, UUID merchantAgencyId) {
         return subscribedMerchantRepository.existsByUserIdAndMerchantAgencyId(userId, merchantAgencyId);
     }
-
 }

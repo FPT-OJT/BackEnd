@@ -1,9 +1,7 @@
 package com.fpt.ojt.services.dtos;
 
-import java.util.UUID;
-
 import com.fpt.ojt.models.postgres.card.UserCreditCard;
-
+import java.util.UUID;
 import lombok.Builder;
 import lombok.Data;
 
@@ -21,8 +19,7 @@ public class UserCardDto {
         if (userCreditCard == null) {
             return null;
         }
-        UserCardDto.UserCardDtoBuilder builder = UserCardDto.builder()
-                .userCardId(userCreditCard.getId());
+        UserCardDto.UserCardDtoBuilder builder = UserCardDto.builder().userCardId(userCreditCard.getId());
         if (userCreditCard.getCardProduct() != null) {
             builder.cardName(userCreditCard.getCardProduct().getCardName())
                     .cardImageUrl(userCreditCard.getCardProduct().getImageUrl());

@@ -14,6 +14,5 @@ public abstract class AbstractBaseResponse {
     protected int statusCode;
     protected String message;
 
-    protected AbstractBaseResponse() {
-    }
+    protected AbstractBaseResponse() {}
 }

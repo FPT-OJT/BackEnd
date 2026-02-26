@@ -5,6 +5,8 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ConstraintViolationException;
+import java.util.HashMap;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -32,9 +34,6 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import org.springframework.web.multipart.MultipartException;
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @RestControllerAdvice
@@ -77,19 +76,19 @@ public class AppExceptionHandler {
     }
 
     @ExceptionHandler({
-            BadRequestException.class,
-            MultipartException.class,
-            MissingServletRequestPartException.class,
-            HttpMediaTypeNotSupportedException.class,
-            MethodArgumentTypeMismatchException.class,
-            IllegalArgumentException.class,
-            IllegalStateException.class,
-            InvalidDataAccessApiUsageException.class,
-            ConstraintViolationException.class,
-            MissingRequestHeaderException.class,
-            MissingServletRequestParameterException.class,
-            EntityNotFoundException.class,
-            MalformedJwtException.class
+        BadRequestException.class,
+        MultipartException.class,
+        MissingServletRequestPartException.class,
+        HttpMediaTypeNotSupportedException.class,
+        MethodArgumentTypeMismatchException.class,
+        IllegalArgumentException.class,
+        IllegalStateException.class,
+        InvalidDataAccessApiUsageException.class,
+        ConstraintViolationException.class,
+        MissingRequestHeaderException.class,
+        MissingServletRequestParameterException.class,
+        EntityNotFoundException.class,
+        MalformedJwtException.class
     })
     public final ResponseEntity<ErrorResponse> handleBadRequestException(final Exception e) {
         log.error(e.toString(), e.getMessage());
@@ -102,7 +101,7 @@ public class AppExceptionHandler {
         return build(HttpStatus.NOT_FOUND, e.getMessage());
     }
 
-    @ExceptionHandler({ NotFoundException.class, NoResourceFoundException.class })
+    @ExceptionHandler({NotFoundException.class, NoResourceFoundException.class})
     public final ResponseEntity<ErrorResponse> handleDomainNotFound(final Exception e) {
         log.error(e.toString(), e.getMessage());
         return build(HttpStatus.NOT_FOUND, e.getMessage());
@@ -115,9 +114,9 @@ public class AppExceptionHandler {
     }
 
     @ExceptionHandler({
-            InternalAuthenticationServiceException.class,
-            BadCredentialsException.class,
-            AuthenticationCredentialsNotFoundException.class
+        InternalAuthenticationServiceException.class,
+        BadCredentialsException.class,
+        AuthenticationCredentialsNotFoundException.class
     })
     public final ResponseEntity<ErrorResponse> handleBadCredentialsException(final Exception e) {
         log.error(e.toString(), e.getMessage());
@@ -169,22 +168,22 @@ public class AppExceptionHandler {
      * @param errors     Map for response errors field
      * @return ResponseEntity
      */
-    private ResponseEntity<ErrorResponse> build(final HttpStatus httpStatus,
-            final String message,
-            final Map<String, String> errors) {
+    private ResponseEntity<ErrorResponse> build(
+            final HttpStatus httpStatus, final String message, final Map<String, String> errors) {
         if (!errors.isEmpty()) {
-            return ResponseEntity.status(httpStatus).body(
-                    DetailedErrorResponse.builder()
+            return ResponseEntity.status(httpStatus)
+                    .body(DetailedErrorResponse.builder()
                             .message(message)
                             .statusCode(httpStatus.value())
                             .items(errors)
                             .build());
         }
 
-        return ResponseEntity.status(httpStatus).body(ErrorResponse.builder()
-                .message(message)
-                .statusCode(httpStatus.value())
-                .build());
+        return ResponseEntity.status(httpStatus)
+                .body(ErrorResponse.builder()
+                        .message(message)
+                        .statusCode(httpStatus.value())
+                        .build());
     }
 
     /**

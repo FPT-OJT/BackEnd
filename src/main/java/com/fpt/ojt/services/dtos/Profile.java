@@ -1,9 +1,7 @@
 package com.fpt.ojt.services.dtos;
 
-import java.util.UUID;
-
 import com.fpt.ojt.models.postgres.user.User;
-
+import java.util.UUID;
 import lombok.Builder;
 import lombok.Data;
 

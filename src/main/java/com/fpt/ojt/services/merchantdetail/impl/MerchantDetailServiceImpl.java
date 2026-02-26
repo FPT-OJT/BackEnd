@@ -14,12 +14,6 @@ import com.fpt.ojt.repositories.deal.CardMerchantDealRepository;
 import com.fpt.ojt.repositories.deal.MerchantDealRepository;
 import com.fpt.ojt.repositories.merchant.MerchantAgencyRepository;
 import com.fpt.ojt.services.merchantdetail.MerchantDetailService;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.stereotype.Service;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +21,10 @@ import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Service;
 
 @Service
 @Slf4j
@@ -53,8 +51,8 @@ public class MerchantDetailServiceImpl implements MerchantDetailService {
 
             String mcc = agency.getMerchant().getMcc();
             Map<UUID, List<CardRule>> cardRulesByProduct = groupCardRulesByProduct(cardRules);
-            List<MerchantAgencyCardsDealsResponse.CardWithDeals> cardsWithDeals = processCardsWithDeals(
-                    userCards, cardRulesByProduct, merchantDeals, mcc);
+            List<MerchantAgencyCardsDealsResponse.CardWithDeals> cardsWithDeals =
+                    processCardsWithDeals(userCards, cardRulesByProduct, merchantDeals, mcc);
 
             return buildResponse(agency, cardsWithDeals);
 
@@ -64,10 +62,10 @@ public class MerchantDetailServiceImpl implements MerchantDetailService {
         }
     }
 
-
     @Cacheable(value = CacheNames.MERCHANT_AGENCY_CACHE_NAME, key = "#merchantAgencyId")
     private MerchantAgency getMerchantAgency(UUID merchantAgencyId) {
-        return merchantAgencyRepository.findById(merchantAgencyId)
+        return merchantAgencyRepository
+                .findById(merchantAgencyId)
                 .orElseThrow(() -> new NotFoundException("Merchant agency not found"));
     }
 
@@ -86,7 +84,6 @@ public class MerchantDetailServiceImpl implements MerchantDetailService {
         return cardRuleRepository.findAllAvailableByCardRulesWithConditionByUserId(userId);
     }
 
-
     private Map<UUID, List<CardRule>> groupCardRulesByProduct(List<CardRule> cardRules) {
         return cardRules.stream()
                 .collect(Collectors.groupingBy(rule -> rule.getCardProduct().getId()));
@@ -97,7 +94,7 @@ public class MerchantDetailServiceImpl implements MerchantDetailService {
             Map<UUID, List<CardRule>> cardRulesByProduct,
             List<MerchantDeal> merchantDeals,
             String mcc) {
-        
+
         return userCards.stream()
                 .map(userCard -> processCardWithDeals(userCard, cardRulesByProduct, merchantDeals, mcc))
                 .toList();
@@ -108,14 +105,14 @@ public class MerchantDetailServiceImpl implements MerchantDetailService {
             Map<UUID, List<CardRule>> cardRulesByProduct,
             List<MerchantDeal> merchantDeals,
             String mcc) {
-        
+
         UUID cardProductId = userCard.getCardProduct().getId();
         List<CardRule> rulesForThisCard = cardRulesByProduct.getOrDefault(cardProductId, List.of());
 
         List<MerchantAgencyCardsDealsResponse.DealItem> deals = new ArrayList<>();
-        
+
         addMerchantDeals(deals, merchantDeals, cardProductId);
-        
+
         addCardDeals(deals, rulesForThisCard, mcc);
 
         return buildCardWithDeals(userCard, cardProductId, deals);
@@ -125,7 +122,7 @@ public class MerchantDetailServiceImpl implements MerchantDetailService {
             List<MerchantAgencyCardsDealsResponse.DealItem> deals,
             List<MerchantDeal> merchantDeals,
             UUID cardProductId) {
-        
+
         for (MerchantDeal merchantDeal : merchantDeals) {
             if (isCardEligibleForDeal(merchantDeal.getId(), cardProductId)) {
                 deals.add(buildMerchantDealItem(merchantDeal));
@@ -134,10 +131,8 @@ public class MerchantDetailServiceImpl implements MerchantDetailService {
     }
 
     private void addCardDeals(
-            List<MerchantAgencyCardsDealsResponse.DealItem> deals,
-            List<CardRule> rulesForThisCard,
-            String mcc) {
-        
+            List<MerchantAgencyCardsDealsResponse.DealItem> deals, List<CardRule> rulesForThisCard, String mcc) {
+
         for (CardRule rule : rulesForThisCard) {
             if (isMccMatching(mcc, rule.getMatchAllowMccs(), rule.getMatchRejectMccs())) {
                 double benefit = calculateCardBenefit(rule);
@@ -148,11 +143,9 @@ public class MerchantDetailServiceImpl implements MerchantDetailService {
         }
     }
 
-
     private MerchantAgencyCardsDealsResponse buildResponse(
-            MerchantAgency agency,
-            List<MerchantAgencyCardsDealsResponse.CardWithDeals> cardsWithDeals) {
-        
+            MerchantAgency agency, List<MerchantAgencyCardsDealsResponse.CardWithDeals> cardsWithDeals) {
+
         return MerchantAgencyCardsDealsResponse.builder()
                 .merchantAgencyId(agency.getId())
                 .merchantAgencyName(agency.getName())
@@ -162,10 +155,8 @@ public class MerchantDetailServiceImpl implements MerchantDetailService {
     }
 
     private MerchantAgencyCardsDealsResponse.CardWithDeals buildCardWithDeals(
-            UserCreditCard userCard,
-            UUID cardProductId,
-            List<MerchantAgencyCardsDealsResponse.DealItem> deals) {
-        
+            UserCreditCard userCard, UUID cardProductId, List<MerchantAgencyCardsDealsResponse.DealItem> deals) {
+
         return MerchantAgencyCardsDealsResponse.CardWithDeals.builder()
                 .userCardId(userCard.getId())
                 .cardProductId(cardProductId)
@@ -204,7 +195,6 @@ public class MerchantDetailServiceImpl implements MerchantDetailService {
                 .build();
     }
 
-
     private boolean isCardEligibleForDeal(UUID dealId, UUID cardProductId) {
         if (cardMerchantDealRepository.isDealAvailableForAllCards(dealId)) {
             return true;
@@ -230,9 +220,8 @@ public class MerchantDetailServiceImpl implements MerchantDetailService {
 
     private double calculateCardBenefit(CardRule rule) {
         double rebateRate = rule.getEffectRebateRate() != null ? rule.getEffectRebateRate() : 0.0;
-        double merchantDiscountRate = rule.getEffectMerchantDiscountRate() != null
-                ? rule.getEffectMerchantDiscountRate()
-                : 0.0;
+        double merchantDiscountRate =
+                rule.getEffectMerchantDiscountRate() != null ? rule.getEffectMerchantDiscountRate() : 0.0;
         double feeRate = rule.getEffectFeeRate() != null ? rule.getEffectFeeRate() : 0.0;
         double cashbackRate = rule.getEffectCashbackRate() != null ? rule.getEffectCashbackRate() : 0.0;
 
@@ -242,9 +231,8 @@ public class MerchantDetailServiceImpl implements MerchantDetailService {
 
     private Double calculateDiscountRate(CardRule rule) {
         double rebateRate = rule.getEffectRebateRate() != null ? rule.getEffectRebateRate() : 0.0;
-        double merchantDiscountRate = rule.getEffectMerchantDiscountRate() != null
-                ? rule.getEffectMerchantDiscountRate()
-                : 0.0;
+        double merchantDiscountRate =
+                rule.getEffectMerchantDiscountRate() != null ? rule.getEffectMerchantDiscountRate() : 0.0;
         double feeRate = rule.getEffectFeeRate() != null ? rule.getEffectFeeRate() : 0.0;
         return rebateRate + merchantDiscountRate - feeRate;
     }

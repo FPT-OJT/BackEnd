@@ -11,15 +11,14 @@ import com.fpt.ojt.services.deal.DealService;
 import com.fpt.ojt.services.dtos.AvailableCardRulesDto;
 import com.fpt.ojt.services.dtos.Coordinate;
 import com.fpt.ojt.services.dtos.MerchantAgencyWithAvailableDealsDto;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 
 @Service
 @Slf4j
@@ -34,7 +33,8 @@ public class DealServiceImpl implements DealService {
             List<MerchantDeal> merchantDeals = merchantDealRepository.findAllAvailableMerchantDeals();
 
             Map<UUID, List<MerchantDeal>> groupedByAgency = merchantDeals.stream()
-                    .collect(Collectors.groupingBy(deal -> deal.getMerchantAgency().getId()));
+                    .collect(Collectors.groupingBy(
+                            deal -> deal.getMerchantAgency().getId()));
 
             return groupedByAgency.entrySet().stream()
                     .map(entry -> {
@@ -49,7 +49,6 @@ public class DealServiceImpl implements DealService {
                                 .mcc(merchant.getMcc())
                                 .lat(agency.getLatitude())
                                 .lng(agency.getLongitude())
-
                                 .merchantDealItems(entry.getValue().stream()
                                         .map(this::mapToMerchantDealItem)
                                         .toList())
@@ -79,16 +78,14 @@ public class DealServiceImpl implements DealService {
             if (userCardList != null && !userCardList.isEmpty()) {
                 for (AvailableCardRulesDto userCard : userCardList) {
                     if (!checkAvailableUserCardForMerchantDeal(
-                            merchantDealItem.getDealId(),
-                            userCard.getCardProductId()))
-                        continue;
+                            merchantDealItem.getDealId(), userCard.getCardProductId())) continue;
 
                     alreadySetMerchantRate = true;
 
                     for (AvailableCardRulesDto.CardRulesDto cardRule : userCard.getCardRules()) {
                         if (checkAvailableMcc(mcc, cardRule.getAllowMccs(), cardRule.getRejectMccs())) {
-                            totalCardDiscountRate += cardRule.getEffectRebateRate()
-                                    + cardRule.getEffectMerchantDiscountRate();
+                            totalCardDiscountRate +=
+                                    cardRule.getEffectRebateRate() + cardRule.getEffectMerchantDiscountRate();
                             totalCardCashbackRate += cardRule.getEffectCashbackRate();
                             totalCardEffectFeeRate += cardRule.getEffectFeeRate();
                         }
@@ -96,12 +93,10 @@ public class DealServiceImpl implements DealService {
                 }
 
                 if (alreadySetMerchantRate) {
-                    merchantDiscountRate = merchantDealItem.getDiscountRate() != null
-                            ? merchantDealItem.getDiscountRate()
-                            : 0.0;
-                    merchantCashbackRate = merchantDealItem.getCashbackRate() != null
-                            ? merchantDealItem.getCashbackRate()
-                            : 0.0;
+                    merchantDiscountRate =
+                            merchantDealItem.getDiscountRate() != null ? merchantDealItem.getDiscountRate() : 0.0;
+                    merchantCashbackRate =
+                            merchantDealItem.getCashbackRate() != null ? merchantDealItem.getCashbackRate() : 0.0;
                 }
 
                 double totalCardBenefit = totalCardDiscountRate - totalCardEffectFeeRate;
@@ -110,10 +105,10 @@ public class DealServiceImpl implements DealService {
 
                 return totalDiscount + merchantCashbackRate + totalCardCashbackRate;
             } else {
-                merchantDiscountRate = merchantDealItem.getDiscountRate() != null ? merchantDealItem.getDiscountRate()
-                        : 0.0;
-                merchantCashbackRate = merchantDealItem.getCashbackRate() != null ? merchantDealItem.getCashbackRate()
-                        : 0.0;
+                merchantDiscountRate =
+                        merchantDealItem.getDiscountRate() != null ? merchantDealItem.getDiscountRate() : 0.0;
+                merchantCashbackRate =
+                        merchantDealItem.getCashbackRate() != null ? merchantDealItem.getCashbackRate() : 0.0;
 
                 return merchantDiscountRate + merchantCashbackRate * (1 - merchantDiscountRate / 100);
             }
@@ -123,8 +118,7 @@ public class DealServiceImpl implements DealService {
     }
 
     private boolean checkAvailableMcc(String mcc, List<String> allowMccs, List<String> rejectMccs) {
-        if (mcc == null)
-            throw new RuntimeException("Error in passing string mcc");
+        if (mcc == null) throw new RuntimeException("Error in passing string mcc");
 
         if ((allowMccs == null || allowMccs.isEmpty()) && (rejectMccs == null || rejectMccs.isEmpty())) {
             return true;
@@ -142,8 +136,7 @@ public class DealServiceImpl implements DealService {
     }
 
     private boolean checkAvailableUserCardForMerchantDeal(UUID dealId, UUID cardProductId) {
-        if (cardMerchantDealRepository.isDealAvailableForAllCards(dealId))
-            return true;
+        if (cardMerchantDealRepository.isDealAvailableForAllCards(dealId)) return true;
 
         return cardMerchantDealRepository.existsByDealAndCard(dealId, cardProductId);
     }
@@ -165,9 +158,8 @@ public class DealServiceImpl implements DealService {
     public Double calculateCardOnlyBenefit(AvailableCardRulesDto.CardRulesDto cardRule) {
         try {
             double rebateRate = cardRule.getEffectRebateRate() != null ? cardRule.getEffectRebateRate() : 0.0;
-            double merchantDiscountRate = cardRule.getEffectMerchantDiscountRate() != null
-                    ? cardRule.getEffectMerchantDiscountRate()
-                    : 0.0;
+            double merchantDiscountRate =
+                    cardRule.getEffectMerchantDiscountRate() != null ? cardRule.getEffectMerchantDiscountRate() : 0.0;
             double feeRate = cardRule.getEffectFeeRate() != null ? cardRule.getEffectFeeRate() : 0.0;
             double cashbackRate = cardRule.getEffectCashbackRate() != null ? cardRule.getEffectCashbackRate() : 0.0;
 
@@ -179,15 +171,13 @@ public class DealServiceImpl implements DealService {
     }
 
     @Override
-    public List<MerchantAgencyWithAvailableDealsDto> getNearestMerchantDeals(Coordinate userLocation,
-            int radiusMeters) {
+    public List<MerchantAgencyWithAvailableDealsDto> getNearestMerchantDeals(
+            Coordinate userLocation, int radiusMeters) {
         List<MerchantDealFlatProjection> flatData = merchantDealRepository.findAvailableDealsInRadius(
-                userLocation.getLatitude(),
-                userLocation.getLongitude(),
-                radiusMeters);
+                userLocation.getLatitude(), userLocation.getLongitude(), radiusMeters);
 
-        Map<UUID, List<MerchantDealFlatProjection>> grouped = flatData.stream()
-                .collect(Collectors.groupingBy(MerchantDealFlatProjection::getAgencyId));
+        Map<UUID, List<MerchantDealFlatProjection>> grouped =
+                flatData.stream().collect(Collectors.groupingBy(MerchantDealFlatProjection::getAgencyId));
 
         return grouped.values().stream()
                 .map(projections -> {

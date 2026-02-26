@@ -1,7 +1,7 @@
 package com.fpt.ojt.presentations.dtos.requests.card;
 
-import java.time.LocalDate;
 import jakarta.validation.constraints.NotNull;
+import java.time.LocalDate;
 import lombok.Data;
 
 @Data
@@ -12,5 +12,4 @@ public class EditUserCard {
 
     @NotNull(message = "Expiry date is required")
     private LocalDate expiryDate;
-
 }

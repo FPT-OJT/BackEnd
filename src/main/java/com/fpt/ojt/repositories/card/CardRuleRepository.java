@@ -1,19 +1,20 @@
 package com.fpt.ojt.repositories.card;
 
 import com.fpt.ojt.models.postgres.card.CardRule;
+import java.util.List;
+import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-import java.util.UUID;
-
 @Repository
 public interface CardRuleRepository extends JpaRepository<CardRule, UUID>, JpaSpecificationExecutor<CardRule> {
 
-  @Query(value = """
+    @Query(
+            value =
+                    """
       SELECT cr.*
       FROM card_rules cr
       INNER JOIN card_products cp ON cr.card_product_id = cp.id
@@ -25,10 +26,13 @@ public interface CardRuleRepository extends JpaRepository<CardRule, UUID>, JpaSp
         AND ucc.deleted_at IS NULL
         AND cr.match_conditions IS NULL
       ORDER BY cr.created_at DESC
-      """, nativeQuery = true)
-  List<CardRule> findAllAvailableByCardRulesByUserId(@Param("userId") UUID userId);
+      """,
+            nativeQuery = true)
+    List<CardRule> findAllAvailableByCardRulesByUserId(@Param("userId") UUID userId);
 
-  @Query(value = """
+    @Query(
+            value =
+                    """
       SELECT cr.*
       FROM card_rules cr
       INNER JOIN card_products cp ON cr.card_product_id = cp.id
@@ -39,6 +43,7 @@ public interface CardRuleRepository extends JpaRepository<CardRule, UUID>, JpaSp
         AND cp.deleted_at IS NULL
         AND ucc.deleted_at IS NULL
       ORDER BY cr.created_at DESC
-      """, nativeQuery = true)
-  List<CardRule> findAllAvailableByCardRulesWithConditionByUserId(@Param("userId") UUID userId);
+      """,
+            nativeQuery = true)
+    List<CardRule> findAllAvailableByCardRulesWithConditionByUserId(@Param("userId") UUID userId);
 }

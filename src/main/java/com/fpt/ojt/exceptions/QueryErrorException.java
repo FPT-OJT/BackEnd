@@ -1,9 +1,8 @@
 package com.fpt.ojt.exceptions;
 
+import java.io.Serial;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
-
-import java.io.Serial;
 
 @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 public class QueryErrorException extends RuntimeException {

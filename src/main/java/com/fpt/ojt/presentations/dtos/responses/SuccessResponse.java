@@ -9,11 +9,6 @@ import lombok.experimental.SuperBuilder;
 @Setter
 @SuperBuilder
 public class SuccessResponse extends AbstractBaseResponse {
-    @Schema(
-            name = "message",
-            type = "Integer",
-            description = "Response message field",
-            example = "Success!"
-    )
+    @Schema(name = "message", type = "Integer", description = "Response message field", example = "Success!")
     private String message;
 }

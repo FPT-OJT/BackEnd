@@ -1,9 +1,7 @@
 package com.fpt.ojt.services.dtos;
 
-import java.util.UUID;
-
 import com.fpt.ojt.models.postgres.card.CardProduct;
-
+import java.util.UUID;
 import lombok.Builder;
 import lombok.Data;
 
@@ -11,14 +9,13 @@ import lombok.Data;
 @Builder
 public class CardProductDto {
     private UUID id;
-    
+
     private String cardName;
 
     private String cardType;
 
     private String imageUrl;
     private String cardCode;
-    
 
     public static CardProductDto fromEntity(CardProduct cardProduct) {
         if (cardProduct == null) {
@@ -32,5 +29,4 @@ public class CardProductDto {
                 .imageUrl(cardProduct.getImageUrl())
                 .build();
     }
-
 }

@@ -1,8 +1,7 @@
 package com.fpt.ojt.models.postgres.card;
 
-import lombok.*;
-
 import java.util.List;
+import lombok.*;
 
 @Getter
 @Setter

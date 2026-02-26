@@ -7,18 +7,15 @@ import com.fpt.ojt.services.dtos.Coordinate;
 import com.fpt.ojt.services.dtos.HomeParam;
 import com.fpt.ojt.services.home.HomeService;
 import com.fpt.ojt.services.location.LocationService;
-import com.fpt.ojt.services.merchants.MerchantService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -40,22 +37,22 @@ public class HomeController extends AbstractBaseController {
         Optional<Coordinate> userLocation;
         log.info("latitude: {}, longitude: {}", latitude, longitude);
         if (latitude != null && longitude != null) {
-            userLocation = Optional.of(Coordinate.builder().latitude(latitude).longitude(longitude).build());
+            userLocation = Optional.of(
+                    Coordinate.builder().latitude(latitude).longitude(longitude).build());
         } else {
             userLocation = Optional.empty();
         }
-        var homeData = HomeParam.builder().userLocation(userLocation)
+        var homeData = HomeParam.builder()
+                .userLocation(userLocation)
                 .ipAddress(request.getRemoteAddr())
                 .build();
-        return responseFactory.successSingle(
-                homeService.getHomeData(homeData),
-                "Retrieve Home page  successfully");
+        return responseFactory.successSingle(homeService.getHomeData(homeData), "Retrieve Home page  successfully");
     }
+
     @GetMapping("/location")
     @Operation(summary = "Location endpoint", description = "Get location")
     public ResponseEntity<SingleResponse<Coordinate>> getLocation(@RequestParam String ipAddress) {
         return responseFactory.successSingle(
-                locationService.getCurrentUserLocation(),
-                "Retrieve location successfully");
+                locationService.getCurrentUserLocation(), "Retrieve location successfully");
     }
 }

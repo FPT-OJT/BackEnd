@@ -15,56 +15,49 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface MerchantAgencyRepository
-    extends
-        JpaRepository<MerchantAgency, UUID>,
-        JpaSpecificationExecutor<MerchantAgency>
-{
+        extends JpaRepository<MerchantAgency, UUID>, JpaSpecificationExecutor<MerchantAgency> {
     /**
      * Find merchant agencies by MCC with eager loading of merchant
      */
-    @EntityGraph(attributePaths = { "merchant" })
+    @EntityGraph(attributePaths = {"merchant"})
     @Query(
-        """
+            """
         SELECT DISTINCT ma FROM MerchantAgency ma
         WHERE ma.merchant.mcc = :mcc
           AND ma.deletedAt IS NULL
           AND ma.merchant.deletedAt IS NULL
-        """
-    )
+        """)
     List<MerchantAgency> findByMerchantMcc(@Param("mcc") String mcc);
 
     /**
      * Find all non-deleted merchant agencies with eager loading of merchant
      */
-    @EntityGraph(attributePaths = { "merchant" })
+    @EntityGraph(attributePaths = {"merchant"})
     @Query(
-        """
+            """
         SELECT ma FROM MerchantAgency ma
         WHERE ma.deletedAt IS NULL
           AND ma.merchant.deletedAt IS NULL
-        """
-    )
+        """)
     List<MerchantAgency> findAllActiveWithMerchant();
 
     /**
      * Find all non-deleted merchant agencies excluding specific MCCs with eager
      * loading
      */
-    @EntityGraph(attributePaths = { "merchant" })
+    @EntityGraph(attributePaths = {"merchant"})
     @Query(
-        """
+            """
         SELECT ma FROM MerchantAgency ma
         WHERE ma.deletedAt IS NULL
           AND ma.merchant.deletedAt IS NULL
           AND ma.merchant.mcc NOT IN :excludedMccs
-        """
-    )
-    List<MerchantAgency> findAllActiveExcludingMccs(
-        @Param("excludedMccs") List<String> excludedMccs
-    );
+        """)
+    List<MerchantAgency> findAllActiveExcludingMccs(@Param("excludedMccs") List<String> excludedMccs);
 
     @Query(
-        value = """
+            value =
+                    """
         WITH user_point AS (
             SELECT ST_SetSRID(ST_MakePoint(:userLng, :userLat), 4326)::geography AS point
         )
@@ -83,17 +76,16 @@ public interface MerchantAgencyRepository
         ORDER BY a.location <-> u.point
         LIMIT :limit;
                     """,
-        nativeQuery = true
-    )
+            nativeQuery = true)
     List<NearestAgencyProjection> searchNearestAgencies(
-        @Param("s") String searchKeyword,
-        @Param("userLat") double userLat,
-        @Param("userLng") double userLng,
-        @Param("limit") int limit
-    );
+            @Param("s") String searchKeyword,
+            @Param("userLat") double userLat,
+            @Param("userLng") double userLng,
+            @Param("limit") int limit);
 
     @Query(
-        value = """
+            value =
+                    """
             WITH user_point AS (
                 SELECT ST_SetSRID(ST_MakePoint(:userLng, :userLat), 4326)::geography AS point
             ),
@@ -130,19 +122,17 @@ public interface MerchantAgencyRepository
                 CASE WHEN :sort = 'DISTANCE_DESC' THEN raw_distance END DESC
             LIMIT :limit
         """,
-        nativeQuery = true
-    )
+            nativeQuery = true)
     List<NearestAgencyProjection> searchNearestAgenciesWithSort(
-        @Param("s") String searchKeyword,
-        @Param("userLat") double userLat,
-        @Param("userLng") double userLng,
-        @Param("limit") int limit,
-        @Param("sort") String sortStr
-    );
+            @Param("s") String searchKeyword,
+            @Param("userLat") double userLat,
+            @Param("userLng") double userLng,
+            @Param("limit") int limit,
+            @Param("sort") String sortStr);
 
     List<MerchantAgency> findByMerchantId(UUID merchantId);
 
-    @EntityGraph(attributePaths = { "merchant" })
+    @EntityGraph(attributePaths = {"merchant"})
     Optional<MerchantAgency> findById(@Param("id") UUID id);
 
     /**
@@ -150,7 +140,8 @@ public interface MerchantAgencyRepository
      * Returns agencies ordered by distance from the given point
      */
     @Query(
-        value = """
+            value =
+                    """
             WITH user_point AS (
                 SELECT ST_SetSRID(ST_MakePoint(:userLng, :userLat), 4326)::geography AS point
             )
@@ -170,20 +161,17 @@ public interface MerchantAgencyRepository
             ORDER BY a.location <-> u.point
             LIMIT :limit
         """,
-        nativeQuery = true
-    )
+            nativeQuery = true)
     List<NearestAgencyProjection> findNearbyAgencies(
-        @Param("userLat") double userLat,
-        @Param("userLng") double userLng,
-        @Param("limit") int limit
-    );
+            @Param("userLat") double userLat, @Param("userLng") double userLng, @Param("limit") int limit);
 
     /**
      * Get nearest merchant agencies for geofence registration
      * Returns agency IDs with their coordinates for geofence setup
      */
     @Query(
-        value = """
+            value =
+                    """
             WITH user_point AS (
                 SELECT ST_SetSRID(ST_MakePoint(:userLng, :userLat), 4326)::geography AS point
             )
@@ -197,11 +185,7 @@ public interface MerchantAgencyRepository
             ORDER BY a.location <-> u.point
             LIMIT :limit
         """,
-        nativeQuery = true
-    )
+            nativeQuery = true)
     List<GeofenceAgencyProjection> getNearestMerchantAgencies(
-        @Param("userLat") double userLat,
-        @Param("userLng") double userLng,
-        @Param("limit") int limit
-    );
+            @Param("userLat") double userLat, @Param("userLng") double userLng, @Param("limit") int limit);
 }

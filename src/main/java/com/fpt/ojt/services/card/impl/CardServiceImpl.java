@@ -17,22 +17,18 @@ import com.fpt.ojt.services.dtos.AvailableCardRulesDto;
 import com.fpt.ojt.services.dtos.CardProductDto;
 import com.fpt.ojt.services.dtos.UserCardDetailDto;
 import com.fpt.ojt.services.dtos.UserCardDto;
-
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.Caching;
-
 import jakarta.persistence.EntityManager;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-
-import org.springframework.stereotype.Service;
-
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
+import org.springframework.stereotype.Service;
 
 @Service
 @Slf4j
@@ -80,38 +76,33 @@ public class CardServiceImpl implements CardService {
 
     @Override
     public List<CardProductDto> searchCardProducts(String keyword, int limit) {
-        
+
         List<CardProduct> cardProducts;
         if (keyword.length() < MIN_SEARCH_LENGTH) {
             cardProducts = cardProductRepository.searchShort(keyword, limit);
         } else {
             cardProducts = cardProductRepository.searchLong(keyword, limit);
         }
-        return cardProducts.stream()
-                .map(CardProductDto::fromEntity)
-                .toList();
+        return cardProducts.stream().map(CardProductDto::fromEntity).toList();
     }
-
-
 
     @Cacheable(value = CacheNames.USER_CARDS_CACHE_NAME, key = "#userId")
     @Override
     public List<UserCardDto> getUserCards(UUID userId) {
         var userCards = userCreditCardRepository.findByUserIdAndDeletedAtIsNull(userId);
-        return userCards.stream()
-                .map(UserCardDto::fromEntity)
-                .toList();
-
+        return userCards.stream().map(UserCardDto::fromEntity).toList();
     }
 
-    @Caching(evict = {
-            @CacheEvict(value = CacheNames.USER_CARDS_CACHE_NAME, key = "#userId"),
-            @CacheEvict(value = CacheNames.USER_CARD_RULES_CACHE_NAME, key = "#userId")
-    })
+    @Caching(
+            evict = {
+                @CacheEvict(value = CacheNames.USER_CARDS_CACHE_NAME, key = "#userId"),
+                @CacheEvict(value = CacheNames.USER_CARD_RULES_CACHE_NAME, key = "#userId")
+            })
     @Override
     @CacheEvict(value = CacheNames.USER_CARD_EMPTY_CACHE_NAME, key = "#userId")
     public UUID addCardToUser(UUID userId, AddCardToUserRequest request) {
-        var cardProduct = cardProductRepository.findById(request.getCardId())
+        var cardProduct = cardProductRepository
+                .findById(request.getCardId())
                 .orElseThrow(() -> new NotFoundException("Card product not found with id: " + request.getCardId()));
         var user = entityManager.getReference(com.fpt.ojt.models.postgres.user.User.class, userId);
 
@@ -128,7 +119,8 @@ public class CardServiceImpl implements CardService {
     @CacheEvict(value = CacheNames.USER_CARDS_CACHE_NAME, key = "#userId")
     @Override
     public void editUserCard(UUID userCardId, UUID userId, EditUserCard request) {
-        var userCard = userCreditCardRepository.findById(userCardId)
+        var userCard = userCreditCardRepository
+                .findById(userCardId)
                 .orElseThrow(() -> new NotFoundException("User card not found with id: " + userCardId));
         if (!userCard.getUser().getId().equals(userId)) {
             throw new ForbiddenException("User does not own this card");
@@ -138,14 +130,16 @@ public class CardServiceImpl implements CardService {
         userCreditCardRepository.save(userCard);
     }
 
-    @Caching(evict = {
-            @CacheEvict(value = CacheNames.USER_CARDS_CACHE_NAME, key = "#userId"),
-            @CacheEvict(value = CacheNames.USER_CARD_RULES_CACHE_NAME, key = "#userId")
-    })
+    @Caching(
+            evict = {
+                @CacheEvict(value = CacheNames.USER_CARDS_CACHE_NAME, key = "#userId"),
+                @CacheEvict(value = CacheNames.USER_CARD_RULES_CACHE_NAME, key = "#userId")
+            })
     @CacheEvict(value = CacheNames.USER_CARD_EMPTY_CACHE_NAME, key = "#userId")
     @Override
     public void removeUserCard(UUID userCardId, UUID userId) {
-        var userCard = userCreditCardRepository.findById(userCardId)
+        var userCard = userCreditCardRepository
+                .findById(userCardId)
                 .orElseThrow(() -> new NotFoundException("User card not found with id: " + userCardId));
         if (!userCard.getUser().getId().equals(userId)) {
             throw new ForbiddenException("User does not own this card");
@@ -156,7 +150,8 @@ public class CardServiceImpl implements CardService {
 
     @Override
     public UserCardDetailDto getUserCardDetail(UUID userCardId, UUID userId) {
-        var userCard = userCreditCardRepository.findByIdAndUserIdAndDeletedAtIsNull(userCardId, userId)
+        var userCard = userCreditCardRepository
+                .findByIdAndUserIdAndDeletedAtIsNull(userCardId, userId)
                 .orElseThrow(() -> new NotFoundException("User card not found with id: " + userCardId));
         return UserCardDetailDto.fromEntity(userCard);
     }
@@ -164,9 +159,7 @@ public class CardServiceImpl implements CardService {
     @Override
     public List<UserCardDto> getUserCardsByCardType(UUID userId, String cardType) {
         var userCards = userCreditCardRepository.findByUserIdAndCardType(userId, cardType);
-        return userCards.stream()
-                .map(UserCardDto::fromEntity)
-                .toList();
+        return userCards.stream().map(UserCardDto::fromEntity).toList();
     }
 
     @Override

@@ -1,22 +1,18 @@
 package com.fpt.ojt.services.user.impl;
 
-import java.util.UUID;
-
-import com.fpt.ojt.models.enums.EnumConstants;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.fpt.ojt.exceptions.DuplicateException;
 import com.fpt.ojt.exceptions.NotFoundException;
+import com.fpt.ojt.models.enums.EnumConstants;
 import com.fpt.ojt.models.postgres.user.User;
 import com.fpt.ojt.repositories.user.UserRepository;
 import com.fpt.ojt.services.dtos.Profile;
 import com.fpt.ojt.services.dtos.UpdateProfileDto;
 import com.fpt.ojt.services.user.CountryService;
 import com.fpt.ojt.services.user.UserService;
-
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 
 @Service
 @Slf4j
@@ -27,34 +23,19 @@ public class UserServiceImpl implements UserService {
     private final CountryService countryService;
 
     @Override
-    public void createUser(EnumConstants.RoleEnum roleEnum,
-            String googleId,
-            String firstName,
-            String lastName,
-            String userName,
-            String email,
-            String passwordEncoded) {
-        // Check for duplicate username
-        if (userName != null && userRepository.existsByUserName(userName)) {
-            throw new DuplicateException("Username '" + userName + "' is already taken");
-        }
-
+    public void createUser(EnumConstants.RoleEnum roleEnum, String firstName, String lastName, String email) {
         // Check for duplicate email
         if (email != null && userRepository.existsByEmail(email)) {
             throw new DuplicateException("Email '" + email + "' is already registered");
         }
 
         try {
-            userRepository.save(
-                    User.builder()
-                            .role(roleEnum)
-                            .googleId(googleId)
-                            .firstName(firstName)
-                            .lastName(lastName)
-                            .userName(userName)
-                            .email(email)
-                            .password(passwordEncoded)
-                            .build());
+            userRepository.save(User.builder()
+                    .role(roleEnum)
+                    .firstName(firstName)
+                    .lastName(lastName)
+                    .email(email)
+                    .build());
         } catch (Exception exception) {
             log.error("Failed to create user: {}", exception.getMessage(), exception);
             throw new RuntimeException("Failed to create user", exception);
@@ -62,30 +43,15 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void updateUser(UUID userId, String userName, String firstName,
-            String lastName) {
+    public void updateUser(UUID userId, String firstName, String lastName) {
 
-        User user = userRepository.findById(userId)
+        User user = userRepository
+                .findById(userId)
                 .orElseThrow(() -> new NotFoundException("User with id " + userId + " not found"));
         user.setFirstName(firstName);
         user.setLastName(lastName);
-        user.setUserName(userName);
 
         userRepository.save(user);
-    }
-
-    @Override
-    @Transactional
-    public void updateNewPassword(UUID userId, String hashPassword) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("User with id " + userId + " not found"));
-        user.setPassword(hashPassword);
-        userRepository.save(user);
-    }
-
-    @Override
-    public User getUserByUserName(String userName) {
-        return userRepository.findByUserName(userName);
     }
 
     @Override
@@ -94,26 +60,15 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User handleUpdateGoogleCredential(String googleId,
-            String email,
-            String firstName, String lastName,
-            String pictureUrl) {
+    public User handleUpdateGoogleCredential(
+            String googleId, String email, String firstName, String lastName, String pictureUrl) {
         // TODO: Handle picture here
         User user = userRepository.findByGoogleId(googleId);
         if (user == null) {
             // Handle create new
-            createUser(
-                    EnumConstants.RoleEnum.CUSTOMER,
-                    googleId,
-                    firstName, lastName,
-                    email,
-                    email,
-                    null);
+            createUser(EnumConstants.RoleEnum.CUSTOMER, firstName, lastName, email);
         } else {
-            updateUser(
-                    user.getId(),
-                    user.getUserName(),
-                    firstName, lastName);
+            updateUser(user.getId(), firstName, lastName);
         }
 
         return userRepository.findByGoogleId(googleId);
@@ -121,14 +76,16 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Profile getProfileById(UUID userId) {
-        User user = userRepository.findById(userId)
+        User user = userRepository
+                .findById(userId)
                 .orElseThrow(() -> new NotFoundException("User with id " + userId + " not found"));
         return Profile.fromEntity(user);
     }
 
     @Override
     public void updateProfile(UUID userId, UpdateProfileDto updateProfileDto) {
-        User user = userRepository.findById(userId)
+        User user = userRepository
+                .findById(userId)
                 .orElseThrow(() -> new NotFoundException("User with id " + userId + " not found"));
         var existByEmail = userRepository.findByEmail(updateProfileDto.getEmail());
         if (existByEmail != null && !existByEmail.getId().equals(userId)) {
@@ -136,7 +93,8 @@ public class UserServiceImpl implements UserService {
         }
         boolean isPhoneCodeExists = countryService.isPhoneCodeExists(updateProfileDto.getCountryPhoneCode());
         if (!isPhoneCodeExists) {
-            throw new NotFoundException("Country phone code '" + updateProfileDto.getCountryPhoneCode() + "' is not valid");
+            throw new NotFoundException(
+                    "Country phone code '" + updateProfileDto.getCountryPhoneCode() + "' is not valid");
         }
         user.setFirstName(updateProfileDto.getFirstName());
         user.setLastName(updateProfileDto.getLastName());
@@ -145,5 +103,4 @@ public class UserServiceImpl implements UserService {
         user.setEmail(updateProfileDto.getEmail());
         userRepository.save(user);
     }
-
 }

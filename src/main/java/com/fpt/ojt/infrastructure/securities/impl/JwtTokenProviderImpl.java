@@ -1,14 +1,20 @@
 package com.fpt.ojt.infrastructure.securities.impl;
 
+import static com.fpt.ojt.infrastructure.constants.Constants.ACCESS_TOKEN_HEADER;
+
 import com.fpt.ojt.exceptions.RefreshTokenExpiredException;
 import com.fpt.ojt.exceptions.SuspiciousDetectedException;
-import com.fpt.ojt.models.redis.RefreshToken;
-import com.fpt.ojt.repositories.RefreshTokenRepository;
 import com.fpt.ojt.infrastructure.securities.JwtTokenProvider;
 import com.fpt.ojt.infrastructure.securities.dto.AccessTokenData;
+import com.fpt.ojt.models.redis.RefreshToken;
+import com.fpt.ojt.repositories.RefreshTokenRepository;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.SignatureException;
 import jakarta.servlet.http.HttpServletRequest;
+import java.security.interfaces.RSAPrivateKey;
+import java.security.interfaces.RSAPublicKey;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
@@ -16,13 +22,6 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
-
-import java.security.interfaces.RSAPrivateKey;
-import java.security.interfaces.RSAPublicKey;
-import java.util.*;
-import java.util.concurrent.CompletableFuture;
-
-import static com.fpt.ojt.infrastructure.constants.Constants.ACCESS_TOKEN_HEADER;
 
 @Component
 @Slf4j
@@ -39,8 +38,7 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
             @Lazy RedisTemplate<String, Object> redisTemplate,
             @Lazy RedisScript<Long> revokeTokenScript,
             RSAPrivateKey privateKey,
-            RSAPublicKey publicKey
-    ) {
+            RSAPublicKey publicKey) {
         this.refreshTokenRepository = refreshTokenRepository;
         this.redisTemplate = redisTemplate;
         this.revokeTokenScript = revokeTokenScript;
@@ -63,7 +61,8 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
     }
 
     @Override
-    public Map<String, String> generateRefreshTokenByUserId(UUID userId, String familyToken, String userRole, Boolean rememberMe) {
+    public Map<String, String> generateRefreshTokenByUserId(
+            UUID userId, String familyToken, String userRole, Boolean rememberMe) {
 
         // Check and revoke existing refresh token
         if (familyToken != null) {
@@ -78,13 +77,11 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
         }
 
         long refreshTokenExpiresIn;
-        if (rememberMe)
-            refreshTokenExpiresIn = jwtRefreshTokenExpiresInWithRememberme;
-        else
-            refreshTokenExpiresIn = jwtRefreshTokenExpiresIn;
+        if (rememberMe) refreshTokenExpiresIn = jwtRefreshTokenExpiresInWithRememberme;
+        else refreshTokenExpiresIn = jwtRefreshTokenExpiresIn;
 
-        String newFamilyToken = familyToken != null ? familyToken
-                : UUID.randomUUID().toString();
+        String newFamilyToken =
+                familyToken != null ? familyToken : UUID.randomUUID().toString();
 
         String refreshToken = generateTokenByUserId(userId, userRole, newFamilyToken, refreshTokenExpiresIn);
 
@@ -104,16 +101,12 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
 
     @Override
     public AccessTokenData generateAccessTokenByRefreshToken(String refreshToken) {
-        RefreshToken storedRefreshToken = refreshTokenRepository.findByRefreshToken(refreshToken)
+        RefreshToken storedRefreshToken = refreshTokenRepository
+                .findByRefreshToken(refreshToken)
                 .orElseThrow(() -> new RefreshTokenExpiredException("Refresh token has expired"));
 
         String redisKey = "refresh_tokens:" + refreshToken;
-        Long result = redisTemplate.execute(
-                revokeTokenScript,
-                Collections.singletonList(redisKey),
-                "isRevoked",
-                "0"
-        );
+        Long result = redisTemplate.execute(revokeTokenScript, Collections.singletonList(redisKey), "isRevoked", "0");
 
         if (result == null || result == -1) {
             throw new RefreshTokenExpiredException("Refresh token not found in Redis");
@@ -150,9 +143,7 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
     @Override
     @Async("taskExecutor")
     public CompletableFuture<Void> revokeRefreshTokenByFamilyToken(String familyToken) {
-        List<RefreshToken> refreshTokens = refreshTokenRepository.findAllByFamilyTokenAndIsRevoked(
-                familyToken, false
-        );
+        List<RefreshToken> refreshTokens = refreshTokenRepository.findAllByFamilyTokenAndIsRevoked(familyToken, false);
 
         for (RefreshToken rt : refreshTokens) {
             if (!rt.isRevoked()) {
@@ -167,7 +158,8 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
 
     @Override
     public void revokeRefreshTokenByRefreshToken(String refreshToken) {
-        RefreshToken storedRefreshToken = refreshTokenRepository.findByRefreshToken(refreshToken)
+        RefreshToken storedRefreshToken = refreshTokenRepository
+                .findByRefreshToken(refreshToken)
                 .orElseThrow(() -> new RefreshTokenExpiredException("Refresh token has expired"));
 
         if (storedRefreshToken.isRevoked()) {
@@ -181,10 +173,7 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
     @Override
     public boolean validateToken(String token, HttpServletRequest request) {
         try {
-            Jwts.parser()
-                    .verifyWith(publicKey)
-                    .build()
-                    .parseSignedClaims(token);
+            Jwts.parser().verifyWith(publicKey).build().parseSignedClaims(token);
             return true;
 
         } catch (ExpiredJwtException e) {
@@ -252,12 +241,13 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
             jwtBuilder.claim("family_token", familyToken);
         }
 
-        String token = jwtBuilder
-                .signWith(privateKey, Jwts.SIG.RS256)
-                .compact();
+        String token = jwtBuilder.signWith(privateKey, Jwts.SIG.RS256).compact();
 
-        log.trace("Token generated for userID: {}, familyToken: {}, ttl: {}ms",
-                userId, familyToken != null ? "present" : "null", expiryTime);
+        log.trace(
+                "Token generated for userID: {}, familyToken: {}, ttl: {}ms",
+                userId,
+                familyToken != null ? "present" : "null",
+                expiryTime);
 
         return token;
     }

@@ -1,13 +1,10 @@
 package com.fpt.ojt.presentations.dtos.requests.card;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.UUID;
-
-import jakarta.validation.constraints.NotNull;
-
 import lombok.Data;
-
-import io.swagger.v3.oas.annotations.media.Schema;
 
 @Data
 @Schema(description = "Request to add a card to user")

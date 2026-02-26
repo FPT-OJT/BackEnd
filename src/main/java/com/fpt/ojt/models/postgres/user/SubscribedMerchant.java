@@ -1,10 +1,11 @@
 package com.fpt.ojt.models.postgres.user;
-import org.hibernate.annotations.SQLRestriction;
 
 import com.fpt.ojt.models.postgres.AbstractBaseEntity;
 import com.fpt.ojt.models.postgres.merchant.MerchantAgency;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.SQLRestriction;
+
 @Entity
 @Table(name = "subscribed_merchants")
 @Builder
