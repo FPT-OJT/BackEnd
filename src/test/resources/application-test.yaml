@@ -69,11 +69,11 @@ spring:
             client-secret: test-client-secret
 
 app:
-  secret: test-secret-key-for-testing-purposes-only
   default-locale: en_US
   default-timezone: UTC
   jwt:
-    secret: test-jwt-secret-key-for-testing-purposes-only-must-be-at-least-256-bits
+    private-key-path: classpath:keys/private.pem
+    public-key-path: classpath:keys/public.pem
     token:
       expires-in: 3600000
     refresh-token:

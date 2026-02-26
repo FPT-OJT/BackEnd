@@ -1,8 +1,9 @@
 package com.fpt.ojt.models.postgres.merchant;
 
 public interface NearestAgencyProjection {
+    String getAgencyId();
 
-    String getBrandName();
+    String getMerchantName();
 
     String getAgencyName();
 

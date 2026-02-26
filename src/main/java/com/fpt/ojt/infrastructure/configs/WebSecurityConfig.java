@@ -40,7 +40,8 @@ public class WebSecurityConfig {
                                 "/public/**",
                                 "/favicon.ico",
                                 "/scalar/**",
-                                "/v3/api-docs"
+                                "/v3/api-docs",
+                                "/.well-known/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
