@@ -60,21 +60,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User handleUpdateGoogleCredential(
-            String googleId, String email, String firstName, String lastName, String pictureUrl) {
-        // TODO: Handle picture here
-        User user = userRepository.findByGoogleId(googleId);
-        if (user == null) {
-            // Handle create new
-            createUser(EnumConstants.RoleEnum.CUSTOMER, firstName, lastName, email);
-        } else {
-            updateUser(user.getId(), firstName, lastName);
-        }
-
-        return userRepository.findByGoogleId(googleId);
-    }
-
-    @Override
     public Profile getProfileById(UUID userId) {
         User user = userRepository
                 .findById(userId)

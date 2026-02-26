@@ -11,9 +11,6 @@ public interface UserService {
 
     void updateUser(UUID userId, String firstName, String lastName);
 
-    User handleUpdateGoogleCredential(
-            String googleId, String email, String firstName, String lastName, String pictureUrl);
-
     User getUserByEmail(String email);
 
     Profile getProfileById(UUID userId);
