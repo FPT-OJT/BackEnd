@@ -10,6 +10,7 @@ import lombok.Setter;
 @Builder
 public class MerchantDealDto {
     private UUID id;
+    private UUID agencyId;
     private String merchantName;
     private String logoUrl;
     private String merchantDescription;

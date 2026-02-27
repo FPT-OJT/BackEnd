@@ -71,6 +71,7 @@ public class MerchantAgencyServiceImpl implements MerchantAgencyService {
     private MerchantDealDto mapToMerchantDealDto(com.fpt.ojt.models.postgres.deal.MerchantDeal deal) {
         return MerchantDealDto.builder()
                 .id(deal.getId())
+                .agencyId(deal.getMerchantAgency().getId())
                 .merchantName(deal.getMerchantAgency().getMerchant().getName())
                 .logoUrl(deal.getMerchantAgency().getMerchant().getLogoUrl())
                 .merchantDescription(deal.getMerchantAgency().getMerchant().getDescription())
