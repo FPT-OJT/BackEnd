@@ -86,7 +86,7 @@ app:
   default-locale: ${APP_DEFAULT_LOCALE}
   default-timezone: ${APP_DEFAULT_TIMEZONE}
   jwt:
-    public-key-path: ${JWT_PUBLIC_KEY_PATH:classpath:keys/public.pem}
+    public-key: ${JWT_PUBLIC_KEY}
 
 springdoc:
   api-docs:
