@@ -3,5 +3,25 @@
     "terminal.integrated.env.windows": {
         "SPRING_PROFILES_ACTIVE": "dev"
     },
-    "java.configuration.updateBuildConfiguration": "automatic"
+    "java.configuration.updateBuildConfiguration": "automatic",
+    "workbench.colorCustomizations": {
+        "activityBar.activeBackground": "#ddfe12",
+        "activityBar.background": "#ddfe12",
+        "activityBar.foreground": "#15202b",
+        "activityBar.inactiveForeground": "#15202b99",
+        "activityBarBadge.background": "#01a4be",
+        "activityBarBadge.foreground": "#e7e7e7",
+        "commandCenter.border": "#15202b99",
+        "sash.hoverBorder": "#ddfe12",
+        "statusBar.background": "#bddc01",
+        "statusBar.foreground": "#15202b",
+        "statusBarItem.hoverBackground": "#91a901",
+        "statusBarItem.remoteBackground": "#bddc01",
+        "statusBarItem.remoteForeground": "#15202b",
+        "titleBar.activeBackground": "#bddc01",
+        "titleBar.activeForeground": "#15202b",
+        "titleBar.inactiveBackground": "#bddc0199",
+        "titleBar.inactiveForeground": "#15202b99"
+    },
+    "peacock.color": "#bddc01"
 }
