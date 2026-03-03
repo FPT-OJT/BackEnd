@@ -1,4 +1,4 @@
-name: FPT OJT Backend CI flow
+name: Core-Service CI Flow
 
 on:
   push:
