@@ -13,7 +13,7 @@ env:
 jobs:
   build-and-test:
     name: Build & Run Unit Tests
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     permissions:
       contents: read
       checks: write
@@ -56,7 +56,7 @@ jobs:
   build-and-push-ghcr:
     name: Build and Push Docker Image to GitHub Container Registry
     needs: build-and-test
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/main-v2')
 
     permissions:
