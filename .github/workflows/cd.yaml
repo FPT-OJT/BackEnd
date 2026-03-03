@@ -11,7 +11,7 @@ on:
 
 jobs:
   deploy-to-production:
-    name: Deploy to Production Server
+    name: Deploy Core Service to Production Server
     runs-on: self-hosted
 
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
