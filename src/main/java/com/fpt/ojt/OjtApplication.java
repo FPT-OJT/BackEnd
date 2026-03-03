@@ -9,13 +9,8 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-@OpenAPIDefinition(
-        info = @Info(title = "FPT OJT Backend", version = "1.0.0", description = "OJT Backend API documentations"))
-@SecurityScheme(
-        name = "tokenAuth",
-        type = SecuritySchemeType.APIKEY,
-        in = SecuritySchemeIn.HEADER,
-        paramName = "Authorization")
+@OpenAPIDefinition(info = @Info(title = "FPT OJT Backend", version = "1.0.0", description = "OJT Backend API documentations"))
+@SecurityScheme(name = "tokenAuth", type = SecuritySchemeType.APIKEY, in = SecuritySchemeIn.HEADER, paramName = "Authorization")
 public class OjtApplication {
 
     public static void main(String[] args) {
