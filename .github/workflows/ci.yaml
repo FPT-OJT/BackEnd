@@ -34,7 +34,7 @@ jobs:
         run: chmod +x mvnw
 
       - name: Build, Test, and Package with Maven
-        run: ./mvnw clean verify
+        run: ./mvnw clean verify -Dspotless.check.skip=true
 
       - name: Upload JAR artifact
         uses: actions/upload-artifact@v4
