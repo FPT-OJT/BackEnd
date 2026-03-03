@@ -2,6 +2,7 @@ package com.fpt.ojt.presentations.controllers.base;
 
 import com.fpt.ojt.presentations.dtos.responses.PageResponse;
 import com.fpt.ojt.presentations.dtos.responses.SingleResponse;
+import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -9,16 +10,10 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-
 @Component
 public class ResponseFactory {
 
-    public <T> SingleResponse<T> createSingleResponse(
-            HttpStatus status,
-            String message,
-            T data
-    ) {
+    public <T> SingleResponse<T> createSingleResponse(HttpStatus status, String message, T data) {
         return SingleResponse.<T>builder()
                 .statusCode(status.value())
                 .message(message)
@@ -27,14 +22,7 @@ public class ResponseFactory {
     }
 
     public <T> PageResponse<T> createPageResponse(
-            HttpStatus status,
-            String message,
-            List<T> data,
-            int page,
-            int size,
-            long totalElements,
-            int totalPages
-    ) {
+            HttpStatus status, String message, List<T> data, int page, int size, long totalElements, int totalPages) {
         return PageResponse.<T>builder()
                 .statusCode(status.value())
                 .message(message)
@@ -43,48 +31,26 @@ public class ResponseFactory {
                 .build();
     }
 
-    public <T> ResponseEntity<SingleResponse<T>> successSingle(
-            T data,
-            String message
-    ) {
-        return ResponseEntity.ok(
-                createSingleResponse(HttpStatus.OK, message, data)
-        );
+    public <T> ResponseEntity<SingleResponse<T>> successSingle(T data, String message) {
+        return ResponseEntity.ok(createSingleResponse(HttpStatus.OK, message, data));
     }
 
     public <T> ResponseEntity<SingleResponse<T>> successSingleWithCookie(
-            T data,
-            String message,
-            ResponseCookie cookie
-    ) {
+            T data, String message, ResponseCookie cookie) {
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
                 .body(createSingleResponse(HttpStatus.OK, message, data));
     }
 
-    public <T> ResponseEntity<SingleResponse<T>> failedSingle(
-            T data,
-            String message
-    ) {
-        return ResponseEntity.badRequest().body(
-                createSingleResponse(HttpStatus.BAD_REQUEST, message, data)
-        );
+    public <T> ResponseEntity<SingleResponse<T>> failedSingle(T data, String message) {
+        return ResponseEntity.badRequest().body(createSingleResponse(HttpStatus.BAD_REQUEST, message, data));
     }
 
-    public <T> ResponseEntity<SingleResponse<T>> sendSingle(
-            T data,
-            String message,
-            HttpStatus status
-    ) {
-        return ResponseEntity.status(status).body(
-                createSingleResponse(status, message, data)
-        );
+    public <T> ResponseEntity<SingleResponse<T>> sendSingle(T data, String message, HttpStatus status) {
+        return ResponseEntity.status(status).body(createSingleResponse(status, message, data));
     }
 
-    public <T> ResponseEntity<PageResponse<T>> successPage(
-            Page<T> page,
-            String message
-    ) {
+    public <T> ResponseEntity<PageResponse<T>> successPage(Page<T> page, String message) {
         PageResponse<T> response = createPageResponse(
                 HttpStatus.OK,
                 message,
@@ -92,8 +58,7 @@ public class ResponseFactory {
                 page.getNumber(),
                 page.getSize(),
                 page.getTotalElements(),
-                page.getTotalPages()
-        );
+                page.getTotalPages());
 
         return ResponseEntity.ok(response);
     }

@@ -1,7 +1,6 @@
 package com.fpt.ojt.services.dtos;
 
 import java.util.UUID;
-
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -11,6 +10,7 @@ import lombok.Setter;
 @Builder
 public class MerchantDealDto {
     private UUID id;
+    private UUID agencyId;
     private String merchantName;
     private String logoUrl;
     private String merchantDescription;

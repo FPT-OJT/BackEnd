@@ -2,7 +2,8 @@ package com.fpt.ojt.repositories.deal;
 
 import com.fpt.ojt.models.postgres.deal.MerchantDeal;
 import com.fpt.ojt.models.postgres.merchant.MerchantDealFlatProjection;
-
+import java.util.List;
+import java.util.UUID;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -10,16 +11,13 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-
-import java.util.List;
-import java.util.UUID;
-
 @Repository
 public interface MerchantDealRepository
-    extends JpaRepository<MerchantDeal, UUID>, JpaSpecificationExecutor<MerchantDeal> {
+        extends JpaRepository<MerchantDeal, UUID>, JpaSpecificationExecutor<MerchantDeal> {
 
     @EntityGraph(attributePaths = {"merchantAgency", "merchantAgency.merchant"})
-    @Query("""
+    @Query(
+            """
             SELECT md FROM MerchantDeal md
             WHERE md.deletedAt IS NULL
               AND md.validFrom <= CURRENT_DATE
@@ -28,7 +26,8 @@ public interface MerchantDealRepository
     List<MerchantDeal> findAllAvailableMerchantDeals();
 
     @EntityGraph(attributePaths = {"merchantAgency", "merchantAgency.merchant"})
-    @Query("""
+    @Query(
+            """
             SELECT md FROM MerchantDeal md
             WHERE md.merchantAgency.id = :agencyId
               AND md.deletedAt IS NULL
@@ -37,8 +36,9 @@ public interface MerchantDealRepository
             """)
     List<MerchantDeal> findAvailableByMerchantAgencyId(@Param("agencyId") UUID agencyId);
 
-
-  @Query(value = """
+    @Query(
+            value =
+                    """
       SELECT
           ma.id AS agencyId,
           ma.name AS agencyName,
@@ -75,9 +75,10 @@ public interface MerchantDealRepository
             :radiusMeters
         )
       ORDER BY distanceMeters ASC
-      """, nativeQuery = true)
-  List<MerchantDealFlatProjection> findAvailableDealsInRadius(
-      @Param("latitude") double latitude,
-      @Param("longitude") double longitude,
-      @Param("radiusMeters") int radiusMeters);
+      """,
+            nativeQuery = true)
+    List<MerchantDealFlatProjection> findAvailableDealsInRadius(
+            @Param("latitude") double latitude,
+            @Param("longitude") double longitude,
+            @Param("radiusMeters") int radiusMeters);
 }

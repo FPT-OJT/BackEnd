@@ -6,7 +6,6 @@ import com.fpt.ojt.services.dtos.AvailableCardRulesDto;
 import com.fpt.ojt.services.dtos.CardProductDto;
 import com.fpt.ojt.services.dtos.UserCardDetailDto;
 import com.fpt.ojt.services.dtos.UserCardDto;
-
 import java.util.List;
 import java.util.UUID;
 
@@ -26,6 +25,8 @@ public interface CardService {
     UserCardDetailDto getUserCardDetail(UUID userCardId, UUID userId);
 
     List<UserCardDto> getUserCardsByCardType(UUID userId, String cardType);
+
     boolean isUserCardEmpty(UUID userId);
+
     boolean isUserCardExists(UUID cardId, UUID userId);
 }

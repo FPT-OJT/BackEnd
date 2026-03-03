@@ -1,25 +1,18 @@
 package com.fpt.ojt.utils;
 
+import com.fpt.ojt.exceptions.BadRequestException;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
-
-import com.fpt.ojt.exceptions.BadRequestException;
-
-import jakarta.servlet.http.HttpServletRequest;
 
 @Component
 public class IpUtils {
 
     public String getClientIp() {
-        ServletRequestAttributes attr =
-        (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        ServletRequestAttributes attr = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         HttpServletRequest request = attr.getRequest();
-        String[] headers = {
-                "X-Forwarded-For",
-                "X-Real-IP",
-                "CF-Connecting-IP"
-        };
+        String[] headers = {"X-Forwarded-For", "X-Real-IP", "CF-Connecting-IP"};
 
         for (String header : headers) {
             String ip = request.getHeader(header);
@@ -33,5 +26,4 @@ public class IpUtils {
         }
         return ip;
     }
-
 }

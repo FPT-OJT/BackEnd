@@ -3,9 +3,8 @@ package com.fpt.ojt.models.postgres.deal;
 import com.fpt.ojt.models.postgres.AbstractBaseEntity;
 import com.fpt.ojt.models.postgres.merchant.MerchantAgency;
 import jakarta.persistence.*;
-import lombok.*;
-
 import java.time.LocalDate;
+import lombok.*;
 
 @Entity
 @Table(name = "merchant_deals")

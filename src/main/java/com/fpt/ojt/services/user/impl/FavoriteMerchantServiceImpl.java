@@ -1,17 +1,14 @@
 package com.fpt.ojt.services.user.impl;
 
-import java.util.List;
-import java.util.UUID;
-
-import org.springframework.stereotype.Service;
-
 import com.fpt.ojt.repositories.user.FavoriteMerchantRepository;
 import com.fpt.ojt.services.dtos.FavoriteMerchantDto;
 import com.fpt.ojt.services.user.FavoriteMerchantService;
-
 import jakarta.transaction.Transactional;
+import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
@@ -36,7 +33,6 @@ public class FavoriteMerchantServiceImpl implements FavoriteMerchantService {
     @Transactional
     public void removeFavoriteMerchant(UUID userId, UUID favoriteMerchantId) {
         favoriteMerchantRepository.deleteByUserIdAndMerchantAgencyId(userId, favoriteMerchantId);
-
     }
 
     @Override

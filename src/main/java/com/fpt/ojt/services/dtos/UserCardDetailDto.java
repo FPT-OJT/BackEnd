@@ -1,10 +1,8 @@
 package com.fpt.ojt.services.dtos;
 
+import com.fpt.ojt.models.postgres.card.UserCreditCard;
 import java.time.LocalDate;
 import java.util.UUID;
-
-import com.fpt.ojt.models.postgres.card.UserCreditCard;
-
 import lombok.Builder;
 import lombok.Data;
 

@@ -1,10 +1,8 @@
 package com.fpt.ojt.services.dtos;
 
-import java.util.UUID;
-
 import com.fpt.ojt.models.enums.EnumConstants;
 import com.fpt.ojt.models.postgres.user.User;
-
+import java.util.UUID;
 import lombok.Builder;
 import lombok.Data;
 
@@ -23,7 +21,6 @@ public class UserDto {
     public static UserDto fromEntity(User user) {
         return UserDto.builder()
                 .id(user.getId())
-                .userName(user.getUserName())
                 .email(user.getEmail())
                 .role(user.getRole())
                 .firstName(user.getFirstName())

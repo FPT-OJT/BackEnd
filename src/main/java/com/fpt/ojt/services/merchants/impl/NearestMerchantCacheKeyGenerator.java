@@ -1,7 +1,6 @@
 package com.fpt.ojt.services.merchants.impl;
 
 import java.lang.reflect.Method;
-
 import org.springframework.cache.interceptor.KeyGenerator;
 import org.springframework.stereotype.Component;
 
@@ -30,24 +29,12 @@ public class NearestMerchantCacheKeyGenerator implements KeyGenerator {
         return buildCacheKey(lat, lng, keyword, limit);
     }
 
-    private String buildCacheKey(
-            double lat,
-            double lng,
-            String keyword,
-            int limit) {
+    private String buildCacheKey(double lat, double lng, String keyword, int limit) {
         long latGrid = latGrid(lat);
         long lngGrid = lngGrid(lat, lng);
 
-        String q = keyword == null
-                ? ""
-                : keyword.trim().toLowerCase();
+        String q = keyword == null ? "" : keyword.trim().toLowerCase();
 
-        return String.format(
-                "search:nearby:lat=%d:lng=%d:q=%s:limit=%d",
-                latGrid,
-                lngGrid,
-                q,
-                limit);
+        return String.format("search:nearby:lat=%d:lng=%d:q=%s:limit=%d", latGrid, lngGrid, q, limit);
     }
-
 }

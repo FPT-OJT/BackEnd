@@ -1,10 +1,9 @@
 package com.fpt.ojt.presentations.dtos.responses.auth;
 
+import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
-
-import java.util.UUID;
 
 @Getter
 @Setter

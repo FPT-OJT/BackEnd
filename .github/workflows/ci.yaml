@@ -1,10 +1,14 @@
-name: FPT OJT Backend CI flow
+name: Core-Service CI Flow
 
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "main-v2"]
   pull_request:
-    branches: ["main"]
+    branches: ["main", "main-v2"]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository_owner }}/core-service
 
 jobs:
   build-and-test:
@@ -29,8 +33,15 @@ jobs:
       - name: Grant execute permission for mvnw
         run: chmod +x mvnw
 
-      - name: Build and Test with Maven
+      - name: Build, Test, and Package with Maven
         run: ./mvnw clean verify
+
+      - name: Upload JAR artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-jar
+          path: target/*.jar
+          retention-days: 1
 
       - name: Publish Test Results
         uses: dorny/test-reporter@v1
@@ -41,3 +52,43 @@ jobs:
           path: target/surefire-reports/*.xml
           reporter: java-junit
           fail-on-error: true
+
+  build-and-push-ghcr:
+    name: Build and Push Docker Image to GitHub Container Registry
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/main-v2')
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Download JAR artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: app-jar
+          path: target/
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Format image name to lowercase
+        run: echo "IMAGE_NAME_LOWER=${IMAGE_NAME,,}" >> ${GITHUB_ENV}
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: docker/prod/Dockerfile
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LOWER }}:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LOWER }}:latest

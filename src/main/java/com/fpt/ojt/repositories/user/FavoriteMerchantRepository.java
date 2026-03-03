@@ -2,6 +2,8 @@ package com.fpt.ojt.repositories.user;
 
 import com.fpt.ojt.models.postgres.merchant.Merchant;
 import com.fpt.ojt.models.postgres.user.FavoriteMerchant;
+import java.util.List;
+import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
@@ -9,15 +11,13 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-import java.util.UUID;
-
 @Repository
 public interface FavoriteMerchantRepository
         extends JpaRepository<FavoriteMerchant, UUID>, JpaSpecificationExecutor<FavoriteMerchant> {
     boolean existsByUserIdAndMerchantAgencyId(UUID userId, UUID merchantAgencyId);
 
-    @Query("""
+    @Query(
+            """
                 SELECT DISTINCT m
                 FROM FavoriteMerchant fm
                 JOIN fm.merchantAgency ma
@@ -27,7 +27,8 @@ public interface FavoriteMerchantRepository
     List<Merchant> findDistinctFavoriteMerchantsByUserId(UUID userId);
 
     @Modifying
-    @Query("""
+    @Query(
+            """
                 UPDATE FavoriteMerchant fm
                 SET fm.deletedAt = CURRENT_TIMESTAMP
                 WHERE fm.merchantAgency.id = :merchantAgencyId
@@ -37,7 +38,9 @@ public interface FavoriteMerchantRepository
     int deleteByUserIdAndMerchantAgencyId(UUID userId, UUID merchantAgencyId);
 
     @Modifying
-    @Query(value = """
+    @Query(
+            value =
+                    """
                 WITH restored AS (
                     UPDATE favorite_merchants
                     SET deleted_at = NULL,
@@ -53,8 +56,7 @@ public interface FavoriteMerchantRepository
                 ON CONFLICT (user_id, merchant_agency_id)
                 WHERE deleted_at IS NULL
                 DO NOTHING
-            """, nativeQuery = true)
-    int insertOrRestore(
-            @Param("userId") UUID userId,
-            @Param("merchantAgencyId") UUID merchantAgencyId);
+            """,
+            nativeQuery = true)
+    int insertOrRestore(@Param("userId") UUID userId, @Param("merchantAgencyId") UUID merchantAgencyId);
 }

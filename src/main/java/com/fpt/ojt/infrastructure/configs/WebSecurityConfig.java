@@ -28,26 +28,22 @@ public class WebSecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(final HttpSecurity http) throws Exception {
-        return http
-                .csrf(AbstractHttpConfigurer::disable)
+        return http.csrf(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
-                .sessionManagement(configurer -> configurer
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(request -> request
-                        .requestMatchers(
+                .sessionManagement(configurer -> configurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(request -> request.requestMatchers(
                                 "/docs/**",
                                 "/public/**",
                                 "/favicon.ico",
                                 "/scalar/**",
                                 "/v3/api-docs",
-                                "/.well-known/**"
-                        ).permitAll()
-                        .anyRequest().authenticated()
-                )
+                                "/.well-known/**")
+                        .permitAll()
+                        .anyRequest()
+                        .authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .exceptionHandling(configurer -> configurer
-                        .authenticationEntryPoint(jwtAuthenticationEntryPoint))
+                .exceptionHandling(configurer -> configurer.authenticationEntryPoint(jwtAuthenticationEntryPoint))
                 .build();
     }
 

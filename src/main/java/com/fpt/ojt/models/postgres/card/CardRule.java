@@ -2,11 +2,10 @@ package com.fpt.ojt.models.postgres.card;
 
 import com.fpt.ojt.models.postgres.AbstractBaseEntity;
 import jakarta.persistence.*;
+import java.util.List;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
-
-import java.util.List;
 
 @Entity
 @Table(name = "card_rules")

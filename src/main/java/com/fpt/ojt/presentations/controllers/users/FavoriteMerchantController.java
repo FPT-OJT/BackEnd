@@ -1,8 +1,17 @@
 package com.fpt.ojt.presentations.controllers.users;
 
+import com.fpt.ojt.presentations.controllers.base.ResponseFactory;
+import com.fpt.ojt.presentations.dtos.requests.user.AddFavoriteMerchantRequest;
+import com.fpt.ojt.presentations.dtos.responses.SingleResponse;
+import com.fpt.ojt.services.auth.AuthService;
+import com.fpt.ojt.services.dtos.FavoriteMerchantDto;
+import com.fpt.ojt.services.user.FavoriteMerchantService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import java.util.UUID;
-
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,18 +20,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.fpt.ojt.presentations.controllers.base.ResponseFactory;
-import com.fpt.ojt.presentations.dtos.requests.user.AddFavoriteMerchantRequest;
-import com.fpt.ojt.presentations.dtos.responses.SingleResponse;
-import com.fpt.ojt.services.auth.AuthService;
-import com.fpt.ojt.services.dtos.FavoriteMerchantDto;
-import com.fpt.ojt.services.user.FavoriteMerchantService;
-
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/users/favorite-merchants")
@@ -40,20 +37,28 @@ public class FavoriteMerchantController {
         return responseFactory.successSingle(favoriteMerchantService.getFavoriteMerchants(userId), "ok");
     }
 
-    @Operation(summary = "toggle favorite merchant agency", description = "toggle a merchant agency to the current user's favorites")
+    @Operation(
+            summary = "toggle favorite merchant agency",
+            description = "toggle a merchant agency to the current user's favorites")
     @PostMapping
     public ResponseEntity<SingleResponse<Boolean>> toggleFavoriteMerchantAgency(
             @RequestBody AddFavoriteMerchantRequest request) {
         var userId = authService.getCurrentUserId();
         var isFavorite = favoriteMerchantService.toggleFavoriteMerchantAgency(userId, request.getMerchantAgencyId());
-        return responseFactory.successSingle(isFavorite, isFavorite ? "Favorite merchant agency added successfully"
-                : "Favorite merchant agency removed successfully");
+        return responseFactory.successSingle(
+                isFavorite,
+                isFavorite
+                        ? "Favorite merchant agency added successfully"
+                        : "Favorite merchant agency removed successfully");
     }
 
-    @Operation(summary = "Remove favorite merchant", description = "Remove a merchant from the current user's favorites")
+    @Operation(
+            summary = "Remove favorite merchant",
+            description = "Remove a merchant from the current user's favorites")
     @DeleteMapping("{favoriteMerchantId}")
     public ResponseEntity<SingleResponse<Void>> removeFavoriteMerchant(
-            @Parameter(description = "UUID of the favorite merchant to remove", required = true) @PathVariable UUID favoriteMerchantId) {
+            @Parameter(description = "UUID of the favorite merchant to remove", required = true) @PathVariable
+                    UUID favoriteMerchantId) {
         var userId = authService.getCurrentUserId();
         favoriteMerchantService.removeFavoriteMerchant(userId, favoriteMerchantId);
         return responseFactory.successSingle(null, "Favorite merchant removed successfully");
@@ -61,8 +66,14 @@ public class FavoriteMerchantController {
 
     @GetMapping("/agencies/{merchantAgencyId}/is-favorite")
     public ResponseEntity<SingleResponse<Boolean>> isFavoriteMerchantAgency(
-            @Parameter(description = "UUID of the merchant agency to check if the current user has it in favorites", required = true) @PathVariable UUID merchantAgencyId) {
-        var isFavorite = favoriteMerchantService.isFavoriteMerchantAgency(authService.getCurrentUserId(), merchantAgencyId);
+            @Parameter(
+                            description =
+                                    "UUID of the merchant agency to check if the current user has it in favorites",
+                            required = true)
+                    @PathVariable
+                    UUID merchantAgencyId) {
+        var isFavorite =
+                favoriteMerchantService.isFavoriteMerchantAgency(authService.getCurrentUserId(), merchantAgencyId);
         return responseFactory.successSingle(isFavorite, "Is favorite merchant agency successful");
     }
 }

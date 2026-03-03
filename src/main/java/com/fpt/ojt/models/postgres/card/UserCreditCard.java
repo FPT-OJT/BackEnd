@@ -3,9 +3,8 @@ package com.fpt.ojt.models.postgres.card;
 import com.fpt.ojt.models.postgres.AbstractBaseEntity;
 import com.fpt.ojt.models.postgres.user.User;
 import jakarta.persistence.*;
-import lombok.*;
-
 import java.time.LocalDate;
+import lombok.*;
 
 @Entity
 @Table(name = "user_credit_cards")

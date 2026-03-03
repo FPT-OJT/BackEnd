@@ -1,11 +1,10 @@
 package com.fpt.ojt.models.redis;
 
+import java.time.LocalDateTime;
+import java.util.UUID;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.redis.core.RedisHash;
-
-import java.time.LocalDateTime;
-import java.util.UUID;
 
 @RedisHash("user_location")
 @Getter
