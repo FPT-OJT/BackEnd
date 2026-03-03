@@ -1,13 +1,13 @@
-package com.fpt.ojt;
+package com.fpt.ojt.services.user.impl;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
-class OjtApplicationTests {
+class UserServiceImplTest {
 
     @Test
-    void contextLoads() {
+    void alwaysTrue() {
         assertTrue(true);
     }
 }
